@@ -72,7 +72,7 @@ test('provides source-backed Hy-Line Brown weekly rearing references and lineage
   assert.equal(getLayerAgeReference('NOVOgen Brown', 60)?.eggsPerHenHousedMin, 254);
   assert.equal(getLayerAgeReference('Hy-Line Brown', 100)?.cumulativeMortalityPercent, 8.6);
   assert.equal(getLayerAgeReference('Hy-Line Brown', 44)?.dailyFeedMinGrams, 109.1);
-  assert.equal(getLayerAgeReference('NOVOgen Brown', 23.5), null);
+  assert.equal(getLayerAgeReference('NOVOgen Brown', 23.5)?.ageWeeks, 23);
   assert.equal(getLayerAgeReference('Hy-Line W-36', 45)?.dailyFeedMinGrams, 99.6);
   assert.equal(getLayerAgeReference('NOVOgen Brown', 12)?.dailyFeedMinGrams, 65);
   assert.equal(getLayerAgeReference('NOVOgen Brown', 35)?.dailyFeedMaxGrams, 119);
