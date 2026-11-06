@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - ".bootstrap-project.zip.b64"
+      - ".bootstrap-ready"
 
 permissions:
   contents: write
@@ -27,7 +27,7 @@ jobs:
           project_dir="$(find /tmp/granja-project -mindepth 1 -maxdepth 1 -type d | head -n 1)"
           test -n "$project_dir"
           cp -a "$project_dir"/. .
-          rm -f .bootstrap-project.zip.b64 .github/workflows/bootstrap-project.yml
+          rm -rf .bootstrap-project.zip.b64 .bootstrap-ready .github/workflows/bootstrap-project.yml
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
