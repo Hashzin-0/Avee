@@ -28,6 +28,7 @@ export interface LayerTechnicalRecommendation {
   values: Partial<Record<TechnicalParameterKey, number>>;
   source: TechnicalSource;
   note: string;
+  reviewStatus: 'transcribed-unreviewed';
 }
 
 const SUPPORTED_KEYS: TechnicalParameterKey[] = ['areaPerBirdCm2', 'birdsPerNipple', 'feederCmPerBird'];
@@ -110,6 +111,7 @@ export function getLayerTechnicalRecommendation(input: {
     if (housingSystem === 'Gaiolas convencionais' && ageWeeks >= 20 && ageWeeks <= 80) {
       return {
         ...input,
+        reviewStatus: 'transcribed-unreviewed',
         values: { birdsPerNipple: 12, feederCmPerBird: 12 },
         source: HYLINE_BROWN_CONVENTIONAL,
         note: 'O manual informa 490–750 cm² de piso de gaiola por ave, 1 nipple/12 aves e 7–12 cm de comedouro/ave entre 20 e 80 semanas. Foram aplicados 12 cm de comedouro/ave. A área de piso da gaiola não é inserida no campo de área do galpão, pois são bases geométricas diferentes. O perfil climático fica registrado, mas esta tabela não diferencia estes coeficientes por clima.',
@@ -130,10 +132,10 @@ export function getLayerTechnicalRecommendation(input: {
     if (climateProfile !== 'Quente' && climateProfile !== 'Temperado') return null;
     const warm = climateProfile === 'Quente';
     if (housingSystem === 'Gaiolas convencionais') {
-      return { ...input, values: { birdsPerNipple: warm ? 8 : 10, feederCmPerBird: 10 }, source: NOVOGEN_BROWN_EQUIPMENT, note: 'O guia diferencia clima quente e temperado: em gaiolas, 1 nipple para 8 aves no clima quente ou 10 aves no temperado; comedouro de corrente 10 cm/ave. A recomendação de 450/540 cm² refere-se ao piso da gaiola, não à área útil do galpão, por isso não é inserida nesse campo. O manual não traz aqui uma classe climática fria.' };
+      return { ...input, reviewStatus: 'transcribed-unreviewed', values: { birdsPerNipple: warm ? 8 : 10, feederCmPerBird: 10 }, source: NOVOGEN_BROWN_EQUIPMENT, note: 'O guia diferencia clima quente e temperado: em gaiolas, 1 nipple para 8 aves no clima quente ou 10 aves no temperado; comedouro de corrente 10 cm/ave. A recomendação de 450/540 cm² refere-se ao piso da gaiola, não à área útil do galpão, por isso não é inserida nesse campo. O manual não traz aqui uma classe climática fria.' };
     }
     if (housingSystem === 'Sistema de piso') {
-      return { ...input, values: { areaPerBirdCm2: warm ? 1667 : 1250, birdsPerNipple: warm ? 8 : 10, feederCmPerBird: 10 }, source: NOVOGEN_BROWN_EQUIPMENT, note: 'O guia diferencia clima quente e temperado. Para piso: 6–7 aves/m² em clima quente e 8–9 aves/m² em clima temperado; foi aplicado o limite mais conservador de 6 ou 8 aves/m², respectivamente. Nipple: 1/8 aves no quente ou 1/10 no temperado; comedouro de corrente: 10 cm/ave. Não extrapolar para free-range sem dimensionar a área externa.' };
+      return { ...input, reviewStatus: 'transcribed-unreviewed', values: { areaPerBirdCm2: warm ? 1667 : 1250, birdsPerNipple: warm ? 8 : 10, feederCmPerBird: 10 }, source: NOVOGEN_BROWN_EQUIPMENT, note: 'O guia diferencia clima quente e temperado. Para piso: 6–7 aves/m² em clima quente e 8–9 aves/m² em clima temperado; foi aplicado o limite mais conservador de 6 ou 8 aves/m², respectivamente. Nipple: 1/8 aves no quente ou 1/10 no temperado; comedouro de corrente: 10 cm/ave. Não extrapolar para free-range sem dimensionar a área externa.' };
     }
   }
   if (lineage === 'Lohmann Brown-Classic' && housingSystem === 'Gaiolas convencionais' && phase === 'Recria') {
