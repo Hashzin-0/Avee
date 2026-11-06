@@ -2,10 +2,29 @@
 
 import { useMemo, useState } from 'react';
 import {
-  Activity, Bird, BookOpen, Boxes, ChartLine, CheckCircle, ChevronDown,
-  CircleHelp, Database, Egg, Gauge, House, Layers3,
-  Menu, Plus, Scale, Search, Settings2, ShieldCheck, SlidersHorizontal,
-  Tag, Wifi, X,
+  PulseIcon as Activity,
+  BirdIcon as Bird,
+  BookOpenIcon as BookOpen,
+  StackIcon as Boxes,
+  ChartLineIcon as ChartLine,
+  CheckCircleIcon as CheckCircle,
+  CaretDownIcon as ChevronDown,
+  QuestionIcon as CircleHelp,
+  DatabaseIcon as Database,
+  EggIcon as Egg,
+  GaugeIcon as Gauge,
+  HouseIcon as House,
+  StackIcon as Layers3,
+  ListIcon as Menu,
+  PlusIcon as Plus,
+  ScalesIcon as Scale,
+  MagnifyingGlassIcon as Search,
+  GearIcon as Settings2,
+  ShieldCheckIcon as ShieldCheck,
+  SlidersHorizontalIcon as SlidersHorizontal,
+  TagIcon as Tag,
+  WifiHighIcon as Wifi,
+  XIcon as X,
 } from '@phosphor-icons/react';
 import { FarmScene } from '../features/farm-builder/FarmScene';
 import { calculateFarm, calculateUniformity, type FarmInput } from '../features/farm-builder/domain';
