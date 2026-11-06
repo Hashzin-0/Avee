@@ -26,7 +26,6 @@ export type FlockDailyResult = FlockDailyEntry & {
   cumulativeEggMassKg: number;
   dailyFeedConversion: number | null;
   cumulativeFeedConversion: number | null;
-  eggMassCoverageComplete: boolean;
 };
 
 function assertNonNegativeInteger(name: string, value: number) {
@@ -49,7 +48,7 @@ export function calculateFlockDashboard(initialBirds: number, entries: FlockDail
   let previousEnd = initialBirds;
 
   const daily: FlockDailyResult[] = ordered.map((entry) => {
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(entry.date) || Number.isNaN(Date.parse(entry.date))) throw new RangeError('Data do registro inválida.');
+    const parsedDate = new Date(`${entry.date}T00:00:00Z`);\n    if (!/^\d{4}-\d{2}-\d{2}$/.test(entry.date) || Number.isNaN(parsedDate.getTime()) || parsedDate.toISOString().slice(0, 10) !== entry.date) throw new RangeError('Data do registro inválida.');
     if (dates.has(entry.date)) throw new RangeError('Existe mais de um registro para a mesma data.');
     dates.add(entry.date);
     assertNonNegativeInteger('Mortalidade', entry.deaths);
@@ -59,6 +58,7 @@ export function calculateFlockDashboard(initialBirds: number, entries: FlockDail
     assertNonNegative('Água consumida', entry.waterLiters);
     if (entry.averageEggWeightGrams !== undefined) assertNonNegative('Peso médio do ovo', entry.averageEggWeightGrams);
     if (entry.averageBodyWeightGrams !== undefined) assertNonNegative('Peso corporal médio', entry.averageBodyWeightGrams);
+    if (entry.averageEggWeightGrams === 0 || entry.averageBodyWeightGrams === 0) throw new RangeError('Pesos informados devem ser maiores que zero.');
 
     const birdsAtStart = previousEnd;
     if (entry.deaths + entry.culls > birdsAtStart) throw new RangeError(`Mortalidade e eliminações em ${entry.date} excedem o plantel disponível.`);
@@ -75,7 +75,7 @@ export function calculateFlockDashboard(initialBirds: number, entries: FlockDail
     else if (entry.eggsProduced > 0) eggMassCoverageComplete = false;
     const feedGramsPerBirdDay = averageInventory > 0 ? (entry.feedKg * 1000) / averageInventory : null;
     const dailyFeedConversion = eggMassKg !== null && eggMassKg > 0 ? entry.feedKg / eggMassKg : null;
-    const cumulativeFeedConversion = eggMassTotalKg > 0 ? feedTotalKg / eggMassTotalKg : null;
+    const cumulativeFeedConversion = eggMassCoverageComplete && eggMassTotalKg > 0 ? feedTotalKg / eggMassTotalKg : null;
 
     const result: FlockDailyResult = {
       ...entry,
