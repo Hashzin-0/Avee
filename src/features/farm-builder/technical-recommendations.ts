@@ -38,7 +38,7 @@ const HYLINE_BROWN_CONVENTIONAL: TechnicalSource = {
 const HYLINE_BROWN_ALTERNATIVE: TechnicalSource = {
   publisher: 'Hy-Line International',
   title: 'Hy-Line Brown Alternative Systems — Management Guide',
-  edition: 'Edição disponibilizada no portal oficial; versão/data impressa não identificada no arquivo consultado',
+  edition: 'Junho de 2021 (código do documento: BRN ALT ENG 062921)',
   page: '8',
   url: 'https://www.hyline.com/filesimages/Hy-Line-Products/Hy-Line-Product-PDFs/Brown/Brown%20Alt/BRN%20ALT%20COM%20ENG.pdf',
 };
