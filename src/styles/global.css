@@ -239,3 +239,13 @@ td { padding: 11px 8px; border-bottom: 1px solid #f0f3f0; color: #536158; font-s
 
 .source-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 9px; }
 .source-actions a { color: #3c7951; font-size: 9px; font-weight: 700; text-decoration: underline; }
+
+.performance-panel { padding: 18px; }
+.performance-panel .panel-heading > svg { color: #78947e; flex: 0 0 auto; }
+.performance-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.performance-item { min-width: 0; padding: 11px; border: 1px solid #edf1ed; border-radius: 8px; background: #fbfcfa; }
+.performance-item small, .performance-item span { display: block; color: #87938a; font-size: 9px; line-height: 1.4; }
+.performance-item strong { display: block; margin: 6px 0 4px; color: #2d4b36; font-size: 14px; line-height: 1.25; }
+.performance-source { margin-top: 12px; padding-top: 11px; border-top: 1px solid #edf1ed; color: #879188; font-size: 9px; line-height: 1.55; }
+.performance-source a { display: inline-block; margin-left: 6px; color: #3c7951; font-weight: 700; text-decoration: underline; }
+@media (max-width: 480px) { .performance-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
