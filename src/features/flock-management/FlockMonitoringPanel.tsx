@@ -41,7 +41,7 @@ export function FlockMonitoringPanel({ lineage, ageWeeks, defaultBirds }: {
   }, [initialBirds, entries]);
   const reference = getLayerAgeReference(lineage, ageWeeks);
   const guide = getLayerGuideSource(lineage);
-  const phase = getManagementPhase(ageWeeks);
+  const phase = Number.isFinite(ageWeeks) && ageWeeks >= 0 ? getManagementPhase(ageWeeks) : 'Cria';
   const latest = dashboard?.latest ?? null;
 
   const addEntry = () => {
