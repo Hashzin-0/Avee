@@ -38,7 +38,13 @@ test('aggregates multi-day feed, egg mass, mortality and inventory in date order
   assert.equal(result.daily[0].date, '2026-11-01');
 });
 
-test('does not report cumulative feed conversion when egg-weight coverage is incomplete', () => {\n  const result = calculateFlockDashboard(100, [{ ...base, averageEggWeightGrams: undefined }]);\n  assert.equal(result.eggMassCoverageComplete, false);\n  assert.equal(result.cumulativeFeedConversion, null);\n});\n\ntest('rejects invalid inventory, duplicate dates and losses exceeding the flock', () => {
+test('does not report cumulative feed conversion when egg-weight coverage is incomplete', () => {
+  const result = calculateFlockDashboard(100, [{ ...base, averageEggWeightGrams: undefined }]);
+  assert.equal(result.eggMassCoverageComplete, false);
+  assert.equal(result.cumulativeFeedConversion, null);
+});
+
+test('rejects invalid inventory, duplicate dates and losses exceeding the flock', () => {
   assert.throws(() => calculateFlockDashboard(0, []), /maior que zero/);
   assert.throws(() => calculateFlockDashboard(10, [base, { ...base, id: 'd2' }]), /mais de um registro/);
   assert.throws(() => calculateFlockDashboard(2, [{ ...base, deaths: 2, culls: 1 }]), /excedem o plantel/);
@@ -62,5 +68,6 @@ test('provides source-backed Hy-Line Brown weekly rearing references and lineage
   assert.equal(layerGuideSources.length, 4);
   assert.ok(layerGuideSources.every((source) => source.url.startsWith('https://')));
   assert.equal(getLayerAgeReference('Lohmann Brown-Classic', 17)?.bodyWeightMinGrams, 1380);
-  assert.equal(getLayerAgeReference('NOVOgen Brown', 60)?.eggsPerHenHousedMin, 254);\n  assert.equal(getLayerAgeReference('Hy-Line Brown', 100)?.cumulativeMortalityPercent, 8.6);
+  assert.equal(getLayerAgeReference('NOVOgen Brown', 60)?.eggsPerHenHousedMin, 254);
+  assert.equal(getLayerAgeReference('Hy-Line Brown', 100)?.cumulativeMortalityPercent, 8.6);
 });
