@@ -136,13 +136,16 @@ export function getLayerTechnicalRecommendation(input: {
       return { ...input, values: { areaPerBirdCm2: warm ? 1667 : 1250, birdsPerNipple: warm ? 8 : 10, feederCmPerBird: 10 }, source: NOVOGEN_BROWN_EQUIPMENT, note: 'O guia diferencia clima quente e temperado. Para piso: 6–7 aves/m² em clima quente e 8–9 aves/m² em clima temperado; foi aplicado o limite mais conservador de 6 ou 8 aves/m², respectivamente. Nipple: 1/8 aves no quente ou 1/10 no temperado; comedouro de corrente: 10 cm/ave. Não extrapolar para free-range sem dimensionar a área externa.' };
     }
   }
-  if (lineage === 'Lohmann Brown-Classic' && phase === 'Produção') {
-    if (housingSystem === 'Gaiolas convencionais' && ageWeeks >= 20 && ageWeeks <= 95) {
-      return { ...input, values: { birdsPerNipple: 8, feederCmPerBird: 5 }, source: LOHMANN_BROWN_EQUIPMENT, note: 'Na produção em gaiolas, o guia indica 6–8 aves por nipple e 5 m de comedouro de corrente por 100 aves. Foram aplicados 8 aves/nipple e 5 cm de comedouro/ave. O manual também indica 475–540 cm² de área de piso de gaiola por ave; esse valor não é transferido para o campo de área útil do galpão.' };
+  if (lineage === 'Lohmann Brown-Classic' && housingSystem === 'Gaiolas convencionais' && phase === 'Recria') {
+    if (ageWeeks >= 3 && ageWeeks <= 10) {
+      return { ...input, values: { birdsPerNipple: 8, feederCmPerBird: 3.5 }, source: LOHMANN_BROWN_EQUIPMENT, note: 'Para recria em gaiolas, o guia indica 6–8 aves por nipple e 2,5–3,5 m de comedouro de corrente por 100 aves entre 3 e 10 semanas. Foram aplicados 8 aves/nipple e 3,5 cm/ave. A área de piso de gaiola não é usada como área útil do galpão.' };
     }
-    if (housingSystem === 'Sistema de piso' && ageWeeks >= 20 && ageWeeks <= 95) {
-      return { ...input, values: { areaPerBirdCm2: 1667, birdsPerNipple: 8, feederCmPerBird: 5 }, source: LOHMANN_BROWN_EQUIPMENT, note: 'Para alojamento não enjaulado, o guia indica 6–8 aves/m²; foi usado o limite mais conservador de 6 aves/m² (1.667 cm²/ave). Na produção, indica 6–8 aves por nipple e 5 m de comedouro de corrente por 100 aves. Free-range exige referência específica para a área externa e não é inferido desta tabela.' };
+    if (ageWeeks >= 11 && ageWeeks <= 20) {
+      return { ...input, values: { birdsPerNipple: 8, feederCmPerBird: 4.5 }, source: LOHMANN_BROWN_EQUIPMENT, note: 'Para recria em gaiolas, o guia indica 6–8 aves por nipple e 4,5 m de comedouro de corrente por 100 aves entre 11 e 20 semanas. Foram aplicados 8 aves/nipple e 4,5 cm/ave. A área de piso de gaiola não é usada como área útil do galpão.' };
     }
+  }
+  if (lineage === 'Lohmann Brown-Classic' && housingSystem === 'Sistema de piso' && phase === 'Produção' && ageWeeks >= 20 && ageWeeks <= 95) {
+    return { ...input, values: { areaPerBirdCm2: 1667 }, source: LOHMANN_BROWN_EQUIPMENT, note: 'Para alojamento não enjaulado, o guia apresenta 6–8 aves/m² como orientação geral, dependente do manejo e do controle climático. Foi usado o limite mais conservador de 6 aves/m² (1.667 cm²/ave). O guia de gaiolas remete a outro manual para detalhes de equipamentos em piso/free-range; por isso nipple e comedouro não são preenchidos aqui.' };
   }
   if (lineage === 'Hy-Line W-36' && housingSystem === 'Gaiolas convencionais') {
     if (phase === 'Recria' && ageWeeks === 17) {
