@@ -30,6 +30,8 @@ export interface LayerTechnicalRecommendation {
   note: string;
 }
 
+const SUPPORTED_KEYS: TechnicalParameterKey[] = ['areaPerBirdCm2', 'birdsPerNipple', 'feederCmPerBird'];
+
 const HYLINE_BROWN_CONVENTIONAL: TechnicalSource = {
   publisher: 'Hy-Line International',
   title: 'Hy-Line Brown Commercial Layers — Conventional Systems, Performance Guide',
