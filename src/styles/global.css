@@ -236,3 +236,6 @@ td { padding: 11px 8px; border-bottom: 1px solid #f0f3f0; color: #536158; font-s
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
 .field select { min-height: 39px; width: 100%; padding: 0 10px; border: 1px solid #dfe6df; border-radius: 8px; background: #fff; color: #34443a; font-size: 10px; }
+
+.source-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 9px; }
+.source-actions a { color: #3c7951; font-size: 9px; font-weight: 700; text-decoration: underline; }
