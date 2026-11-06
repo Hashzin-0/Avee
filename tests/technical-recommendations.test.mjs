@@ -17,6 +17,8 @@ test('autofills Hy-Line Brown conventional cage values from its cited production
     birdsPerNipple: 12,
     feederCmPerBird: 12,
   });
+  assert.equal(recommendation.values.areaPerBirdCm2, undefined);
+  assert.match(recommendation.note, /piso de gaiola/);
   assert.equal(recommendation.source.page, '7');
   assert.match(recommendation.source.url, /^https:\/\//);
 });
@@ -46,7 +48,6 @@ test('uses only the exact documented W-36 age intervals', () => {
   });
   assert.ok(recommendation);
   assert.equal(recommendation.values.birdsPerNipple, 12);
-  assert.equal(recommendation.values.areaPerBirdCm2, undefined);
   assert.equal(recommendation.values.areaPerBirdCm2, undefined);
   assert.equal(getLayerTechnicalRecommendation({
     ...base,
