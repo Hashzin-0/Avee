@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { LayerLineage } from '../farm-builder/technical-recommendations';
 import { calculateFlockDashboard, type FlockDailyEntry } from './domain';
 import { getLayerAgeReference, getLayerGuideSource, getManagementPhase } from './management-library';
@@ -23,6 +23,10 @@ export function FlockMonitoringPanel({ lineage, ageWeeks, defaultBirds }: {
   defaultBirds: number;
 }) {
   const [initialBirds, setInitialBirds] = useState(String(defaultBirds));
+
+  useEffect(() => {
+    setInitialBirds(String(defaultBirds));
+  }, [defaultBirds]);
   const [date, setDate] = useState(todayLocal);
   const [deaths, setDeaths] = useState('0');
   const [culls, setCulls] = useState('0');
