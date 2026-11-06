@@ -131,7 +131,7 @@ export const layerAgeReferences: SourcedLayerAgeReference[] = [...hylineRearing,
 
 export function getLayerAgeReference(lineage: LayerLineage, ageWeeks: number): SourcedLayerAgeReference | null {
   if (!Number.isFinite(ageWeeks) || ageWeeks < 0) return null;
-  const exact = layerAgeReferences.find((item) => item.lineage === lineage && item.ageWeeks === Math.ceil(ageWeeks));
+  const exact = layerAgeReferences.find((item) => item.lineage === lineage && item.ageWeeks === Math.floor(ageWeeks));
   if (exact) return exact;
 
   const metadata = sourceMetadata[lineage];
