@@ -26,6 +26,7 @@ export type FlockDailyResult = FlockDailyEntry & {
   cumulativeEggMassKg: number;
   dailyFeedConversion: number | null;
   cumulativeFeedConversion: number | null;
+  eggMassCoverageComplete: boolean;
 };
 
 function assertNonNegativeInteger(name: string, value: number) {
@@ -44,6 +45,7 @@ export function calculateFlockDashboard(initialBirds: number, entries: FlockDail
   let feedTotalKg = 0;
   let eggMassTotalKg = 0;
   let eggsTotal = 0;
+  let eggMassCoverageComplete = true;
   let previousEnd = initialBirds;
 
   const daily: FlockDailyResult[] = ordered.map((entry) => {
@@ -70,6 +72,7 @@ export function calculateFlockDashboard(initialBirds: number, entries: FlockDail
     feedTotalKg += entry.feedKg;
     eggsTotal += entry.eggsProduced;
     if (eggMassKg !== null) eggMassTotalKg += eggMassKg;
+    else if (entry.eggsProduced > 0) eggMassCoverageComplete = false;
     const feedGramsPerBirdDay = averageInventory > 0 ? (entry.feedKg * 1000) / averageInventory : null;
     const dailyFeedConversion = eggMassKg !== null && eggMassKg > 0 ? entry.feedKg / eggMassKg : null;
     const cumulativeFeedConversion = eggMassTotalKg > 0 ? feedTotalKg / eggMassTotalKg : null;
@@ -110,6 +113,7 @@ export function calculateFlockDashboard(initialBirds: number, entries: FlockDail
     cumulativeMortalityPercent: (deathsTotal / initialBirds) * 100,
     cumulativeCullsPercent: (cullsTotal / initialBirds) * 100,
     liveabilityPercent: ((initialBirds - deathsTotal - cullsTotal) / initialBirds) * 100,
-    cumulativeFeedConversion: eggMassTotalKg > 0 ? feedTotalKg / eggMassTotalKg : null,
+    cumulativeFeedConversion: eggMassCoverageComplete && eggMassTotalKg > 0 ? feedTotalKg / eggMassTotalKg : null,
+    eggMassCoverageComplete,
   };
 }
