@@ -35,6 +35,13 @@ export type LayerAgeReference = {
   eggMassPerHenHousedMinKg?: number;
   eggMassPerHenHousedMaxKg?: number;
   note?: string;
+  sourceId?: string;
+  page?: string;
+  housingSystemApplicability?: string;
+  reviewStatus?: 'transcribed-unreviewed';
+};
+
+export type SourcedLayerAgeReference = LayerAgeReference & {
   sourceId: string;
   page: string;
   housingSystemApplicability: string;
@@ -115,13 +122,13 @@ const sourceMetadata: Record<LayerLineage, { id: string; pageForAge: (ageWeeks: 
   'Outra / não definida': { id: 'unsupported', pageForAge: () => '—', housing: 'Sem aplicabilidade definida.' },
 };
 
-export const layerAgeReferences: LayerAgeReference[] = [...hylineRearing, ...hylineProductionMilestones, ...milestoneReferences]
+export const layerAgeReferences: SourcedLayerAgeReference[] = [...hylineRearing, ...hylineProductionMilestones, ...milestoneReferences]
   .map((reference) => {
     const metadata = sourceMetadata[reference.lineage];
     return { ...reference, sourceId: metadata.id, page: metadata.pageForAge(reference.ageWeeks), housingSystemApplicability: metadata.housing, reviewStatus: 'transcribed-unreviewed' as const };
   });
 
-export function getLayerAgeReference(lineage: LayerLineage, ageWeeks: number): LayerAgeReference | null {
+export function getLayerAgeReference(lineage: LayerLineage, ageWeeks: number): SourcedLayerAgeReference | null {
   if (!Number.isFinite(ageWeeks) || ageWeeks < 0) return null;
   const exact = layerAgeReferences.find((item) => item.lineage === lineage && item.ageWeeks === Math.ceil(ageWeeks));
   return exact ?? null;
