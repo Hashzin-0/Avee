@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { getLayerTechnicalRecommendation } from '../src/features/farm-builder/technical-recommendations.ts';
+import { getLayerPerformanceProfile, getLayerTechnicalRecommendation } from '../src/features/farm-builder/technical-recommendations.ts';
 
 const base = {
   lineage: 'Hy-Line Brown',
@@ -54,4 +54,33 @@ test('uses only the exact documented W-36 age intervals', () => {
     lineage: 'Hy-Line W-36',
     ageWeeks: 35,
   }), null);
+});
+
+test('autofills Lohmann Brown-Classic cage equipment values from its guide', () => {
+  const recommendation = getLayerTechnicalRecommendation({
+    ...base,
+    lineage: 'Lohmann Brown-Classic',
+  });
+  assert.ok(recommendation);
+  assert.deepEqual(recommendation.values, {
+    birdsPerNipple: 8,
+    feederCmPerBird: 5,
+  });
+  assert.equal(recommendation.source.page, '7');
+});
+
+test('provides source-backed performance indicators for Hy-Line Brown and Lohmann', () => {
+  const hyline = getLayerPerformanceProfile('Hy-Line Brown');
+  assert.ok(hyline);
+  assert.ok(hyline.indicators.some((item) => item.label.includes('Mortalidade') && item.value === '8,60%'));
+  assert.ok(hyline.indicators.some((item) => item.label.includes('Ovos por ave alojada')));
+  assert.ok(hyline.indicators.some((item) => item.label.includes('Consumo médio de ração')));
+  const lohmann = getLayerPerformanceProfile('Lohmann Brown-Classic');
+  assert.ok(lohmann);
+  assert.ok(lohmann.indicators.some((item) => item.value === '358–363 ovos'));
+});
+
+test('does not present unsupported performance profiles as official', () => {
+  assert.equal(getLayerPerformanceProfile('NOVOgen Brown'), null);
+  assert.equal(getLayerPerformanceProfile('Outra / não definida'), null);
 });
