@@ -35,6 +35,10 @@ export type LayerAgeReference = {
   eggMassPerHenHousedMinKg?: number;
   eggMassPerHenHousedMaxKg?: number;
   note?: string;
+  sourceId: string;
+  page: string;
+  housingSystemApplicability: string;
+  reviewStatus: 'transcribed-unreviewed';
 };
 
 export const layerGuideSources: LayerGuideSource[] = [
@@ -103,7 +107,19 @@ const milestoneReferences: LayerAgeReference[] = [
   { lineage: 'Hy-Line W-36', ageWeeks: 100, phase: 'Produção', eggsPerHenHousedMin: 456, eggsPerHenHousedMax: 472, cumulativeMortalityPercent: 8, dailyFeedMinGrams: 99.6, dailyFeedMaxGrams: 99.6, note: 'Performance summary.' },
 ];
 
-export const layerAgeReferences: LayerAgeReference[] = [...hylineRearing, ...hylineProductionMilestones, ...milestoneReferences];
+const sourceMetadata: Record<LayerLineage, { id: string; pageForAge: (ageWeeks: number) => string; housing: string }> = {
+  'Hy-Line Brown': { id: 'hyline-brown-2025', pageForAge: (age) => age <= 17 ? '4' : '5–6', housing: 'Sistemas convencionais; os dados de performance não substituem recomendações específicas de alojamento.' },
+  'Lohmann Brown-Classic': { id: 'lohmann-brown-classic-2020', pageForAge: () => '7', housing: 'Gaiolas convencionais; não extrapolar para alojamento alternativo.' },
+  'NOVOgen Brown': { id: 'novogen-brown-commercial-2024', pageForAge: () => '41', housing: 'Poedeiras comerciais; confirmar sistema e clima nas recomendações de alojamento do manual.' },
+  'Hy-Line W-36': { id: 'hyline-w36-commercial', pageForAge: () => '1', housing: 'Sistemas convencionais; confirmar o guia de alojamento antes de dimensionar equipamentos.' },
+  'Outra / não definida': { id: 'unsupported', pageForAge: () => '—', housing: 'Sem aplicabilidade definida.' },
+};
+
+export const layerAgeReferences: LayerAgeReference[] = [...hylineRearing, ...hylineProductionMilestones, ...milestoneReferences]
+  .map((reference) => {
+    const metadata = sourceMetadata[reference.lineage];
+    return { ...reference, sourceId: metadata.id, page: metadata.pageForAge(reference.ageWeeks), housingSystemApplicability: metadata.housing, reviewStatus: 'transcribed-unreviewed' as const };
+  });
 
 export function getLayerAgeReference(lineage: LayerLineage, ageWeeks: number): LayerAgeReference | null {
   if (!Number.isFinite(ageWeeks) || ageWeeks < 0) return null;
