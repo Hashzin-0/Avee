@@ -82,7 +82,7 @@ function House({ length, width, sideHeight, ridgeHeight, rows }: FarmSceneProps)
       </mesh>
       <mesh position={[0, roofCenterY, -roofCenterZ]} rotation={[-roofAngle, 0, 0]} castShadow receiveShadow>
         <boxGeometry args={[l + 0.6 * scale, 0.1 * scale, roofSlopeLength]} />
-        <meshStandardMaterial color="#718b73" roughness={0.78} side={2} />
+        <meshStandardMaterial color="#718b73" roughness={0.78} side={DoubleSide} />
       </mesh>
       <mesh position={[0, ridgeY, 0]} castShadow>
         <boxGeometry args={[l + 0.6 * scale, 0.12 * scale, 0.14 * scale]} />
