@@ -117,8 +117,8 @@ export function FlockMonitoringPanel({ lineage, ageWeeks, defaultBirds }: {
         <article><small>Água por ave/dia</small><strong>{latest ? `${number(latest.waterMlPerBirdDay)} ml` : '—'}</strong><span>Consumo ÷ inventário médio do dia</span></article>
         <article><small>Postura hen-day</small><strong>{latest ? `${number(latest.henDayProductionPercent)}%` : '—'}</strong><span>Ovos ÷ aves vivas no fim do dia</span></article>
         <article><small>Postura hen-housed</small><strong>{latest ? `${number(latest.henHousedProductionPercent)}%` : '—'}</strong><span>Ovos ÷ aves alojadas inicialmente</span></article>
-        <article><small>Massa de ovos acumulada</small><strong>{dashboard ? `${number(dashboard.eggMassTotalKg)} kg` : '—'}</strong><span>Calculada quando há peso médio dos ovos</span></article>
-        <article><small>Conversão alimentar acumulada</small><strong>{dashboard?.cumulativeFeedConversion === null || dashboard?.cumulativeFeedConversion === undefined ? '—' : `${number(dashboard.cumulativeFeedConversion, 2)} kg/kg`}</strong><span>Ração acumulada ÷ massa de ovos acumulada</span></article>
+        <article><small>Massa de ovos acumulada</small><strong>{dashboard ? `${number(dashboard.eggMassTotalKg)} kg` : '—'}</strong><span>{dashboard?.eggMassCoverageComplete ? 'Cobertura completa dos dias com postura' : 'Parcial: falta peso médio em dias com ovos'}</span></article>
+        <article><small>Conversão alimentar acumulada</small><strong>{!dashboard?.eggMassCoverageComplete || dashboard?.cumulativeFeedConversion === null || dashboard?.cumulativeFeedConversion === undefined ? '—' : `${number(dashboard.cumulativeFeedConversion, 2)} kg/kg`}</strong><span>Ração acumulada ÷ massa de ovos acumulada</span></article>
         <article><small>Ovos acumulados</small><strong>{dashboard ? number(dashboard.eggsTotal, 0) : '—'}</strong><span>Todos os dias registrados</span></article>
         <article><small>Ração acumulada</small><strong>{dashboard ? `${number(dashboard.feedTotalKg)} kg` : '—'}</strong><span>Total dos registros diários</span></article>
       </div>
