@@ -53,7 +53,7 @@ export const layerGuideSources: LayerGuideSource[] = [
   { id: 'hyline-brown-2025', lineage: 'Hy-Line Brown', publisher: 'Hy-Line International', title: 'Hy-Line Brown Commercial Layers — International Standards', edition: 'Dezembro de 2025', url: 'https://www.hyline.com/filesimages/Hy-Line-Products/Hy-Line-Product-PDFs/Brown/BRN%20STD%20ENG.pdf', coverage: 'Tabela semanal de recria (1–17 semanas) e tabela de produção (18–100 semanas), com peso, consumo, água, mortalidade, postura e ovos acumulados.', dataStatus: 'weekly' },
   { id: 'lohmann-brown-classic-2020', lineage: 'Lohmann Brown-Classic', publisher: 'LOHMANN BREEDERS', title: 'LOHMANN BROWN-CLASSIC Layers — Management Guide, Cage Housing', edition: 'Guia oficial publicado em 2020; consultar a edição vigente do fabricante', url: 'https://lohmann-breeders.com/media/2020/07/ManagementGuideLBClassicCage-EN.pdf', coverage: 'Metas publicadas de recria e produção, incluindo consumo total na recria, consumo diário em produção, peso, viabilidade e ovos por ave alojada.', dataStatus: 'milestones' },
   { id: 'novogen-brown-commercial-2024', lineage: 'NOVOgen Brown', publisher: 'NOVOGEN', title: 'Guía de Manejo para Ponedoras Comerciales — NOVOgen BROWN', edition: 'Documento 202402; versão em espanhol', url: 'https://novocenter.novogen-layers.com/wp-content/uploads/2021/11/202402-Guide_management_CS_Brown_V2-EScomp.pdf', coverage: 'Tabela comercial semanal de resultados; a ficha estruturada inclui pontos de referência confirmados em 24, 60 e 100 semanas. Não confundir com documentos Parent Stock.', dataStatus: 'milestones' },
-  { id: 'hyline-w36-commercial', lineage: 'Hy-Line W-36', publisher: 'Hy-Line International', title: 'Hy-Line W-36 Commercial Layers — Performance Standards', edition: 'Documento de desempenho oficial; verificar atualização na página de literatura W-36', url: 'https://www.hyline.com/filesimages/Hy-Line-Products/Hy-Line-Product-PDFs/W-36/36%20COM%20ENG.pdf', coverage: 'Metas publicadas de recria e produção, incluindo consumo, peso, viabilidade e ovos por ave alojada.', dataStatus: 'milestones' },
+  { id: 'hyline-w36-commercial', lineage: 'Hy-Line W-36', publisher: 'Hy-Line International', title: 'Hy-Line W-36 Commercial Layers — Performance Standards', edition: 'Janeiro de 2020; confirmar edição vigente na página de literatura W-36', url: 'https://www.hyline.com/filesimages/Hy-Line-Products/Hy-Line-Product-PDFs/W-36/36%20COM%20ENG.pdf', coverage: 'Tabela semanal de recria (1–17 semanas), marcos de produção e consumo médio de produção; manual inclui tabelas até 100 semanas.', dataStatus: 'weekly' },
 ];
 
 export function getManagementPhase(ageWeeks: number): ManagementPhase {
@@ -100,6 +100,30 @@ const hylineProductionMilestones: LayerAgeReference[] = [
   { lineage: 'Hy-Line Brown', ageWeeks: 100, phase: 'Produção', bodyWeightMinGrams: 1965, bodyWeightMaxGrams: 2078, dailyFeedMinGrams: 110, dailyFeedMaxGrams: 118, dailyWaterMinMl: 165, dailyWaterMaxMl: 236, cumulativeMortalityPercent: 8.6, layRateMinPercent: 70.8, layRateMaxPercent: 77.6, eggsPerHenHousedMin: 466.4, eggsPerHenHousedMax: 497.9, averageEggWeightMinGrams: 62.2, averageEggWeightMaxGrams: 66.1, eggMassPerHenHousedMinKg: 28.9, eggMassPerHenHousedMaxKg: 30.8 },
 ];
 
+const hylineW36Rearing: LayerAgeReference[] = [
+  [1,60,73,13,16,20,32,0.75,60,111], [2,100,118,17,20,25,41,1.30,209,253],
+  [3,150,181,22,26,33,53,1.55,360,438], [4,200,259,29,34,43,67,1.66,560,673],
+  [5,290,349,34,38,51,76,1.77,798,940], [6,372,440,39,43,59,86,1.88,1074,1242],
+  [7,472,531,43,47,64,93,1.99,1373,1569], [8,549,621,46,51,69,102,2.10,1695,1927],
+  [9,649,721,50,55,76,110,2.15,2047,2311], [10,739,812,54,58,80,116,2.20,2423,2717],
+  [11,830,894,55,60,83,119,2.25,2810,3135], [12,921,971,56,61,84,123,2.30,3204,3564],
+  [13,980,1039,58,64,87,128,2.35,3613,4013], [14,1039,1111,59,66,89,132,2.40,4027,4475],
+  [15,1102,1161,61,68,91,135,2.45,4453,4948], [16,1152,1211,64,69,95,138,2.50,4898,5431],
+  [17,1188,1252,67,72,100,144,2.55,5366,5936],
+].map(([ageWeeks,bwMin,bwMax,feedMin,feedMax,waterMin,waterMax,mortality,feedCumMin,feedCumMax]) => ({
+  lineage: 'Hy-Line W-36', ageWeeks, phase: getManagementPhase(ageWeeks),
+  bodyWeightMinGrams: bwMin, bodyWeightMaxGrams: bwMax, dailyFeedMinGrams: feedMin, dailyFeedMaxGrams: feedMax,
+  dailyWaterMinMl: waterMin, dailyWaterMaxMl: waterMax, cumulativeMortalityPercent: mortality,
+  cumulativeFeedMinGrams: feedCumMin, cumulativeFeedMaxGrams: feedCumMax,
+}));
+
+const hylineW36ProductionMilestones: LayerAgeReference[] = [
+  { lineage: 'Hy-Line W-36', ageWeeks: 18, phase: 'Produção', bodyWeightMinGrams: 1230, bodyWeightMaxGrams: 1300, dailyFeedMinGrams: 63, dailyFeedMaxGrams: 74, dailyWaterMinMl: 95, dailyWaterMaxMl: 148, cumulativeMortalityPercent: 0.1, layRateMinPercent: 2, layRateMaxPercent: 3, eggsPerHenHousedMin: 0.1, eggsPerHenHousedMax: 0.2, averageEggWeightMinGrams: 44.2, averageEggWeightMaxGrams: 44.2 },
+  { lineage: 'Hy-Line W-36', ageWeeks: 24, phase: 'Produção', bodyWeightMinGrams: 1450, bodyWeightMaxGrams: 1510, dailyFeedMinGrams: 89, dailyFeedMaxGrams: 96, dailyWaterMinMl: 134, dailyWaterMaxMl: 192, cumulativeMortalityPercent: 0.4, layRateMinPercent: 91, layRateMaxPercent: 94, eggsPerHenHousedMin: 25.9, eggsPerHenHousedMax: 28.8, averageEggWeightMinGrams: 52.6, averageEggWeightMaxGrams: 52.6, eggMassPerHenHousedMinKg: 1.3, eggMassPerHenHousedMaxKg: 1.5 },
+  { lineage: 'Hy-Line W-36', ageWeeks: 32, phase: 'Produção', bodyWeightMinGrams: 1510, bodyWeightMaxGrams: 1570, dailyFeedMinGrams: 98, dailyFeedMaxGrams: 104, dailyWaterMinMl: 146, dailyWaterMaxMl: 207, cumulativeMortalityPercent: 0.9, layRateMinPercent: 95, layRateMaxPercent: 96, eggsPerHenHousedMin: 78.5, eggsPerHenHousedMax: 82.3, averageEggWeightMinGrams: 58.5, averageEggWeightMaxGrams: 58.5, eggMassPerHenHousedMinKg: 4.2, eggMassPerHenHousedMaxKg: 4.5 },
+  { lineage: 'Hy-Line W-36', ageWeeks: 60, phase: 'Produção', bodyWeightMinGrams: 1550, bodyWeightMaxGrams: 1610, dailyFeedMinGrams: 99, dailyFeedMaxGrams: 105, cumulativeMortalityPercent: 2.9, eggsPerHenHousedMin: 252, eggsPerHenHousedMax: 260 },
+  { lineage: 'Hy-Line W-36', ageWeeks: 100, phase: 'Produção', bodyWeightMinGrams: 1550, bodyWeightMaxGrams: 1610, dailyFeedMinGrams: 99.6, dailyFeedMaxGrams: 99.6, cumulativeMortalityPercent: 8, eggsPerHenHousedMin: 456, eggsPerHenHousedMax: 472, averageEggWeightMinGrams: 63.8, averageEggWeightMaxGrams: 63.8 },
+];
 const milestoneReferences: LayerAgeReference[] = [
   { lineage: 'Lohmann Brown-Classic', ageWeeks: 17, phase: 'Pré-postura', bodyWeightMinGrams: 1380, bodyWeightMaxGrams: 1460, cumulativeFeedMinGrams: 5700, cumulativeFeedMaxGrams: 5900, note: 'Guia Cage Housing, p. 7.' },
   { lineage: 'Lohmann Brown-Classic', ageWeeks: 72, phase: 'Produção', eggsPerHenHousedMin: 318, eggsPerHenHousedMax: 323, averageEggWeightMinGrams: 63.5, averageEggWeightMaxGrams: 64.5, note: 'Guia Cage Housing, p. 7.' },
@@ -119,11 +143,11 @@ const sourceMetadata: Record<LayerLineage, { id: string; pageForAge: (ageWeeks: 
   'Hy-Line Brown': { id: 'hyline-brown-2025', pageForAge: (age) => age <= 17 ? '4' : '5–6', housing: 'Sistemas convencionais; os dados de performance não substituem recomendações específicas de alojamento.' },
   'Lohmann Brown-Classic': { id: 'lohmann-brown-classic-2020', pageForAge: () => '7', housing: 'Gaiolas convencionais; não extrapolar para alojamento alternativo.' },
   'NOVOgen Brown': { id: 'novogen-brown-commercial-2024', pageForAge: () => '41', housing: 'Poedeiras comerciais; confirmar sistema e clima nas recomendações de alojamento do manual.' },
-  'Hy-Line W-36': { id: 'hyline-w36-commercial', pageForAge: () => '1', housing: 'Sistemas convencionais; confirmar o guia de alojamento antes de dimensionar equipamentos.' },
+  'Hy-Line W-36': { id: 'hyline-w36-commercial', pageForAge: (age) => age <= 48 ? '2' : '3', housing: 'Sistemas convencionais; confirmar o guia de alojamento antes de dimensionar equipamentos.' },
   'Outra / não definida': { id: 'unsupported', pageForAge: () => '—', housing: 'Sem aplicabilidade definida.' },
 };
 
-export const layerAgeReferences: SourcedLayerAgeReference[] = [...hylineRearing, ...hylineProductionMilestones, ...milestoneReferences]
+export const layerAgeReferences: SourcedLayerAgeReference[] = [...hylineRearing, ...hylineProductionMilestones, ...hylineW36Rearing, ...hylineW36ProductionMilestones, ...milestoneReferences]
   .map((reference) => {
     const metadata = sourceMetadata[reference.lineage];
     return { ...reference, sourceId: metadata.id, page: metadata.pageForAge(reference.ageWeeks), housingSystemApplicability: metadata.housing, reviewStatus: 'transcribed-unreviewed' as const };
