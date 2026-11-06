@@ -76,9 +76,9 @@ export function getLayerTechnicalRecommendation(input: {
     if (housingSystem === 'Gaiolas convencionais' && ageWeeks >= 20 && ageWeeks <= 80) {
       return {
         ...input,
-        values: { areaPerBirdCm2: 750, birdsPerNipple: 12, feederCmPerBird: 12 },
+        values: { birdsPerNipple: 12, feederCmPerBird: 12 },
         source: HYLINE_BROWN_CONVENTIONAL,
-        note: 'O manual informa 490–750 cm²/ave, 1 nipple/12 aves e 7–12 cm de comedouro/ave entre 20 e 80 semanas. Foram aplicados 750 cm² e 12 cm, os limites mais conservadores de espaço e acesso ao comedouro. O perfil climático fica registrado, mas esta tabela não diferencia esses três coeficientes por clima.',
+        note: 'O manual informa 490–750 cm² de piso de gaiola por ave, 1 nipple/12 aves e 7–12 cm de comedouro/ave entre 20 e 80 semanas. Foram aplicados 12 cm de comedouro/ave. A área de piso da gaiola não é inserida no campo de área do galpão, pois são bases geométricas diferentes. O perfil climático fica registrado, mas esta tabela não diferencia estes coeficientes por clima.',
       };
     }
 
@@ -96,25 +96,25 @@ export function getLayerTechnicalRecommendation(input: {
     if (phase === 'Recria' && ageWeeks === 17) {
       return {
         ...input,
-        values: { areaPerBirdCm2: 310, birdsPerNipple: 8, feederCmPerBird: 8 },
+        values: { birdsPerNipple: 8, feederCmPerBird: 8 },
         source: HYLINE_W36,
-        note: 'Referência pontual do guia para 17 semanas: 310 cm²/ave, 1 nipple/copo para 8 aves e 8 cm de comedouro/ave. Não interpolar para outras idades sem dado publicado.',
+        note: 'Referência pontual do guia para 17 semanas: 310 cm² de piso de gaiola por ave, 1 nipple/copo para 8 aves e 8 cm de comedouro/ave. Foram aplicados nipple e comedouro; a área de piso da gaiola não é inserida no cálculo de área útil do galpão. Não interpolar para outras idades sem dado publicado.',
       };
     }
     if (phase === 'Produção' && ageWeeks >= 20 && ageWeeks <= 30) {
       return {
         ...input,
-        values: { areaPerBirdCm2: 750, birdsPerNipple: 8, feederCmPerBird: 8 },
+        values: { birdsPerNipple: 8, feederCmPerBird: 8 },
         source: HYLINE_W36,
-        note: 'Para 20–30 semanas, o guia informa 490–750 cm²/ave, 1 nipple/8 aves e 8 cm de comedouro/ave. Foi aplicado o limite de 750 cm²/ave, mais conservador em espaço. O clima informado não altera os coeficientes desta tabela.',
+        note: 'Para 20–30 semanas, o guia informa 490–750 cm² de piso de gaiola por ave, 1 nipple/8 aves e 8 cm de comedouro/ave. Foram aplicados nipple e comedouro; a área de piso da gaiola não é inserida no cálculo de área útil do galpão. O clima informado não altera os coeficientes desta tabela.',
       };
     }
     if (phase === 'Produção' && ageWeeks >= 40 && ageWeeks <= 80) {
       return {
         ...input,
-        values: { areaPerBirdCm2: 750, birdsPerNipple: 12, feederCmPerBird: 12 },
+        values: { birdsPerNipple: 12, feederCmPerBird: 12 },
         source: HYLINE_W36,
-        note: 'Para 40–80 semanas, o guia informa 490–750 cm²/ave, 1 nipple/12 aves ou acesso a dois bebedouros e 7–12 cm de comedouro/ave. Foram aplicados 750 cm² e 12 cm, os limites mais conservadores de espaço e acesso ao comedouro. O clima informado não altera os coeficientes desta tabela.',
+        note: 'Para 40–80 semanas, o guia informa 490–750 cm² de piso de gaiola por ave, 1 nipple/12 aves ou acesso a dois bebedouros e 7–12 cm de comedouro/ave. Foram aplicados nipple e 12 cm de comedouro/ave; a área de piso da gaiola não é inserida no cálculo de área útil do galpão. O clima informado não altera os coeficientes desta tabela.',
       };
     }
   }
