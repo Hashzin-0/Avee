@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   PulseIcon as Activity,
   BirdIcon as Bird,
@@ -27,6 +27,7 @@ import {
   XIcon as X,
 } from '@phosphor-icons/react';
 import { FarmScene } from '../features/farm-builder/FarmScene';
+import { getLayerTechnicalRecommendation, type ClimateProfile, type TechnicalParameterKey } from '../features/farm-builder/technical-recommendations';
 import { calculateFarm, calculateUniformity, type FarmInput } from '../features/farm-builder/domain';
 import { connectionOptions, scaleCatalog } from '../features/weighing/catalog';
 import type { IdentificationMode, WeighingRecord } from '../features/weighing/types';
@@ -95,8 +96,20 @@ export function App() {
   const [housingSystem, setHousingSystem] = useState('Gaiolas convencionais');
   const [productionPhase, setProductionPhase] = useState('Produção');
   const [ageWeeks, setAgeWeeks] = useState(18);
-  const [manualVersion, setManualVersion] = useState('');
-  const [manualPage, setManualPage] = useState('');
+  const [climateProfile, setClimateProfile] = useState<ClimateProfile>('Quente');
+  const [manualOverrides, setManualOverrides] = useState<Set<TechnicalParameterKey>>(() => new Set());
+  const technicalRecommendation = useMemo(() => getLayerTechnicalRecommendation({ lineage: lineage as 'Hy-Line Brown' | 'Hy-Line W-36' | 'Lohmann Brown-Classic' | 'NOVOgen Brown' | 'Outra / não definida', housingSystem: housingSystem as 'Gaiolas convencionais' | 'Gaiolas enriquecidas' | 'Sistema de piso' | 'Free-range', phase: productionPhase as 'Cria' | 'Recria' | 'Pré-postura' | 'Produção', ageWeeks, climateProfile }), [lineage, housingSystem, productionPhase, ageWeeks, climateProfile]);
+
+  useEffect(() => {
+    setFarm((current) => {
+      const next = { ...current };
+      const keys: TechnicalParameterKey[] = ['areaPerBirdCm2', 'birdsPerNipple', 'feederCmPerBird'];
+      for (const key of keys) {
+        if (!manualOverrides.has(key)) next[key] = technicalRecommendation?.values[key];
+      }
+      return next;
+    });
+  }, [technicalRecommendation, manualOverrides]);
 
   const calculation = useMemo(() => {
     try { return calculateFarm(farm as FarmInput); }
@@ -106,7 +119,17 @@ export function App() {
   const visibleScales = scaleCatalog.filter((scale) => `${scale.manufacturer} ${scale.model}`.toLowerCase().includes(scaleQuery.toLowerCase()));
 
   const updateFarm = (key: keyof FarmInput, value: number | undefined) => {
+    if (key === 'areaPerBirdCm2' || key === 'birdsPerNipple' || key === 'feederCmPerBird') {
+      setManualOverrides((current) => new Set(current).add(key));
+    }
     setFarm((current) => ({ ...current, [key]: value }));
+  };
+
+  const applyTechnicalRecommendation = () => {
+    if (!technicalRecommendation) return;
+    setManualOverrides(new Set());
+    setFarm((current) => ({ ...current, ...technicalRecommendation.values }));
+    setNotice('Parâmetros documentados aplicados. Você ainda pode editar cada valor.');
   };
 
   const addWeight = () => {
@@ -245,8 +268,8 @@ export function App() {
                 <section className="panel builder-form">
                   <div className="panel-heading"><div><h2>Dados do galpão</h2><p>Dimensões da estrutura e capacidade pretendida.</p></div><span className="panel-icon"><House size={20} /></span></div>
                   <div className="form-section"><h3>Estrutura física</h3><div className="field-grid"><Field label="Comprimento" value={farm.houseLengthM} onChange={(value) => updateFarm('houseLengthM', value)} unit="m" step={0.1} /><Field label="Largura" value={farm.houseWidthM} onChange={(value) => updateFarm('houseWidthM', value)} unit="m" step={0.1} /><Field label="Altura lateral" value={farm.sideHeightM} onChange={(value) => updateFarm('sideHeightM', value)} unit="m" step={0.1} /><Field label="Altura da cumeeira" value={farm.ridgeHeightM} onChange={(value) => updateFarm('ridgeHeightM', value)} unit="m" step={0.1} /></div></div>
-                  <div className="form-section"><h3>Planejamento do lote</h3><div className="field-grid"><Field label="Aves pretendidas" value={farm.targetBirds} onChange={(value) => updateFarm('targetBirds', value)} unit="aves" /><Field label="Área útil" value={farm.usableAreaPercent} onChange={(value) => updateFarm('usableAreaPercent', value)} unit="%" step={1} /></div><div className="field-grid"><label className="field"><span>Linhagem</span><select value={lineage} onChange={(event) => setLineage(event.target.value)}><option>Hy-Line Brown</option><option>Lohmann Brown-Classic</option><option>NOVOgen Brown</option><option>Hy-Line W-36</option><option>Outra / não definida</option></select></label><label className="field"><span>Sistema de alojamento</span><select value={housingSystem} onChange={(event) => setHousingSystem(event.target.value)}><option>Gaiolas convencionais</option><option>Gaiolas enriquecidas</option><option>Sistema de piso</option><option>Free-range</option></select></label><label className="field"><span>Fase produtiva</span><select value={productionPhase} onChange={(event) => setProductionPhase(event.target.value)}><option>Cria</option><option>Recria</option><option>Pré-postura</option><option>Produção</option></select></label><Field label="Idade das aves" value={ageWeeks} onChange={(value) => setAgeWeeks(value ?? 1)} unit="semanas" hint="Idade usada para filtrar parâmetros do manual." /></div></div>
-                  <div className="form-section"><div className="form-section-heading"><div><h3>Parâmetros técnicos</h3><p>Preencha conforme manual oficial e sistema de alojamento.</p></div><span className="source-required">Fonte obrigatória</span></div><div className="field-grid"><Field label="Área por ave" value={farm.areaPerBirdCm2} onChange={(value) => updateFarm('areaPerBirdCm2', value)} unit="cm²/ave" step={1} hint="Aplicável apenas se o critério de área for válido para o alojamento." /><Field label="Aves por nipple" value={farm.birdsPerNipple} onChange={(value) => updateFarm('birdsPerNipple', value)} unit="aves" step={1} /><Field label="Comedouro linear por ave" value={farm.feederCmPerBird} onChange={(value) => updateFarm('feederCmPerBird', value)} unit="cm/ave" step={0.1} /><Field label="Capacidade por gaiola/módulo" value={farm.cageCapacity} onChange={(value) => updateFarm('cageCapacity', value)} unit="aves" step={1} /><Field label="Vazão útil por ventilador" value={farm.fanCapacityM3h} onChange={(value) => updateFarm('fanCapacityM3h', value)} unit="m³/h" step={100} /><Field label="Necessidade de ar por ave" value={farm.airflowM3hPerBird} onChange={(value) => updateFarm('airflowM3hPerBird', value)} unit="m³/h/ave" step={0.1} /></div><div className="field-grid"><label className="field"><span>Versão do manual utilizado</span><div className="input-with-unit"><input type="text" value={manualVersion} onChange={(event) => setManualVersion(event.target.value)} placeholder="Ex.: edição 2025" /></div></label><label className="field"><span>Página de referência</span><div className="input-with-unit"><input type="text" value={manualPage} onChange={(event) => setManualPage(event.target.value)} placeholder="Ex.: página 42" /></div></label></div><div className="source-warning"><ShieldCheck size={17} /><span>Contexto atual: {lineage} · {housingSystem} · {productionPhase}. Os coeficientes ficam vazios por padrão. Registre documento, versão e página antes de aprovar o dimensionamento. Manual importado e validado: ainda não.</span></div></div>
+                  <div className="form-section"><h3>Planejamento do lote</h3><div className="field-grid"><Field label="Aves pretendidas" value={farm.targetBirds} onChange={(value) => updateFarm('targetBirds', value)} unit="aves" /><Field label="Área útil" value={farm.usableAreaPercent} onChange={(value) => updateFarm('usableAreaPercent', value)} unit="%" step={1} /></div><div className="field-grid"><label className="field"><span>Linhagem</span><select value={lineage} onChange={(event) => setLineage(event.target.value)}><option>Hy-Line Brown</option><option>Lohmann Brown-Classic</option><option>NOVOgen Brown</option><option>Hy-Line W-36</option><option>Outra / não definida</option></select></label><label className="field"><span>Sistema de alojamento</span><select value={housingSystem} onChange={(event) => setHousingSystem(event.target.value)}><option>Gaiolas convencionais</option><option>Gaiolas enriquecidas</option><option>Sistema de piso</option><option>Free-range</option></select></label><label className="field"><span>Fase produtiva</span><select value={productionPhase} onChange={(event) => setProductionPhase(event.target.value)}><option>Cria</option><option>Recria</option><option>Pré-postura</option><option>Produção</option></select></label><Field label="Idade das aves" value={ageWeeks} onChange={(value) => setAgeWeeks(value ?? 1)} unit="semanas" hint="Idade usada para filtrar parâmetros do manual." /><label className="field"><span>Clima informado da região</span><select value={climateProfile} onChange={(event) => setClimateProfile(event.target.value as ClimateProfile)}><option>Quente</option><option>Temperado</option><option>Frio</option><option>Outro / não informado</option></select><small>Definido pelo usuário; não usa geolocalização.</small></label></div></div>
+                  <div className="form-section"><div className="form-section-heading"><div><h3>Parâmetros técnicos</h3><p>Preenchimento automático quando há correspondência exata no manual.</p></div><span className="source-required">{technicalRecommendation ? 'Referência encontrada' : 'Sem referência aplicável'}</span></div><div className="field-grid"><Field label="Área por ave" value={farm.areaPerBirdCm2} onChange={(value) => updateFarm('areaPerBirdCm2', value)} unit="cm²/ave" step={1} hint="Em free-range, representa somente a área interna útil." /><Field label="Aves por nipple" value={farm.birdsPerNipple} onChange={(value) => updateFarm('birdsPerNipple', value)} unit="aves" step={1} /><Field label="Comedouro linear por ave" value={farm.feederCmPerBird} onChange={(value) => updateFarm('feederCmPerBird', value)} unit="cm/ave" step={0.1} /><Field label="Capacidade por gaiola/módulo" value={farm.cageCapacity} onChange={(value) => updateFarm('cageCapacity', value)} unit="aves" step={1} hint="Depende do modelo e das dimensões do equipamento." /><Field label="Vazão útil por ventilador" value={farm.fanCapacityM3h} onChange={(value) => updateFarm('fanCapacityM3h', value)} unit="m³/h" step={100} hint="Informe a vazão na pressão estática de trabalho." /><Field label="Necessidade de ar por ave" value={farm.airflowM3hPerBird} onChange={(value) => updateFarm('airflowM3hPerBird', value)} unit="m³/h/ave" step={0.1} hint="Não há coeficiente universal validado para todas as linhagens e climas." /></div>{technicalRecommendation ? <><div className="source-warning"><ShieldCheck size={17} /><span><strong>{technicalRecommendation.source.publisher}</strong> · {technicalRecommendation.source.title} · {technicalRecommendation.source.edition} · página {technicalRecommendation.source.page}. {technicalRecommendation.note} Clima informado: {climateProfile}.</span></div><div className="source-actions"><a href={technicalRecommendation.source.url} target="_blank" rel="noreferrer">Abrir manual original</a><button className="text-button" onClick={applyTechnicalRecommendation}>Reaplicar valores do manual</button></div></> : <div className="source-warning"><ShieldCheck size={17} /><span>Não há combinação de linhagem, alojamento, fase e idade com coeficientes comerciais verificados nesta biblioteca local. Os campos permanecem editáveis, sem preenchimento presumido. Clima informado: {climateProfile}. Ventiladores e capacidade de gaiolas dependem de dados específicos do equipamento.</span></div>}</div>
                 </section>
                 <div className="builder-preview-column">
                   <section className="panel scene-panel"><div className="scene-heading"><div><h2>Pré-visualização 3D</h2><p>Modelo paramétrico simplificado · vista interativa</p></div><span className="scene-live"><span className="status-dot" />Atualizado</span></div><FarmScene length={farm.houseLengthM || 1} width={farm.houseWidthM || 1} rows={3} /><div className="scene-footer"><span><Layers3 size={15} />Estrutura ilustrativa</span><span>Arraste para orbitar · scroll para zoom</span></div></section>
