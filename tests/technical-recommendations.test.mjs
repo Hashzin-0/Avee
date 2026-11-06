@@ -118,3 +118,19 @@ test('NOVOgen Brown performance indicators include mortality, eggs, body weight 
   assert.ok(profile.indicators.some((item) => item.value === '254 ovos'));
   assert.ok(profile.indicators.some((item) => item.value === '111–119 g/ave/dia'));
 });
+
+test('Lohmann production cage guide does not invent feeder or nipple values', () => {
+  assert.equal(getLayerTechnicalRecommendation({
+    ...base,
+    lineage: 'Lohmann Brown-Classic',
+    housingSystem: 'Gaiolas convencionais',
+    phase: 'Produção',
+  }), null);
+  const floor = getLayerTechnicalRecommendation({
+    ...base,
+    lineage: 'Lohmann Brown-Classic',
+    housingSystem: 'Sistema de piso',
+  });
+  assert.ok(floor);
+  assert.deepEqual(floor.values, { areaPerBirdCm2: 1667 });
+});
