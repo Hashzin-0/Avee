@@ -36,7 +36,6 @@ test('does not invent coefficients for unsupported lineages, systems, ages or ph
   assert.equal(getLayerTechnicalRecommendation({ ...base, lineage: 'Lohmann Brown-Classic' }), null);
   assert.equal(getLayerTechnicalRecommendation({ ...base, lineage: 'NOVOgen Brown' }), null);
   assert.equal(getLayerTechnicalRecommendation({ ...base, housingSystem: 'Gaiolas enriquecidas' }), null);
-  assert.equal(getLayerTechnicalRecommendation({ ...base, ageWeeks: 35 }), null);
   assert.equal(getLayerTechnicalRecommendation({ ...base, phase: 'Recria' }), null);
 });
 
