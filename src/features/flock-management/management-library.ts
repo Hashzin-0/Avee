@@ -179,7 +179,10 @@ export function getLayerAgeReference(lineage: LayerLineage, ageWeeks: number): S
   if (lineage === 'Lohmann Brown-Classic' && ageWeeks >= 20 && ageWeeks <= 95) {
     return { lineage, ageWeeks, ageRangeLabel: 'Período de produção', phase: 'Produção', dailyFeedMinGrams: 110, dailyFeedMaxGrams: 120, sourceId: metadata.id, page: '7', housingSystemApplicability: metadata.housing, reviewStatus: 'transcribed-unreviewed', note: 'Faixa diária geral publicada para produção; o guia não discrimina o consumo em cada semana nesta tabela.' };
   }
-  if (lineage === 'NOVOgen Brown' && ageWeeks >= 26 && ageWeeks <= 100) {\n    return { lineage, ageWeeks, ageRangeLabel: '26–100 semanas', phase: 'Produção', dailyFeedMinGrams: 111, dailyFeedMaxGrams: 119, sourceId: metadata.id, page: '41', housingSystemApplicability: metadata.housing, reviewStatus: 'transcribed-unreviewed', note: 'Faixa diária publicada na tabela comercial para as semanas 26 a 100; os demais indicadores devem usar o ponto semanal quando disponível.' };\n  }\n  if (lineage === 'Hy-Line W-36' && ageWeeks >= 18 && ageWeeks <= 100) {
+  if (lineage === 'NOVOgen Brown' && ageWeeks >= 26 && ageWeeks <= 100) {
+    return { lineage, ageWeeks, ageRangeLabel: '26–100 semanas', phase: 'Produção', dailyFeedMinGrams: 111, dailyFeedMaxGrams: 119, sourceId: metadata.id, page: '41', housingSystemApplicability: metadata.housing, reviewStatus: 'transcribed-unreviewed', note: 'Faixa diária publicada na tabela comercial para as semanas 26 a 100; os demais indicadores devem usar o ponto semanal quando disponível.' };
+  }
+  if (lineage === 'Hy-Line W-36' && ageWeeks >= 18 && ageWeeks <= 100) {
     return { lineage, ageWeeks, ageRangeLabel: '18–100 semanas', phase: 'Produção', dailyFeedMinGrams: 99.6, dailyFeedMaxGrams: 99.6, sourceId: metadata.id, page: '1', housingSystemApplicability: metadata.housing, reviewStatus: 'transcribed-unreviewed', note: 'Consumo médio publicado para o período de produção; não é uma meta semanal variável.' };
   }
   return null;
