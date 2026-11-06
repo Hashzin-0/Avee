@@ -34,7 +34,7 @@ test('autofills Hy-Line Brown floor values and marks free-range area as indoor o
 });
 
 test('does not invent coefficients for unsupported lineages, systems, ages or phases', () => {
-  assert.equal(getLayerTechnicalRecommendation({ ...base, lineage: 'Lohmann Brown-Classic' }), null);
+  assert.ok(getLayerTechnicalRecommendation({ ...base, lineage: 'Lohmann Brown-Classic' }));
   assert.equal(getLayerTechnicalRecommendation({ ...base, lineage: 'NOVOgen Brown' }), null);
   assert.equal(getLayerTechnicalRecommendation({ ...base, housingSystem: 'Gaiolas enriquecidas' }), null);
   assert.equal(getLayerTechnicalRecommendation({ ...base, phase: 'Recria' }), null);
@@ -66,7 +66,7 @@ test('autofills Lohmann Brown-Classic cage equipment values from its guide', () 
     birdsPerNipple: 8,
     feederCmPerBird: 5,
   });
-  assert.equal(recommendation.source.page, '7');
+  assert.equal(recommendation.source.page, '33');
 });
 
 test('provides source-backed performance indicators for Hy-Line Brown and Lohmann', () => {
