@@ -29,7 +29,7 @@ import {
 import { FarmScene } from '../features/farm-builder/FarmScene';
 import { FlockMonitoringPanel } from '../features/flock-management/FlockMonitoringPanel';
 import { getManagementPhase, layerGuideSources } from '../features/flock-management/management-library';
-import { getLayerPerformanceProfile, getLayerTechnicalRecommendation, type ClimateProfile, type HousingSystem, type LayerLineage, type ProductionPhase, type TechnicalParameterKey } from '../features/farm-builder/technical-recommendations';
+import { getLayerPerformanceProfile, getLayerTechnicalRecommendation, type ClimateProfile, type HousingSystem, type LayerLineage, type TechnicalParameterKey } from '../features/farm-builder/technical-recommendations';
 import { calculateFarm, calculateUniformity, type FarmInput } from '../features/farm-builder/domain';
 import { connectionOptions, scaleCatalog } from '../features/weighing/catalog';
 import type { IdentificationMode, WeighingRecord } from '../features/weighing/types';
