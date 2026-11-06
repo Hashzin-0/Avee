@@ -66,6 +66,15 @@ const LOHMANN_BROWN_EQUIPMENT: TechnicalSource = {
   page: '33',
 };
 
+const NOVOGEN_BROWN_GUIDE: TechnicalSource = {
+  publisher: 'NOVOGEN',
+  title: 'Guía de Manejo para Ponedoras Comerciales — NOVOgen BROWN',
+  edition: 'Documento identificado como 202402; versão em espanhol',
+  page: '15',
+  url: 'https://novocenter.novogen-layers.com/wp-content/uploads/2021/11/202402-Guide_management_CS_Brown_V2-EScomp.pdf',
+};
+const NOVOGEN_BROWN_EQUIPMENT: TechnicalSource = { ...NOVOGEN_BROWN_GUIDE, page: '15' };
+const NOVOGEN_BROWN_PERFORMANCE: TechnicalSource = { ...NOVOGEN_BROWN_GUIDE, page: '41' };
 const HYLINE_W36_PERFORMANCE: TechnicalSource = {
   publisher: 'Hy-Line International',
   title: 'Hy-Line W-36 Commercial Layers — Summary of Performance Standards',
@@ -117,6 +126,16 @@ export function getLayerTechnicalRecommendation(input: {
     }
   }
 
+  if (lineage === 'NOVOgen Brown' && phase === 'Produção' && ageWeeks >= 20 && ageWeeks <= 100) {
+    if (climateProfile !== 'Quente' && climateProfile !== 'Temperado') return null;
+    const warm = climateProfile === 'Quente';
+    if (housingSystem === 'Gaiolas convencionais') {
+      return { ...input, values: { birdsPerNipple: warm ? 8 : 10, feederCmPerBird: 10 }, source: NOVOGEN_BROWN_EQUIPMENT, note: 'O guia diferencia clima quente e temperado: em gaiolas, 1 nipple para 8 aves no clima quente ou 10 aves no temperado; comedouro de corrente 10 cm/ave. A recomendação de 450/540 cm² refere-se ao piso da gaiola, não à área útil do galpão, por isso não é inserida nesse campo. O manual não traz aqui uma classe climática fria.' };
+    }
+    if (housingSystem === 'Sistema de piso') {
+      return { ...input, values: { areaPerBirdCm2: warm ? 1667 : 1250, birdsPerNipple: warm ? 8 : 10, feederCmPerBird: 10 }, source: NOVOGEN_BROWN_EQUIPMENT, note: 'O guia diferencia clima quente e temperado. Para piso: 6–7 aves/m² em clima quente e 8–9 aves/m² em clima temperado; foi aplicado o limite mais conservador de 6 ou 8 aves/m², respectivamente. Nipple: 1/8 aves no quente ou 1/10 no temperado; comedouro de corrente: 10 cm/ave. Não extrapolar para free-range sem dimensionar a área externa.' };
+    }
+  }
   if (lineage === 'Lohmann Brown-Classic' && phase === 'Produção') {
     if (housingSystem === 'Gaiolas convencionais' && ageWeeks >= 20 && ageWeeks <= 95) {
       return { ...input, values: { birdsPerNipple: 8, feederCmPerBird: 5 }, source: LOHMANN_BROWN_EQUIPMENT, note: 'Na produção em gaiolas, o guia indica 6–8 aves por nipple e 5 m de comedouro de corrente por 100 aves. Foram aplicados 8 aves/nipple e 5 cm de comedouro/ave. O manual também indica 475–540 cm² de área de piso de gaiola por ave; esse valor não é transferido para o campo de área útil do galpão.' };
@@ -214,6 +233,31 @@ export function getLayerPerformanceProfile(lineage: LayerLineage): LayerPerforma
       { label: 'Ração consumida na recria', value: '5,36–5,94 kg/ave', period: 'Até 17 semanas' },
     ],
   };
+  if (lineage === 'NOVOgen Brown') {
+    const indicators: PerformanceIndicator[] = [
+      { label: 'Mortalidade acumulada', value: '0,6%', period: '24 semanas' },
+      { label: 'Mortalidade acumulada', value: '4,2%', period: '60 semanas' },
+      { label: 'Mortalidade acumulada', value: '8,0%', period: '100 semanas' },
+      { label: 'Peso corporal mínimo', value: '1.765 g', period: '24 semanas' },
+      { label: 'Peso corporal mínimo', value: '1.890 g', period: '60 semanas' },
+      { label: 'Peso corporal mínimo', value: '1.950 g', period: '100 semanas' },
+      { label: 'Ovos acumulados por ave alojada', value: '21 ovos', period: '24 semanas' },
+      { label: 'Ovos acumulados por ave alojada', value: '254 ovos', period: '60 semanas' },
+      { label: 'Ovos acumulados por ave alojada', value: '465 ovos', period: '100 semanas' },
+      { label: 'Postura semanal', value: '93,0%', period: '24 semanas' },
+      { label: 'Postura semanal', value: '90,4%', period: '60 semanas' },
+      { label: 'Postura semanal', value: '69,8%', period: '100 semanas' },
+      { label: 'Peso médio do ovo', value: '56,3 g', period: '24 semanas' },
+      { label: 'Peso médio do ovo', value: '64,5 g', period: '60 semanas' },
+      { label: 'Peso médio do ovo', value: '66,2 g', period: '100 semanas' },
+      { label: 'Consumo médio de ração', value: '109–117 g/ave/dia', period: '24 semanas' },
+      { label: 'Consumo médio de ração', value: '111–119 g/ave/dia', period: '60–100 semanas' },
+      { label: 'Conversão alimentar', value: '2,11 kg/kg', period: '60 semanas' },
+      { label: 'Conversão alimentar', value: '2,15 kg/kg', period: '100 semanas' },
+      { label: 'Massa acumulada de ovos por ave alojada', value: '29,505 kg', period: '100 semanas' },
+    ];
+    return { lineage, indicators, source: NOVOGEN_BROWN_PERFORMANCE, note: 'Dados semanais de referência da tabela de resultados do guia comercial. Peso corporal é o valor mínimo publicado; mortalidade é acumulada; ovos são acumulados por ave alojada (HH). O consumo é faixa diária por ave. A tabela do guia não deve ser confundida com resultados reais do lote.' };
+  }
   const indicators = sourceIndicators[lineage];
   if (!indicators) return null;
   const source = lineage === 'Hy-Line Brown' ? HYLINE_BROWN_PERFORMANCE : lineage === 'Lohmann Brown-Classic' ? LOHMANN_BROWN : HYLINE_W36_PERFORMANCE;
