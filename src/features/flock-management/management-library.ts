@@ -80,6 +80,14 @@ const hylineRearing: LayerAgeReference[] = [
   cumulativeFeedMinGrams: feedCumMin, cumulativeFeedMaxGrams: feedCumMax,
 }));
 
+
+const hylineProductionMilestones: LayerAgeReference[] = [
+  { lineage: 'Hy-Line Brown', ageWeeks: 18, phase: 'Produção', bodyWeightMinGrams: 1411, bodyWeightMaxGrams: 1492, dailyFeedMinGrams: 81, dailyFeedMaxGrams: 86, dailyWaterMinMl: 121, dailyWaterMaxMl: 173, cumulativeMortalityPercent: 0.24, layRateMinPercent: 6.7, layRateMaxPercent: 7, averageEggWeightMinGrams: 42.8, averageEggWeightMaxGrams: 45.5 },
+  { lineage: 'Hy-Line Brown', ageWeeks: 24, phase: 'Produção', bodyWeightMinGrams: 1739, bodyWeightMaxGrams: 1838, dailyFeedMinGrams: 107, dailyFeedMaxGrams: 114, dailyWaterMinMl: 161, dailyWaterMaxMl: 228, cumulativeMortalityPercent: 0.49, layRateMinPercent: 92.4, layRateMaxPercent: 97, eggsPerHenHousedMin: 29.9, eggsPerHenHousedMax: 31.4, averageEggWeightMinGrams: 53.1, averageEggWeightMaxGrams: 56.4, eggMassPerHenHousedMinKg: 1.6, eggMassPerHenHousedMaxKg: 1.6 },
+  { lineage: 'Hy-Line Brown', ageWeeks: 60, phase: 'Produção', bodyWeightMinGrams: 1947, bodyWeightMaxGrams: 2058, dailyFeedMinGrams: 110, dailyFeedMaxGrams: 118, dailyWaterMinMl: 165, dailyWaterMaxMl: 236, cumulativeMortalityPercent: 2.83, layRateMinPercent: 87.4, layRateMaxPercent: 93.2, eggsPerHenHousedMin: 256.2, eggsPerHenHousedMax: 270.8, averageEggWeightMinGrams: 60.9, averageEggWeightMaxGrams: 64.6, eggMassPerHenHousedMinKg: 15.5, eggMassPerHenHousedMaxKg: 16.4 },
+  { lineage: 'Hy-Line Brown', ageWeeks: 100, phase: 'Produção', bodyWeightMinGrams: 1965, bodyWeightMaxGrams: 2078, dailyFeedMinGrams: 110, dailyFeedMaxGrams: 118, dailyWaterMinMl: 165, dailyWaterMaxMl: 236, cumulativeMortalityPercent: 8.6, layRateMinPercent: 70.8, layRateMaxPercent: 77.6, eggsPerHenHousedMin: 466.4, eggsPerHenHousedMax: 497.9, averageEggWeightMinGrams: 62.2, averageEggWeightMaxGrams: 66.1, eggMassPerHenHousedMinKg: 28.9, eggMassPerHenHousedMaxKg: 30.8 },
+];
+
 const milestoneReferences: LayerAgeReference[] = [
   { lineage: 'Lohmann Brown-Classic', ageWeeks: 17, phase: 'Pré-postura', bodyWeightMinGrams: 1380, bodyWeightMaxGrams: 1460, cumulativeFeedMinGrams: 5700, cumulativeFeedMaxGrams: 5900, note: 'Guia Cage Housing, p. 7.' },
   { lineage: 'Lohmann Brown-Classic', ageWeeks: 72, phase: 'Produção', eggsPerHenHousedMin: 318, eggsPerHenHousedMax: 323, averageEggWeightMinGrams: 63.5, averageEggWeightMaxGrams: 64.5, note: 'Guia Cage Housing, p. 7.' },
@@ -95,7 +103,7 @@ const milestoneReferences: LayerAgeReference[] = [
   { lineage: 'Hy-Line W-36', ageWeeks: 100, phase: 'Produção', eggsPerHenHousedMin: 456, eggsPerHenHousedMax: 472, cumulativeMortalityPercent: 8, dailyFeedMinGrams: 99.6, dailyFeedMaxGrams: 99.6, note: 'Performance summary.' },
 ];
 
-export const layerAgeReferences: LayerAgeReference[] = [...hylineRearing, ...milestoneReferences];
+export const layerAgeReferences: LayerAgeReference[] = [...hylineRearing, ...hylineProductionMilestones, ...milestoneReferences];
 
 export function getLayerAgeReference(lineage: LayerLineage, ageWeeks: number): LayerAgeReference | null {
   if (!Number.isFinite(ageWeeks) || ageWeeks < 0) return null;
