@@ -38,6 +38,11 @@ const HYLINE_BROWN_CONVENTIONAL: TechnicalSource = {
   url: 'https://www.hyline.com/filesimages/Hy-Line-Products/Hy-Line-Product-PDFs/Brown/BRN%20STD%20ENG.pdf',
 };
 
+const HYLINE_BROWN_PERFORMANCE: TechnicalSource = {
+  ...HYLINE_BROWN_CONVENTIONAL,
+  page: '3',
+};
+
 const HYLINE_BROWN_ALTERNATIVE: TechnicalSource = {
   publisher: 'Hy-Line International',
   title: 'Hy-Line Brown Alternative Systems — Management Guide',
@@ -59,11 +64,19 @@ const LOHMANN_BROWN_EQUIPMENT: TechnicalSource = {
   page: '33',
 };
 
+const HYLINE_W36_PERFORMANCE: TechnicalSource = {
+  publisher: 'Hy-Line International',
+  title: 'Hy-Line W-36 Commercial Layers — Summary of Performance Standards',
+  edition: 'Janeiro de 2020',
+  page: '1',
+  url: 'https://www.hyline.com/filesimages/Hy-Line-Products/Hy-Line-Product-PDFs/W-36/36%20COM%20ENG.pdf',
+};
+
 const HYLINE_W36: TechnicalSource = {
   publisher: 'Hy-Line International',
   title: 'Hy-Line W-36 Commercial Layers — Management Guide',
   edition: 'Janeiro de 2020',
-  page: '1',
+  page: '9',
   url: 'https://www.hyline.com/filesimages/Hy-Line-Products/Hy-Line-Product-PDFs/W-36/36%20COM%20ENG.pdf',
 };
 
@@ -201,6 +214,6 @@ export function getLayerPerformanceProfile(lineage: LayerLineage): LayerPerforma
   };
   const indicators = sourceIndicators[lineage];
   if (!indicators) return null;
-  const source = lineage === 'Hy-Line Brown' ? HYLINE_BROWN_CONVENTIONAL : lineage === 'Lohmann Brown-Classic' ? LOHMANN_BROWN : HYLINE_W36;
+  const source = lineage === 'Hy-Line Brown' ? HYLINE_BROWN_PERFORMANCE : lineage === 'Lohmann Brown-Classic' ? LOHMANN_BROWN : HYLINE_W36_PERFORMANCE;
   return { lineage, indicators, source, note: 'Indicadores de desempenho de referência do manual da linhagem. Mortalidade é calculada como 100% menos viabilidade publicada. Ovos por ave alojada são acumulados até a idade indicada, não produção diária. Os valores são metas/resultados de referência e não substituem os dados medidos do lote.' };
 }
