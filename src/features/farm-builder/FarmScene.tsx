@@ -1,6 +1,7 @@
 import { Canvas } from '@react-three/fiber';
 import { Grid, OrbitControls } from '@react-three/drei';
 import { Suspense } from 'react';
+import { DoubleSide } from 'three';
 
 interface FarmSceneProps {
   length: number;
@@ -77,7 +78,7 @@ function House({ length, width, sideHeight, ridgeHeight, rows }: FarmSceneProps)
 
       <mesh position={[0, roofCenterY, roofCenterZ]} rotation={[roofAngle, 0, 0]} castShadow receiveShadow>
         <boxGeometry args={[l + 0.6 * scale, 0.1 * scale, roofSlopeLength]} />
-        <meshStandardMaterial color="#657d68" roughness={0.78} side={2} />
+        <meshStandardMaterial color="#657d68" roughness={0.78} side={DoubleSide} />
       </mesh>
       <mesh position={[0, roofCenterY, -roofCenterZ]} rotation={[-roofAngle, 0, 0]} castShadow receiveShadow>
         <boxGeometry args={[l + 0.6 * scale, 0.1 * scale, roofSlopeLength]} />
@@ -92,6 +93,8 @@ function House({ length, width, sideHeight, ridgeHeight, rows }: FarmSceneProps)
 }
 
 export function FarmScene(props: FarmSceneProps) {
+  const sceneScale = Math.min(14 / Math.max(props.length, 1), 8 / Math.max(props.width, 1), 4 / Math.max(props.ridgeHeight, 1));
+
   return (
     <div className="scene-canvas" role="img" aria-label="Pré-visualização tridimensional ilustrativa do galpão com telhado de duas águas">
       <Canvas camera={{ position: [10, 8, 11], fov: 42 }} shadows dpr={[1, 1.5]}>
@@ -100,7 +103,7 @@ export function FarmScene(props: FarmSceneProps) {
         <directionalLight position={[7, 10, 5]} intensity={2} castShadow />
         <Suspense fallback={null}>
           <House {...props} />
-          <Grid args={[24, 24]} cellSize={1} cellThickness={0.45} sectionSize={5} sectionThickness={0.9} fadeDistance={30} infiniteGrid position={[0, -0.14, 0]} />
+          <Grid args={[24, 24]} cellSize={1} cellThickness={0.45} sectionSize={5} sectionThickness={0.9} fadeDistance={30} infiniteGrid position={[0, -0.12 * sceneScale - 0.001, 0]} />
         </Suspense>
         <OrbitControls makeDefault minDistance={5} maxDistance={30} maxPolarAngle={Math.PI / 2.05} />
       </Canvas>
