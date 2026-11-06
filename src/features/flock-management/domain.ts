@@ -48,7 +48,8 @@ export function calculateFlockDashboard(initialBirds: number, entries: FlockDail
   let previousEnd = initialBirds;
 
   const daily: FlockDailyResult[] = ordered.map((entry) => {
-    const parsedDate = new Date(`${entry.date}T00:00:00Z`);\n    if (!/^\d{4}-\d{2}-\d{2}$/.test(entry.date) || Number.isNaN(parsedDate.getTime()) || parsedDate.toISOString().slice(0, 10) !== entry.date) throw new RangeError('Data do registro inválida.');
+    const parsedDate = new Date(`${entry.date}T00:00:00Z`);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(entry.date) || Number.isNaN(parsedDate.getTime()) || parsedDate.toISOString().slice(0, 10) !== entry.date) throw new RangeError('Data do registro inválida.');
     if (dates.has(entry.date)) throw new RangeError('Existe mais de um registro para a mesma data.');
     dates.add(entry.date);
     assertNonNegativeInteger('Mortalidade', entry.deaths);
