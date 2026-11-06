@@ -16,6 +16,7 @@ export type LayerGuideSource = {
 export type LayerAgeReference = {
   lineage: LayerLineage;
   ageWeeks: number;
+  ageRangeLabel?: string;
   phase: ManagementPhase;
   bodyWeightMinGrams?: number;
   bodyWeightMaxGrams?: number;
@@ -131,7 +132,19 @@ export const layerAgeReferences: SourcedLayerAgeReference[] = [...hylineRearing,
 export function getLayerAgeReference(lineage: LayerLineage, ageWeeks: number): SourcedLayerAgeReference | null {
   if (!Number.isFinite(ageWeeks) || ageWeeks < 0) return null;
   const exact = layerAgeReferences.find((item) => item.lineage === lineage && item.ageWeeks === Math.ceil(ageWeeks));
-  return exact ?? null;
+  if (exact) return exact;
+
+  const metadata = sourceMetadata[lineage];
+  if (lineage === 'Hy-Line Brown' && ageWeeks >= 19 && ageWeeks <= 100) {
+    return { lineage, ageWeeks, ageRangeLabel: '19–100 semanas', phase: 'Produção', dailyFeedMinGrams: 109.1, dailyFeedMaxGrams: 116.9, sourceId: metadata.id, page: '3', housingSystemApplicability: metadata.housing, reviewStatus: 'transcribed-unreviewed', note: 'Média diária publicada para o período completo de 19 a 100 semanas; não representa uma meta individual semanal.' };
+  }
+  if (lineage === 'Lohmann Brown-Classic' && ageWeeks >= 20 && ageWeeks <= 95) {
+    return { lineage, ageWeeks, ageRangeLabel: 'Período de produção', phase: 'Produção', dailyFeedMinGrams: 110, dailyFeedMaxGrams: 120, sourceId: metadata.id, page: '7', housingSystemApplicability: metadata.housing, reviewStatus: 'transcribed-unreviewed', note: 'Faixa diária geral publicada para produção; o guia não discrimina o consumo em cada semana nesta tabela.' };
+  }
+  if (lineage === 'Hy-Line W-36' && ageWeeks >= 18 && ageWeeks <= 100) {
+    return { lineage, ageWeeks, ageRangeLabel: '18–100 semanas', phase: 'Produção', dailyFeedMinGrams: 99.6, dailyFeedMaxGrams: 99.6, sourceId: metadata.id, page: '1', housingSystemApplicability: metadata.housing, reviewStatus: 'transcribed-unreviewed', note: 'Consumo médio publicado para o período de produção; não é uma meta semanal variável.' };
+  }
+  return null;
 }
 
 export function getLayerGuideSource(lineage: LayerLineage): LayerGuideSource | null {
