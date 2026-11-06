@@ -17,7 +17,7 @@ export interface TechnicalSource {
 }
 
 export interface PerformanceIndicator { label: string; value: string; period: string; }
-export interface LayerPerformanceProfile { lineage: LayerLineage; indicators: PerformanceIndicator[]; source: TechnicalSource; note: string; }
+export interface LayerPerformanceProfile { lineage: LayerLineage; indicators: PerformanceIndicator[]; source: TechnicalSource; note: string; reviewStatus: 'transcribed-unreviewed'; }
 
 export interface LayerTechnicalRecommendation {
   lineage: LayerLineage;
@@ -261,10 +261,10 @@ export function getLayerPerformanceProfile(lineage: LayerLineage): LayerPerforma
       { label: 'Conversão alimentar', value: '2,15 kg/kg', period: '100 semanas' },
       { label: 'Massa acumulada de ovos por ave alojada', value: '29,505 kg', period: '100 semanas' },
     ];
-    return { lineage, indicators, source: NOVOGEN_BROWN_PERFORMANCE, note: 'Dados semanais de referência da tabela de resultados do guia comercial. Peso corporal é o valor mínimo publicado; mortalidade é acumulada; ovos são acumulados por ave alojada (HH). O consumo é faixa diária por ave. A tabela do guia não deve ser confundida com resultados reais do lote.' };
+    return { lineage, indicators, source: NOVOGEN_BROWN_PERFORMANCE, reviewStatus: 'transcribed-unreviewed', note: 'Dados semanais de referência da tabela de resultados do guia comercial. Peso corporal é o valor mínimo publicado; mortalidade é acumulada; ovos são acumulados por ave alojada (HH). O consumo é faixa diária por ave. A tabela do guia não deve ser confundida com resultados reais do lote.' };
   }
   const indicators = sourceIndicators[lineage];
   if (!indicators) return null;
   const source = lineage === 'Hy-Line Brown' ? HYLINE_BROWN_PERFORMANCE : lineage === 'Lohmann Brown-Classic' ? LOHMANN_BROWN : HYLINE_W36_PERFORMANCE;
-  return { lineage, indicators, source, note: 'Indicadores de desempenho de referência do manual da linhagem. Mortalidade é calculada como 100% menos viabilidade publicada. Ovos por ave alojada são acumulados até a idade indicada, não produção diária. Os valores são metas/resultados de referência e não substituem os dados medidos do lote.' };
+  return { lineage, indicators, source, reviewStatus: 'transcribed-unreviewed', note: 'Indicadores de desempenho de referência do manual da linhagem. Mortalidade é calculada como 100% menos viabilidade publicada. Ovos por ave alojada são acumulados até a idade indicada, não produção diária. Os valores são metas/resultados de referência e não substituem os dados medidos do lote.' };
 }
