@@ -97,7 +97,7 @@ export function App() {
   const [lineage, setLineage] = useState<LayerLineage>('Hy-Line Brown');
   const [housingSystem, setHousingSystem] = useState<HousingSystem>('Gaiolas convencionais');
   const [ageWeeks, setAgeWeeks] = useState(24);
-  const productionPhase = getManagementPhase(ageWeeks);
+  const productionPhase = Number.isFinite(ageWeeks) && ageWeeks >= 0 ? getManagementPhase(ageWeeks) : 'Cria';
   const [climateProfile, setClimateProfile] = useState<ClimateProfile>('Outro / não informado');
   const [manualOverrides, setManualOverrides] = useState<Set<TechnicalParameterKey>>(() => new Set());
   const performanceProfile = useMemo(() => getLayerPerformanceProfile(lineage), [lineage]);
@@ -277,11 +277,11 @@ export function App() {
                   <section className="panel scene-panel"><div className="scene-heading"><div><h2>Pré-visualização 3D</h2><p>Modelo paramétrico simplificado · vista interativa</p></div><span className="scene-live"><span className="status-dot" />Atualizado</span></div><FarmScene length={farm.houseLengthM || 1} width={farm.houseWidthM || 1} rows={3} /><div className="scene-footer"><span><Layers3 size={15} />Estrutura ilustrativa</span><span>Arraste para orbitar · scroll para zoom</span></div></section>
                   <section className="panel calculation-panel"><div className="panel-heading"><div><h2>Dimensionamento preliminar</h2><p>Resultados derivados exclusivamente das entradas.</p></div><Gauge size={20} /></div><div className="calculation-grid"><div><small>Área bruta</small><strong>{calculation ? `${formatNumber(calculation.grossAreaM2, 1)} m²` : 'Pendente'}</strong></div><div><small>Área útil estimada</small><strong>{calculation ? `${formatNumber(calculation.usableAreaM2, 1)} m²` : 'Pendente'}</strong></div><div><small>Capacidade por área</small><strong>{!calculation || calculation.areaBasedCapacity === null ? 'Pendente' : `${formatNumber(calculation.areaBasedCapacity)} aves`}</strong></div><div><small>Nipples calculados</small><strong>{!calculation || calculation.nipplesRequired === null ? 'Pendente' : formatNumber(calculation.nipplesRequired)}</strong></div><div><small>Comedouro linear</small><strong>{!calculation || calculation.feederLengthM === null ? 'Pendente' : `${formatNumber(calculation.feederLengthM, 1)} m`}</strong></div><div><small>Ventiladores</small><strong>{!calculation || calculation.fansRequired === null ? 'Pendente' : formatNumber(calculation.fansRequired)}</strong></div><div><small>Gaiolas/módulos</small><strong>{!calculation || calculation.cagesRequired === null ? 'Pendente' : formatNumber(calculation.cagesRequired)}</strong></div></div><div className="calculation-disclaimer"><ShieldCheck size={17} /><p>Pré-dimensionamento. Não considera ainda perdas de carga, curvas de ventiladores, distribuição hidráulica, legislação ou validação de engenharia.</p></div></section>
                    {performanceProfile && <section className="panel performance-panel">
-                     <div className="panel-heading"><div><h2>Indicadores zootécnicos de referência</h2><p>{performanceProfile.lineage} · metas e resultados publicados no guia</p></div><ChartLine size={20} /></div>
+                     <div className="panel-heading"><div><h2>Indicadores zootécnicos de referência</h2><p>{performanceProfile.lineage} · metas e resultados publicados no guia · {performanceProfile.reviewStatus}</p></div><ChartLine size={20} /></div>
                      <div className="performance-grid">{performanceProfile.indicators.map((indicator, index) => <article className="performance-item" key={indicator.label + "-" + indicator.period + "-" + index}><small>{indicator.label}</small><strong>{indicator.value}</strong><span>{indicator.period}</span></article>)}</div>
                      <div className="performance-source"><strong>{performanceProfile.source.publisher}</strong> · {performanceProfile.source.title} · {performanceProfile.source.edition} · página {performanceProfile.source.page}. {performanceProfile.note}<a href={performanceProfile.source.url} target="_blank" rel="noreferrer">Consultar documento original</a></div>
                    </section>}
-                   <FlockMonitoringPanel lineage={lineage} ageWeeks={ageWeeks} defaultBirds={farm.targetBirds || 1} />
+                   <FlockMonitoringPanel lineage={lineage} ageWeeks={ageWeeks} defaultBirds={farm.targetBirds ?? 1} />
                 </div>
               </div>
             </>
