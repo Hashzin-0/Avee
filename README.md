@@ -6,7 +6,7 @@ Base inicial de um sistema de gestão zootécnica, pesagem de aves e planejament
 
 Este repositório contém um **protótipo funcional de interface e motor de cálculo paramétrico**. Ainda não há backend, autenticação, persistência em nuvem, integração física validada com balanças, biblioteca oficial de linhagens nem dimensionamento executivo de instalações.
 
-Os coeficientes de equipamentos são fornecidos pelo usuário no formulário e não são pré-preenchidos com recomendações presumidas. A cena 3D é uma representação preliminar do layout, não um projeto de engenharia aprovado.
+Os parâmetros zootécnicos são preenchidos automaticamente somente quando há correspondência documentada de linhagem, alojamento, fase e idade. A primeira cobertura inclui Hy-Line Brown (gaiolas convencionais, piso e free-range) e Hy-Line W-36 (gaiolas convencionais, nas faixas etárias documentadas). Lohmann Brown-Classic, NOVOgen Brown, gaiolas enriquecidas e combinações sem referência compatível permanecem sem preenchimento automático. Capacidade de gaiolas e vazão de ventiladores continuam dependentes do equipamento real. O clima é informado pelo usuário; só altera coeficientes quando a fonte consultada os diferencia. A cena 3D é uma representação preliminar do layout, não um projeto de engenharia aprovado.
 
 ## Requisitos
 
