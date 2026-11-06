@@ -27,7 +27,7 @@ import {
   XIcon as X,
 } from '@phosphor-icons/react';
 import { FarmScene } from '../features/farm-builder/FarmScene';
-import { getLayerTechnicalRecommendation, type ClimateProfile, type TechnicalParameterKey } from '../features/farm-builder/technical-recommendations';
+import { getLayerTechnicalRecommendation, type ClimateProfile, type HousingSystem, type LayerLineage, type ProductionPhase, type TechnicalParameterKey } from '../features/farm-builder/technical-recommendations';
 import { calculateFarm, calculateUniformity, type FarmInput } from '../features/farm-builder/domain';
 import { connectionOptions, scaleCatalog } from '../features/weighing/catalog';
 import type { IdentificationMode, WeighingRecord } from '../features/weighing/types';
@@ -92,21 +92,20 @@ export function App() {
   const [connection, setConnection] = useState('usb');
   const [activeScale, setActiveScale] = useState('');
   const [notice, setNotice] = useState('');
-  const [lineage, setLineage] = useState('Hy-Line Brown');
-  const [housingSystem, setHousingSystem] = useState('Gaiolas convencionais');
-  const [productionPhase, setProductionPhase] = useState('Produção');
+  const [lineage, setLineage] = useState<LayerLineage>('Hy-Line Brown');
+  const [housingSystem, setHousingSystem] = useState<HousingSystem>('Gaiolas convencionais');
+  const [productionPhase, setProductionPhase] = useState<ProductionPhase>('Produção');
   const [ageWeeks, setAgeWeeks] = useState(18);
   const [climateProfile, setClimateProfile] = useState<ClimateProfile>('Quente');
   const [manualOverrides, setManualOverrides] = useState<Set<TechnicalParameterKey>>(() => new Set());
-  const technicalRecommendation = useMemo(() => getLayerTechnicalRecommendation({ lineage: lineage as 'Hy-Line Brown' | 'Hy-Line W-36' | 'Lohmann Brown-Classic' | 'NOVOgen Brown' | 'Outra / não definida', housingSystem: housingSystem as 'Gaiolas convencionais' | 'Gaiolas enriquecidas' | 'Sistema de piso' | 'Free-range', phase: productionPhase as 'Cria' | 'Recria' | 'Pré-postura' | 'Produção', ageWeeks, climateProfile }), [lineage, housingSystem, productionPhase, ageWeeks, climateProfile]);
+  const technicalRecommendation = useMemo(() => getLayerTechnicalRecommendation({ lineage, housingSystem, phase: productionPhase, ageWeeks, climateProfile }), [lineage, housingSystem, productionPhase, ageWeeks, climateProfile]);
 
   useEffect(() => {
     setFarm((current) => {
       const next = { ...current };
-      const keys: TechnicalParameterKey[] = ['areaPerBirdCm2', 'birdsPerNipple', 'feederCmPerBird'];
-      for (const key of keys) {
-        if (!manualOverrides.has(key)) next[key] = technicalRecommendation?.values[key];
-      }
+      if (!manualOverrides.has('areaPerBirdCm2')) next.areaPerBirdCm2 = technicalRecommendation?.values.areaPerBirdCm2;
+      if (!manualOverrides.has('birdsPerNipple')) next.birdsPerNipple = technicalRecommendation?.values.birdsPerNipple;
+      if (!manualOverrides.has('feederCmPerBird')) next.feederCmPerBird = technicalRecommendation?.values.feederCmPerBird;
       return next;
     });
   }, [technicalRecommendation, manualOverrides]);
@@ -281,8 +280,8 @@ export function App() {
 
           {section === 'technical' && (
             <>
-              <div className="page-heading"><div><span className="eyebrow">BASE DE CONHECIMENTO</span><h1>Biblioteca técnica</h1><p>Parâmetros zootécnicos precisam manter origem, versão e contexto de aplicação.</p></div><button className="button button-primary" onClick={() => setNotice('O upload de manuais será implementado junto com armazenamento e extração documental.')}><Plus size={17} />Adicionar manual</button></div>
-              <section className="panel library-empty"><div className="library-icon"><BookOpen size={27} /></div><h2>Biblioteca ainda não configurada</h2><p>Não há manuais oficiais importados nesta versão. Nenhum coeficiente de linhagem será presumido ou utilizado como regra padrão.</p><div className="library-checklist"><div><CheckCircle size={17} />Upload de PDF original</div><div><CheckCircle size={17} />Extração de tabelas e recomendações</div><div><CheckCircle size={17} />Revisão técnica e aprovação humana</div><div><CheckCircle size={17} />Rastreabilidade por página e versão</div></div></section>
+              <div className="page-heading"><div><span className="eyebrow">BASE DE CONHECIMENTO</span><h1>Biblioteca técnica</h1><p>Parâmetros zootécnicos precisam manter origem, versão e contexto de aplicação.</p></div><button className="button button-primary" onClick={() => setNotice('O cadastro e a revisão documental serão ampliados junto com o armazenamento dos manuais originais.')}><Plus size={17} />Adicionar manual</button></div>
+              <section className="panel library-empty"><div className="library-icon"><BookOpen size={27} /></div><h2>Biblioteca técnica em implantação</h2><p>Há referências oficiais vinculadas a algumas linhagens e sistemas, mas a cobertura ainda é parcial. Nenhum coeficiente será presumido quando o manual consultado não trouxer a combinação exata.</p><div className="library-checklist"><div><CheckCircle size={17} />Upload de PDF original</div><div><CheckCircle size={17} />Extração de tabelas e recomendações</div><div><CheckCircle size={17} />Revisão técnica e aprovação humana</div><div><CheckCircle size={17} />Rastreabilidade por página e versão</div></div></section>
             </>
           )}
         </div>
