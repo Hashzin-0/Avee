@@ -33,6 +33,7 @@ test('aggregates multi-day feed, egg mass, mortality and inventory in date order
   assert.equal(result.currentBirds, 996);
   assert.equal(result.deathsTotal, 3);
   assert.equal(result.eggsTotal, 1500);
+  assert.equal(result.eggsPerHousedBird, 1.5);
   assert.equal(result.eggMassTotalKg, 90);
   assert.equal(result.cumulativeFeedConversion, 200 / 90);
   assert.equal(result.daily[0].date, '2026-11-01');
