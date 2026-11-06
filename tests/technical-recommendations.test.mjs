@@ -19,7 +19,7 @@ test('autofills Hy-Line Brown conventional cage values from its cited production
   });
   assert.equal(recommendation.values.areaPerBirdCm2, undefined);
   assert.match(recommendation.note, /piso de gaiola/);
-  assert.equal(recommendation.source.page, '33');
+  assert.equal(recommendation.source.page, '7');
   assert.match(recommendation.source.url, /^https:\/\//);
 });
 
