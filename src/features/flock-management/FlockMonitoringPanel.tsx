@@ -45,6 +45,10 @@ export function FlockMonitoringPanel({ lineage, ageWeeks, defaultBirds }: {
   const latest = dashboard?.latest ?? null;
 
   const addEntry = () => {
+    if (feedKg === '' || waterLiters === '' || eggsProduced === '') {
+      setError('Informe ração, água e quantidade de ovos. Use zero quando não houver produção.');
+      return;
+    }
     const entry: FlockDailyEntry = {
       id: crypto.randomUUID(),
       date,
@@ -110,6 +114,7 @@ export function FlockMonitoringPanel({ lineage, ageWeeks, defaultBirds }: {
       <div className="section-title-row"><div><h3>Indicadores reais calculados</h3><p>Baseados no último dia cadastrado e no acumulado do lote.</p></div></div>
       <div className="flock-metrics-grid">
         <article><small>Aves vivas estimadas</small><strong>{dashboard ? number(dashboard.currentBirds, 0) : '—'}</strong><span>Inventário após mortes e eliminações</span></article>
+        <article><small>Mortalidade do dia</small><strong>{latest ? `${number(latest.dailyMortalityPercent, 3)}%` : '—'}</strong><span>Óbitos ÷ inventário no início do dia</span></article>
         <article><small>Mortalidade acumulada</small><strong>{dashboard ? `${number(dashboard.cumulativeMortalityPercent, 2)}%` : '—'}</strong><span>Óbitos ÷ aves alojadas</span></article>
         <article><small>Eliminações acumuladas</small><strong>{dashboard ? `${number(dashboard.cumulativeCullsPercent, 2)}%` : '—'}</strong><span>Eliminadas, sem classificar como morte</span></article>
         <article><small>Viabilidade atual</small><strong>{dashboard ? `${number(dashboard.liveabilityPercent, 2)}%` : '—'}</strong><span>Aves vivas ÷ aves alojadas</span></article>
@@ -121,6 +126,8 @@ export function FlockMonitoringPanel({ lineage, ageWeeks, defaultBirds }: {
         <article><small>Conversão alimentar acumulada</small><strong>{!dashboard?.eggMassCoverageComplete || dashboard?.cumulativeFeedConversion === null || dashboard?.cumulativeFeedConversion === undefined ? '—' : `${number(dashboard.cumulativeFeedConversion, 2)} kg/kg`}</strong><span>Ração acumulada ÷ massa de ovos acumulada</span></article>
         <article><small>Ovos acumulados</small><strong>{dashboard ? number(dashboard.eggsTotal, 0) : '—'}</strong><span>Todos os dias registrados</span></article>
         <article><small>Ração acumulada</small><strong>{dashboard ? `${number(dashboard.feedTotalKg)} kg` : '—'}</strong><span>Total dos registros diários</span></article>
+        <article><small>Peso corporal médio medido</small><strong>{latest?.averageBodyWeightGrams ? `${number(latest.averageBodyWeightGrams, 0)} g` : '—'}</strong><span>Amostra informada no último registro</span></article>
+        <article><small>Peso médio do ovo medido</small><strong>{latest?.averageEggWeightGrams ? `${number(latest.averageEggWeightGrams)} g` : '—'}</strong><span>Amostra informada no último registro</span></article>
       </div>
       {feedStatus && <p className="flock-comparison"><strong>Comparação com o guia na idade selecionada:</strong> {feedStatus}. Referência: {reference?.dailyFeedMinGrams}–{reference?.dailyFeedMaxGrams} g/ave/dia. A comparação é válida apenas quando a referência estruturada existe para esta linhagem e idade.</p>}
       {reference && <div className="flock-reference"><strong>Referência oficial para {lineage}, {reference.ageWeeks} semanas</strong><span>{reference.bodyWeightMinGrams !== undefined ? `Peso corporal: ${reference.bodyWeightMinGrams}–${reference.bodyWeightMaxGrams} g. ` : ''}{reference.dailyFeedMinGrams !== undefined ? `Ração: ${reference.dailyFeedMinGrams}–${reference.dailyFeedMaxGrams} g/ave/dia. ` : ''}{reference.dailyWaterMinMl !== undefined ? `Água: ${reference.dailyWaterMinMl}–${reference.dailyWaterMaxMl} ml/ave/dia. ` : ''}{reference.cumulativeMortalityPercent !== undefined ? `Mortalidade acumulada: ${reference.cumulativeMortalityPercent}%. ` : ''}{reference.cumulativeFeedMinGrams !== undefined ? `Ração acumulada: ${reference.cumulativeFeedMinGrams}–${reference.cumulativeFeedMaxGrams} g/ave. ` : ''}{reference.eggsPerHenHousedMin !== undefined ? `Ovos por ave alojada: ${reference.eggsPerHenHousedMin}–${reference.eggsPerHenHousedMax}. ` : ''}{reference.note ?? ''}</span></div>}
