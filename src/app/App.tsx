@@ -96,7 +96,7 @@ export function App() {
   const [housingSystem, setHousingSystem] = useState<HousingSystem>('Gaiolas convencionais');
   const [productionPhase, setProductionPhase] = useState<ProductionPhase>('Produção');
   const [ageWeeks, setAgeWeeks] = useState(18);
-  const [climateProfile, setClimateProfile] = useState<ClimateProfile>('Quente');
+  const [climateProfile, setClimateProfile] = useState<ClimateProfile>('Outro / não informado');
   const [manualOverrides, setManualOverrides] = useState<Set<TechnicalParameterKey>>(() => new Set());
   const technicalRecommendation = useMemo(() => getLayerTechnicalRecommendation({ lineage, housingSystem, phase: productionPhase, ageWeeks, climateProfile }), [lineage, housingSystem, productionPhase, ageWeeks, climateProfile]);
 
