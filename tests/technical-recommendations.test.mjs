@@ -35,7 +35,7 @@ test('autofills Hy-Line Brown floor values and marks free-range area as indoor o
 
 test('does not invent coefficients for unsupported lineages, systems, ages or phases', () => {
   assert.ok(getLayerTechnicalRecommendation({ ...base, lineage: 'Lohmann Brown-Classic' }));
-  assert.equal(getLayerTechnicalRecommendation({ ...base, lineage: 'NOVOgen Brown' }), null);
+  assert.ok(getLayerTechnicalRecommendation({ ...base, lineage: 'NOVOgen Brown', climateProfile: 'Quente' }));
   assert.equal(getLayerTechnicalRecommendation({ ...base, housingSystem: 'Gaiolas enriquecidas' }), null);
   assert.equal(getLayerTechnicalRecommendation({ ...base, phase: 'Recria' }), null);
 });
@@ -81,6 +81,40 @@ test('provides source-backed performance indicators for Hy-Line Brown and Lohman
 });
 
 test('does not present unsupported performance profiles as official', () => {
-  assert.equal(getLayerPerformanceProfile('NOVOgen Brown'), null);
+  assert.ok(getLayerPerformanceProfile('NOVOgen Brown'));
   assert.equal(getLayerPerformanceProfile('Outra / não definida'), null);
+});
+
+test('NOVOgen Brown applies climate-specific floor and nipple recommendations', () => {
+  const warm = getLayerTechnicalRecommendation({
+    ...base,
+    lineage: 'NOVOgen Brown',
+    housingSystem: 'Sistema de piso',
+    climateProfile: 'Quente',
+  });
+  assert.ok(warm);
+  assert.equal(warm.values.areaPerBirdCm2, 1667);
+  assert.equal(warm.values.birdsPerNipple, 8);
+  const temperate = getLayerTechnicalRecommendation({
+    ...base,
+    lineage: 'NOVOgen Brown',
+    housingSystem: 'Sistema de piso',
+    climateProfile: 'Temperado',
+  });
+  assert.ok(temperate);
+  assert.equal(temperate.values.areaPerBirdCm2, 1250);
+  assert.equal(temperate.values.birdsPerNipple, 10);
+  assert.equal(getLayerTechnicalRecommendation({
+    ...base,
+    lineage: 'NOVOgen Brown',
+    climateProfile: 'Frio',
+  }), null);
+});
+
+test('NOVOgen Brown performance indicators include mortality, eggs, body weight and feed intake', () => {
+  const profile = getLayerPerformanceProfile('NOVOgen Brown');
+  assert.ok(profile);
+  assert.ok(profile.indicators.some((item) => item.value === '4,2%' && item.label.includes('Mortalidade')));
+  assert.ok(profile.indicators.some((item) => item.value === '254 ovos'));
+  assert.ok(profile.indicators.some((item) => item.value === '111–119 g/ave/dia'));
 });
