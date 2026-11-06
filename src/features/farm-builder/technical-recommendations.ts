@@ -16,6 +16,9 @@ export interface TechnicalSource {
   url: string;
 }
 
+export interface PerformanceIndicator { label: string; value: string; period: string; }
+export interface LayerPerformanceProfile { lineage: LayerLineage; indicators: PerformanceIndicator[]; source: TechnicalSource; note: string; }
+
 export interface LayerTechnicalRecommendation {
   lineage: LayerLineage;
   housingSystem: HousingSystem;
@@ -43,19 +46,21 @@ const HYLINE_BROWN_ALTERNATIVE: TechnicalSource = {
   url: 'https://www.hyline.com/filesimages/Hy-Line-Products/Hy-Line-Product-PDFs/Brown/Brown%20Alt/BRN%20ALT%20COM%20ENG.pdf',
 };
 
+const LOHMANN_BROWN: TechnicalSource = {
+  publisher: 'LOHMANN BREEDERS',
+  title: 'LOHMANN BROWN-CLASSIC Layers — Management Guide, Cage Housing',
+  edition: 'PDF oficial disponibilizado em 2020',
+  page: '7',
+  url: 'https://lohmann-breeders.com/media/2020/07/ManagementGuideLBClassicCage-EN.pdf',
+};
+
 const HYLINE_W36: TechnicalSource = {
   publisher: 'Hy-Line International',
   title: 'Hy-Line W-36 Commercial Layers — Management Guide',
   edition: 'Janeiro de 2020',
-  page: '9',
+  page: '1',
   url: 'https://www.hyline.com/filesimages/Hy-Line-Products/Hy-Line-Product-PDFs/W-36/36%20COM%20ENG.pdf',
 };
-
-const SUPPORTED_KEYS: TechnicalParameterKey[] = [
-  'areaPerBirdCm2',
-  'birdsPerNipple',
-  'feederCmPerBird',
-];
 
 /**
  * Returns only values explicitly supported by the cited commercial-layer guide.
@@ -124,4 +129,65 @@ export function getLayerTechnicalRecommendation(input: {
 
 export function getTechnicalParameterKeys(): TechnicalParameterKey[] {
   return [...SUPPORTED_KEYS];
+}
+
+
+export function getLayerPerformanceProfile(lineage: LayerLineage): LayerPerformanceProfile | null {
+  const sourceIndicators: Record<string, PerformanceIndicator[]> = {
+    'Hy-Line Brown': [
+      { label: 'Mortalidade acumulada na recria', value: '2%', period: 'Até 17 semanas; derivada de 98% de viabilidade' },
+      { label: 'Mortalidade acumulada na produção', value: '2,83%', period: 'Até 60 semanas; derivada de 97,17% de viabilidade' },
+      { label: 'Mortalidade acumulada na produção', value: '8,60%', period: 'Até 100 semanas; derivada de 91,40% de viabilidade' },
+      { label: 'Peso corporal médio', value: '1.411–1.492 g', period: '18 semanas' },
+      { label: 'Peso corporal médio', value: '1.810–1.913 g', period: '26 semanas' },
+      { label: 'Peso corporal médio', value: '1.876–1.984 g', period: '32 semanas' },
+      { label: 'Peso corporal médio', value: '1.954–2.066 g', period: '70 semanas' },
+      { label: 'Ovos por ave alojada', value: '256,2–270,8 ovos', period: 'Acumulado até 60 semanas' },
+      { label: 'Ovos por ave alojada', value: '466,4–497,9 ovos', period: 'Acumulado até 100 semanas' },
+      { label: 'Pico de postura', value: '93,6–98,5%', period: 'Pico do ciclo' },
+      { label: 'Peso médio do ovo', value: '55,2–58,6 g', period: '26 semanas' },
+      { label: 'Peso médio do ovo', value: '58,9–62,6 g', period: '32 semanas' },
+      { label: 'Consumo médio de ração', value: '109,1–116,9 g/ave/dia', period: '19–100 semanas' },
+      { label: 'Conversão alimentar', value: '2,06–2,15 kg/kg', period: '20–60 semanas; ração/massa de ovos' },
+      { label: 'Massa de ovos por ave alojada', value: '29,8 kg', period: '18–100 semanas' },
+      { label: 'Ração consumida na recria', value: '5,99 kg/ave', period: 'Até 17 semanas' },
+    ],
+    'Lohmann Brown-Classic': [
+      { label: 'Mortalidade acumulada na recria', value: '2–3%', period: 'Recria; derivada de 97–98% de viabilidade' },
+      { label: 'Mortalidade acumulada na produção', value: '6–8%', period: 'Postura; derivada de 92–94% de viabilidade' },
+      { label: 'Peso corporal médio', value: '1,38–1,46 kg', period: '17 semanas' },
+      { label: 'Peso corporal médio', value: '1,90–2,20 kg', period: 'Final da produção' },
+      { label: 'Ovos por ave alojada', value: '318–323 ovos', period: 'Acumulado até 72 semanas' },
+      { label: 'Ovos por ave alojada', value: '358–363 ovos', period: 'Acumulado até 80 semanas' },
+      { label: 'Ovos por ave alojada', value: '428–433 ovos', period: 'Acumulado até 95 semanas' },
+      { label: 'Pico de postura', value: '93–95%', period: 'Pico do ciclo' },
+      { label: 'Peso médio do ovo', value: '63,5–64,5 g', period: '72 semanas' },
+      { label: 'Peso médio do ovo', value: '64,0–65,0 g', period: '80 semanas' },
+      { label: 'Consumo médio de ração', value: '110–120 g/ave/dia', period: 'Produção' },
+      { label: 'Conversão alimentar', value: '2,0–2,1 kg/kg', period: 'Ração/massa de ovos' },
+      { label: 'Massa de ovos por ave alojada', value: '27,5–28,5 kg', period: 'Até 95 semanas' },
+      { label: 'Ração consumida na recria', value: '5,7–5,9 kg/ave', period: '1ª–17ª semana' },
+    ],
+    'Hy-Line W-36': [
+      { label: 'Mortalidade acumulada na recria', value: '3%', period: 'Até 17 semanas; derivada de 97% de viabilidade' },
+      { label: 'Mortalidade acumulada na produção', value: '2,9%', period: 'Até 60 semanas; derivada de 97,1% de viabilidade' },
+      { label: 'Mortalidade acumulada na produção', value: '8%', period: 'Até 100 semanas; derivada de 92% de viabilidade' },
+      { label: 'Peso corporal médio', value: '1.190–1.250 g', period: '17 semanas' },
+      { label: 'Peso corporal médio', value: '1.480–1.540 g', period: '26 semanas' },
+      { label: 'Peso corporal médio', value: '1.510–1.570 g', period: '32 semanas' },
+      { label: 'Ovos por ave alojada', value: '252–260 ovos', period: 'Acumulado até 60 semanas' },
+      { label: 'Ovos por ave alojada', value: '456–472 ovos', period: 'Acumulado até 100 semanas' },
+      { label: 'Pico de postura', value: '95–97%', period: 'Pico do ciclo' },
+      { label: 'Peso médio do ovo', value: '54,7 g', period: '26 semanas' },
+      { label: 'Peso médio do ovo', value: '58,5 g', period: '32 semanas' },
+      { label: 'Consumo médio de ração', value: '99,6 g/ave/dia', period: '18–100 semanas' },
+      { label: 'Conversão alimentar', value: '1,81–1,94 kg/kg', period: '20–60 semanas; ração/massa de ovos' },
+      { label: 'Massa de ovos por ave alojada', value: '27,4–29,4 kg', period: '18–100 semanas' },
+      { label: 'Ração consumida na recria', value: '5,36–5,94 kg/ave', period: 'Até 17 semanas' },
+    ],
+  };
+  const indicators = sourceIndicators[lineage];
+  if (!indicators) return null;
+  const source = lineage === 'Hy-Line Brown' ? HYLINE_BROWN_CONVENTIONAL : lineage === 'Lohmann Brown-Classic' ? LOHMANN_BROWN : HYLINE_W36;
+  return { lineage, indicators, source, note: 'Indicadores de desempenho de referência do manual da linhagem. Mortalidade é calculada como 100% menos viabilidade publicada. Ovos por ave alojada são acumulados até a idade indicada, não produção diária. Os valores são metas/resultados de referência e não substituem os dados medidos do lote.' };
 }
