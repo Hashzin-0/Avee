@@ -34,7 +34,7 @@ test('autofills Hy-Line Brown floor values and marks free-range area as indoor o
 });
 
 test('does not invent coefficients for unsupported lineages, systems, ages or phases', () => {
-  assert.ok(getLayerTechnicalRecommendation({ ...base, lineage: 'Lohmann Brown-Classic' }));
+  assert.equal(getLayerTechnicalRecommendation({ ...base, lineage: 'Lohmann Brown-Classic' }), null);
   assert.ok(getLayerTechnicalRecommendation({ ...base, lineage: 'NOVOgen Brown', climateProfile: 'Quente' }));
   assert.equal(getLayerTechnicalRecommendation({ ...base, housingSystem: 'Gaiolas enriquecidas' }), null);
   assert.equal(getLayerTechnicalRecommendation({ ...base, phase: 'Recria' }), null);
@@ -60,11 +60,13 @@ test('autofills Lohmann Brown-Classic cage equipment values from its guide', () 
   const recommendation = getLayerTechnicalRecommendation({
     ...base,
     lineage: 'Lohmann Brown-Classic',
+    phase: 'Recria',
+    ageWeeks: 15,
   });
   assert.ok(recommendation);
   assert.deepEqual(recommendation.values, {
     birdsPerNipple: 8,
-    feederCmPerBird: 5,
+    feederCmPerBird: 4.5,
   });
   assert.equal(recommendation.source.page, '33');
 });
