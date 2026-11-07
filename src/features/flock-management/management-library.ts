@@ -34,6 +34,7 @@ export type LayerAgeReference = {
   layRateMaxPercent?: number;
   eggsPerHenDayMin?: number;
   eggsPerHenDayMax?: number;
+  uniformityMinPercent?: number;
   eggsPerHenHousedMin?: number;
   eggsPerHenHousedMax?: number;
   averageEggWeightMinGrams?: number;
@@ -105,7 +106,7 @@ const hylineProductionMilestones: LayerAgeReference[] = hyLineBrownProductionRow
   eggsPerHenDayMin: row[3], eggsPerHenDayMax: row[4],
   eggsPerHenHousedMin: row[5], eggsPerHenHousedMax: row[6],
   cumulativeMortalityPercent: row[7], bodyWeightMinGrams: row[8], bodyWeightMaxGrams: row[9],
-  dailyWaterMinMl: row[10], dailyWaterMaxMl: row[11], dailyFeedMinGrams: row[12], dailyFeedMaxGrams: row[13],
+  dailyFeedMinGrams: row[10], dailyFeedMaxGrams: row[11], dailyWaterMinMl: row[12], dailyWaterMaxMl: row[13],
   eggMassPerHenHousedMinKg: row[14] ?? undefined, eggMassPerHenHousedMaxKg: row[15] ?? undefined,
   averageEggWeightMinGrams: row[16], averageEggWeightMaxGrams: row[17],
   sourceId: 'hyline-brown-2025-conventional', page: '5–6',
@@ -179,6 +180,7 @@ const hylineBrownAlternativeRearing: SourcedLayerAgeReference[] = hyLineBrownAlt
   cumulativeMortalityPercent: row[1], bodyWeightMinGrams: row[2], bodyWeightMaxGrams: row[3],
   dailyWaterMinMl: row[4], dailyWaterMaxMl: row[5], dailyFeedMinGrams: row[6], dailyFeedMaxGrams: row[7],
   cumulativeFeedMinGrams: row[8] * 1000, cumulativeFeedMaxGrams: row[9] * 1000,
+  uniformityMinPercent: ({ 2: 85, 5: 80, 11: 85, 17: 90 } as Record<number, number>)[row[0]],
   sourceId: 'hyline-brown-2026-alternative', page: '4',
   housingSystemApplicability: 'Sistemas alternativos; metas de desempenho do guia de maio de 2026.',
   reviewStatus: 'transcribed-unreviewed',
