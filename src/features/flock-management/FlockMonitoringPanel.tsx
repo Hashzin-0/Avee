@@ -17,10 +17,11 @@ function todayLocal() {
   return date.toISOString().slice(0, 10);
 }
 
-export function FlockMonitoringPanel({ lineage, ageWeeks, defaultBirds }: {
+export function FlockMonitoringPanel({ lineage, ageWeeks, defaultBirds, referenceSystem = 'conventional' }: {
   lineage: LayerLineage;
   ageWeeks: number;
   defaultBirds: number;
+  referenceSystem?: 'conventional' | 'alternative' | 'unsupported';
 }) {
   const [initialBirds, setInitialBirds] = useState(String(defaultBirds));
 
@@ -43,8 +44,8 @@ export function FlockMonitoringPanel({ lineage, ageWeeks, defaultBirds }: {
     if (!Number.isInteger(count) || count <= 0) return null;
     try { return calculateFlockDashboard(count, entries); } catch { return null; }
   }, [initialBirds, entries]);
-  const reference = getLayerAgeReference(lineage, ageWeeks);
-  const guide = getLayerGuideSource(lineage);
+  const reference = referenceSystem === 'unsupported' ? null : getLayerAgeReference(lineage, ageWeeks, referenceSystem);
+  const guide = referenceSystem === 'unsupported' ? null : getLayerGuideSource(lineage, referenceSystem);
   const phase = Number.isFinite(ageWeeks) && ageWeeks >= 0 ? getManagementPhase(ageWeeks) : 'Cria';
   const latest = dashboard?.latest ?? null;
 
@@ -99,6 +100,7 @@ export function FlockMonitoringPanel({ lineage, ageWeeks, defaultBirds }: {
         <strong>{lineage}</strong>
         <span>Idade informada: {number(ageWeeks, 1)} semanas</span>
         <span>Fase identificada: {phase}</span>
+        {lineage === 'Hy-Line Brown' && <span>Sistema de referência: {referenceSystem === 'conventional' ? 'convencional' : referenceSystem === 'alternative' ? 'alternativo' : 'sem guia compatível'}</span>}
         {reference && <span>Referência técnica disponível para esta idade</span>}
       </div>
       <div className="flock-entry-grid">
@@ -137,7 +139,7 @@ export function FlockMonitoringPanel({ lineage, ageWeeks, defaultBirds }: {
       </div>
       {feedStatus && <p className="flock-comparison"><strong>Comparação com o guia na idade selecionada:</strong> {feedStatus}. Referência: {reference?.dailyFeedMinGrams}–{reference?.dailyFeedMaxGrams} g/ave/dia. A comparação é válida apenas quando a referência estruturada existe para esta linhagem e idade.</p>}
       {reference && <div className="flock-reference"><strong>Referência oficial para {lineage}, {reference.ageRangeLabel ?? `${reference.ageWeeks} semanas`}</strong><span>{reference.bodyWeightMinGrams !== undefined ? `Peso corporal: ${reference.bodyWeightMinGrams}–${reference.bodyWeightMaxGrams} g. ` : ''}{reference.dailyFeedMinGrams !== undefined ? `Ração: ${reference.dailyFeedMinGrams}–${reference.dailyFeedMaxGrams} g/ave/dia. ` : ''}{reference.dailyWaterMinMl !== undefined ? `Água: ${reference.dailyWaterMinMl}–${reference.dailyWaterMaxMl} ml/ave/dia. ` : ''}{reference.cumulativeMortalityPercent !== undefined ? `Mortalidade acumulada: ${reference.cumulativeMortalityPercent}%. ` : ''}{reference.cumulativeFeedMinGrams !== undefined ? `Ração acumulada: ${reference.cumulativeFeedMinGrams}–${reference.cumulativeFeedMaxGrams} g/ave. ` : ''}{reference.eggsPerHenHousedMin !== undefined ? `Ovos por ave alojada: ${reference.eggsPerHenHousedMin}–${reference.eggsPerHenHousedMax}. ` : ''}{reference.note ?? ''} Fonte: {reference.sourceId}, página {reference.page}, versão {guide?.edition ?? 'não informada'}. Aplicabilidade: {reference.housingSystemApplicability} Status: {reference.reviewStatus}.</span></div>}
-      {!reference && <p className="flock-reference">O guia desta linhagem foi catalogado, mas não há um ponto de idade estruturado exatamente para {number(ageWeeks, 1)} semanas. O sistema não interpola nem inventa uma meta.</p>}
+      {!reference && <p className="flock-reference">{referenceSystem === 'unsupported' ? 'Não há referência de desempenho compatível para este sistema de alojamento nesta biblioteca. Nenhuma meta foi aplicada.' : `O guia desta linhagem foi catalogado, mas não há um ponto de idade estruturado exatamente para ${number(ageWeeks, 1)} semanas. O sistema não interpola nem inventa uma meta.`}</p>}
       {guide && <div className="performance-source"><strong>{guide.publisher}</strong> · {guide.title} · {guide.edition}. Cobertura cadastrada: {guide.coverage} <a href={guide.url} target="_blank" rel="noreferrer">Abrir guia oficial</a></div>}
       <div className="table-wrap">
         <table><thead><tr><th>Data</th><th>Aves vivas</th><th>Mortes</th><th>Ração g/ave</th><th>Água ml/ave</th><th>Ovos</th><th>Postura HD</th></tr></thead>
