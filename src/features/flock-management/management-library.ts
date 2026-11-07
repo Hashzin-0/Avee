@@ -13,7 +13,7 @@ export type LayerGuideSource = {
   url: string;
   coverage: string;
   dataStatus: 'weekly-rearing' | 'weekly-rearing-and-production' | 'milestones';
-  housingSystem: 'conventional' | 'alternative';
+  housingSystem?: 'conventional' | 'alternative';
 };
 
 export type LayerAgeReference = {
@@ -172,7 +172,7 @@ const sourceMetadata: Record<LayerLineage, { id: string; pageForAge: (ageWeeks: 
   'Outra / não definida': { id: 'unsupported', pageForAge: () => '—', housing: 'Sem aplicabilidade definida.' },
 };
 
-const hylineBrownAlternativeRearing: LayerAgeReference[] = hyLineBrownAlternativeRearingRows.map((row) => ({
+const hylineBrownAlternativeRearing: SourcedLayerAgeReference[] = hyLineBrownAlternativeRearingRows.map((row) => ({
   lineage: 'Hy-Line Brown', ageWeeks: row[0], phase: getManagementPhase(row[0]),
   cumulativeMortalityPercent: row[1], bodyWeightMinGrams: row[2], bodyWeightMaxGrams: row[3],
   dailyWaterMinMl: row[4], dailyWaterMaxMl: row[5], dailyFeedMinGrams: row[6], dailyFeedMaxGrams: row[7],
@@ -182,7 +182,7 @@ const hylineBrownAlternativeRearing: LayerAgeReference[] = hyLineBrownAlternativ
   reviewStatus: 'transcribed-unreviewed',
 }));
 
-const hylineBrownAlternativeProduction: LayerAgeReference[] = hyLineBrownAlternativeProductionRows.map((row) => ({
+const hylineBrownAlternativeProduction: SourcedLayerAgeReference[] = hyLineBrownAlternativeProductionRows.map((row) => ({
   lineage: 'Hy-Line Brown', ageWeeks: row[0], phase: 'Produção',
   layRateMinPercent: row[1], layRateMaxPercent: row[2],
   eggsPerHenDayMin: row[3], eggsPerHenDayMax: row[4],
