@@ -92,6 +92,8 @@ test('keeps Hy-Line Brown conventional and alternative performance standards sep
   assert.equal(getLayerAgeReference('Hy-Line Brown', 100, 'conventional')?.eggsPerHenHousedMax, 497.9);
   assert.equal(getLayerAgeReference('Hy-Line Brown', 100, 'alternative')?.eggsPerHenHousedMax, 489.1);
   assert.equal(getLayerAgeReference('Hy-Line Brown', 100, 'conventional')?.cumulativeMortalityPercent, 8.6);
+  assert.equal(getLayerAgeReference('Hy-Line Brown', 18, 'conventional')?.dailyWaterMinMl, 121);
+  assert.equal(getLayerAgeReference('Hy-Line Brown', 18, 'conventional')?.dailyFeedMinGrams, 81);
   assert.equal(getLayerAgeReference('Hy-Line Brown', 100, 'alternative')?.cumulativeMortalityPercent, 10.04);
   assert.equal(getLayerAgeReference('Hy-Line Brown', 18, 'alternative')?.dailyFeedMinGrams, 87);
   assert.equal(getLayerAgeReference('Hy-Line Brown', 18, 'alternative')?.dailyWaterMinMl, 130);
