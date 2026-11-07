@@ -26,6 +26,7 @@ export type LayerAgeReference = {
   dailyWaterMinMl?: number;
   dailyWaterMaxMl?: number;
   cumulativeMortalityPercent?: number;
+  uniformityMinPercent?: number;
   cumulativeFeedMinGrams?: number;
   cumulativeFeedMaxGrams?: number;
   layRateMinPercent?: number;
@@ -67,6 +68,8 @@ export function getManagementPhase(ageWeeks: number): ManagementPhase {
   return 'Produção';
 }
 
+const hylineRearingUniformityTargets: Record<number, number> = { 2: 85, 5: 80, 7: 85, 17: 90 };
+
 const hylineRearing: LayerAgeReference[] = [
   [1,69,73,16,17,24,33,0.40,110,117],
   [2,119,126,18,19,27,37,0.55,234,248],
@@ -92,6 +95,7 @@ const hylineRearing: LayerAgeReference[] = [
   dailyFeedMinGrams: feedMin, dailyFeedMaxGrams: feedMax,
   dailyWaterMinMl: waterMin, dailyWaterMaxMl: waterMax,
   cumulativeMortalityPercent: mortality,
+  uniformityMinPercent: hylineRearingUniformityTargets[ageWeeks],
   cumulativeFeedMinGrams: feedCumMin, cumulativeFeedMaxGrams: feedCumMax,
 }));
 
