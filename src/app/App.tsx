@@ -110,7 +110,6 @@ export function App() {
   const productionPhase = Number.isFinite(ageWeeks) && ageWeeks >= 0 ? getManagementPhase(ageWeeks) : 'Cria';
   const [climateProfile, setClimateProfile] = useState<ClimateProfile>('Outro / não informado');
   const [manualOverrides, setManualOverrides] = useState<Set<TechnicalParameterKey>>(() => new Set());
-  const alternativeHousing = housingSystem === 'Sistema de piso' || housingSystem === 'Aviário / multinível' || housingSystem === 'Free-range';
   const flockReferenceSystem = housingSystem === 'Gaiolas enriquecidas' ? 'unsupported' : housingSystem === 'Gaiolas convencionais' ? 'conventional' : 'alternative';
   const performanceProfile = useMemo(() => housingSystem === 'Gaiolas convencionais' ? getLayerPerformanceProfile(lineage) : null, [lineage, housingSystem]);
   const technicalRecommendation = useMemo(() => getLayerTechnicalRecommendation({ lineage, housingSystem, phase: productionPhase, ageWeeks, climateProfile }), [lineage, housingSystem, productionPhase, ageWeeks, climateProfile]);
