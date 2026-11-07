@@ -1,5 +1,6 @@
 import type { LayerLineage } from '../farm-builder/technical-recommendations';
 import { hyLineBrownAlternativeProductionRows, hyLineBrownAlternativeRearingRows } from './hyline-brown-alternative';
+import { hyLineBrownProductionRows } from './hyline-brown-conventional-production';
 
 export type ManagementPhase = 'Cria' | 'Recria' | 'Pré-postura' | 'Produção';
 
@@ -96,12 +97,19 @@ const hylineRearing: LayerAgeReference[] = [
 }));
 
 
-const hylineProductionMilestones: LayerAgeReference[] = [
-  { lineage: 'Hy-Line Brown', ageWeeks: 18, phase: 'Produção', bodyWeightMinGrams: 1411, bodyWeightMaxGrams: 1492, dailyFeedMinGrams: 81, dailyFeedMaxGrams: 86, dailyWaterMinMl: 121, dailyWaterMaxMl: 173, cumulativeMortalityPercent: 0.24, layRateMinPercent: 6.7, layRateMaxPercent: 7, averageEggWeightMinGrams: 42.8, averageEggWeightMaxGrams: 45.5 },
-  { lineage: 'Hy-Line Brown', ageWeeks: 24, phase: 'Produção', bodyWeightMinGrams: 1739, bodyWeightMaxGrams: 1838, dailyFeedMinGrams: 107, dailyFeedMaxGrams: 114, dailyWaterMinMl: 161, dailyWaterMaxMl: 228, cumulativeMortalityPercent: 0.49, layRateMinPercent: 92.4, layRateMaxPercent: 97, eggsPerHenHousedMin: 29.9, eggsPerHenHousedMax: 31.4, averageEggWeightMinGrams: 53.1, averageEggWeightMaxGrams: 56.4, eggMassPerHenHousedMinKg: 1.6, eggMassPerHenHousedMaxKg: 1.6 },
-  { lineage: 'Hy-Line Brown', ageWeeks: 60, phase: 'Produção', bodyWeightMinGrams: 1947, bodyWeightMaxGrams: 2058, dailyFeedMinGrams: 110, dailyFeedMaxGrams: 118, dailyWaterMinMl: 165, dailyWaterMaxMl: 236, cumulativeMortalityPercent: 2.83, layRateMinPercent: 87.4, layRateMaxPercent: 93.2, eggsPerHenHousedMin: 256.2, eggsPerHenHousedMax: 270.8, averageEggWeightMinGrams: 60.9, averageEggWeightMaxGrams: 64.6, eggMassPerHenHousedMinKg: 15.5, eggMassPerHenHousedMaxKg: 16.4 },
-  { lineage: 'Hy-Line Brown', ageWeeks: 100, phase: 'Produção', bodyWeightMinGrams: 1965, bodyWeightMaxGrams: 2078, dailyFeedMinGrams: 110, dailyFeedMaxGrams: 118, dailyWaterMinMl: 165, dailyWaterMaxMl: 236, cumulativeMortalityPercent: 8.6, layRateMinPercent: 70.8, layRateMaxPercent: 77.6, eggsPerHenHousedMin: 466.4, eggsPerHenHousedMax: 497.9, averageEggWeightMinGrams: 62.2, averageEggWeightMaxGrams: 66.1, eggMassPerHenHousedMinKg: 28.9, eggMassPerHenHousedMaxKg: 30.8 },
-];
+const hylineProductionMilestones: LayerAgeReference[] = hyLineBrownProductionRows.map((row) => ({
+  lineage: 'Hy-Line Brown', ageWeeks: row[0], phase: 'Produção',
+  layRateMinPercent: row[1], layRateMaxPercent: row[2],
+  eggsPerHenDayMin: row[3], eggsPerHenDayMax: row[4],
+  eggsPerHenHousedMin: row[5], eggsPerHenHousedMax: row[6],
+  cumulativeMortalityPercent: row[7], bodyWeightMinGrams: row[8], bodyWeightMaxGrams: row[9],
+  dailyWaterMinMl: row[10], dailyWaterMaxMl: row[11], dailyFeedMinGrams: row[12], dailyFeedMaxGrams: row[13],
+  eggMassPerHenHousedMinKg: row[14] ?? undefined, eggMassPerHenHousedMaxKg: row[15] ?? undefined,
+  averageEggWeightMinGrams: row[16], averageEggWeightMaxGrams: row[17],
+  sourceId: 'hyline-brown-2025-conventional', page: '5–6',
+  housingSystemApplicability: 'Sistema convencional; guia de dezembro de 2025.',
+  reviewStatus: 'transcribed-unreviewed',
+}));
 
 const hylineW36Rearing: LayerAgeReference[] = [
   [1,60,73,13,16,20,32,0.75,60,111], [2,100,118,17,20,25,41,1.30,209,253],
