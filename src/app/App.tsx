@@ -301,9 +301,10 @@ export function App() {
                 <label className="field guide-lineage-filter"><span>Linhagem da tabela</span><select value={lineage} onChange={(event) => setLineage(event.target.value as LayerLineage)}><option>Hy-Line Brown</option><option>Lohmann Brown-Classic</option><option>NOVOgen Brown</option><option>Hy-Line W-36</option><option>Outra / não definida</option></select></label>
                 <div className="table-wrap guide-standards-table">
                   <table>
-                    <thead><tr><th>Sem.</th><th>Fase</th><th>Peso corporal (g)</th><th>Ração (g/ave/dia)</th><th>Água (ml/ave/dia)</th><th>Mortalidade acum. (%)</th><th>Postura ave-dia (%)</th><th>Ovos/ave-dia acum.</th><th>Ovos/ave alojada acum.</th><th>Massa de ovos (kg)</th><th>Peso do ovo (g)</th></tr></thead>
+                    <thead><tr><th>Sem.</th><th>Fase</th><th>Uniformidade mínima (%)</th><th>Peso corporal (g)</th><th>Ração (g/ave/dia)</th><th>Água (ml/ave/dia)</th><th>Mortalidade acum. (%)</th><th>Postura ave-dia (%)</th><th>Ovos/ave-dia acum.</th><th>Ovos/ave alojada acum.</th><th>Massa de ovos (kg)</th><th>Peso do ovo (g)</th></tr></thead>
                     <tbody>{layerAgeReferences.filter((item) => item.lineage === lineage).sort((a, b) => a.ageWeeks - b.ageWeeks).map((item) => <tr key={item.lineage + '-' + item.ageWeeks}>
                       <td>{item.ageWeeks}</td><td>{item.phase}</td>
+                      <td>{item.uniformityMinPercent === undefined ? '—' : `> ${formatNumber(item.uniformityMinPercent, 0)}`}</td>
                       <td>{formatRange(item.bodyWeightMinGrams, item.bodyWeightMaxGrams, 0)}</td>
                       <td>{formatRange(item.dailyFeedMinGrams, item.dailyFeedMaxGrams)}</td>
                       <td>{formatRange(item.dailyWaterMinMl, item.dailyWaterMaxMl, 0)}</td>
@@ -314,7 +315,7 @@ export function App() {
                       <td>{formatRange(item.eggMassPerHenHousedMinKg, item.eggMassPerHenHousedMaxKg, 2)}</td>
                       <td>{formatRange(item.averageEggWeightMinGrams, item.averageEggWeightMaxGrams)}</td>
                     </tr>)}
-                    {layerAgeReferences.every((item) => item.lineage !== lineage) && <tr><td colSpan={11} className="table-empty">Não há valores estruturados para esta linhagem.</td></tr>}
+                    {layerAgeReferences.every((item) => item.lineage !== lineage) && <tr><td colSpan={12} className="table-empty">Não há valores estruturados para esta linhagem.</td></tr>}
                     </tbody>
                   </table>
                 </div>
