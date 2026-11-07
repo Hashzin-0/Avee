@@ -5,7 +5,7 @@
  */
 export type HyLineBrownAlternativeRearingRow = readonly [
   ageWeeks:number, mortalityPercent:number, bodyWeightMinGrams:number, bodyWeightMaxGrams:number,
-  dailyWaterMinMl:number, dailyWaterMaxMl:number, dailyFeedMinGrams:number, dailyFeedMaxGrams:number,
+  dailyFeedMinGrams:number, dailyFeedMaxGrams:number, dailyWaterMinMl:number, dailyWaterMaxMl:number,
   cumulativeFeedMinKg:number, cumulativeFeedMaxKg:number
 ];
 export type HyLineBrownAlternativeProductionRow = readonly [
