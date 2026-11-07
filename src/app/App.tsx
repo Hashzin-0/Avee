@@ -28,7 +28,7 @@ import {
 } from '@phosphor-icons/react';
 import { FarmScene } from '../features/farm-builder/FarmScene';
 import { FlockMonitoringPanel } from '../features/flock-management/FlockMonitoringPanel';
-import { getManagementPhase, layerGuideSources } from '../features/flock-management/management-library';
+import { getManagementPhase, layerAgeReferences, layerGuideSources } from '../features/flock-management/management-library';
 import { getLayerPerformanceProfile, getLayerTechnicalRecommendation, type ClimateProfile, type HousingSystem, type LayerLineage, type TechnicalParameterKey } from '../features/farm-builder/technical-recommendations';
 import { calculateFarm, calculateUniformity, type FarmInput } from '../features/farm-builder/domain';
 import { connectionOptions, scaleCatalog } from '../features/weighing/catalog';
@@ -53,6 +53,11 @@ const initialFarm: FarmInput = {
 
 function formatNumber(value: number, digits = 0) {
   return new Intl.NumberFormat('pt-BR', { maximumFractionDigits: digits, minimumFractionDigits: digits }).format(value);
+}
+
+function formatRange(min?: number, max?: number, digits = 1) {
+  if (min === undefined || max === undefined) return '—';
+  return min === max ? formatNumber(min, digits) : `${formatNumber(min, digits)}–${formatNumber(max, digits)}`;
 }
 
 function Metric({ label, value, detail, icon: Icon }: { label: string; value: string; detail: string; icon: typeof Bird }) {
@@ -286,8 +291,35 @@ export function App() {
             <>
               <div className="page-heading"><div><span className="eyebrow">BASE DE CONHECIMENTO</span><h1>Biblioteca técnica</h1><p>Parâmetros zootécnicos precisam manter origem, versão e contexto de aplicação.</p></div><button className="button button-primary" onClick={() => setNotice('O cadastro e a revisão documental serão ampliados junto com o armazenamento dos manuais originais.')}><Plus size={17} />Adicionar manual</button></div>
               <div className="page-heading"><div><span className="eyebrow">BASE DE CONHECIMENTO</span><h1>Biblioteca técnica</h1><p>Guias oficiais catalogados por linhagem, versão e cobertura dos dados.</p></div></div>
-              <div className="guide-library-grid">{layerGuideSources.map((guide) => <article className="panel guide-library-card" key={guide.id}><div className="guide-library-top"><span className="sample-count">{guide.dataStatus === 'weekly-rearing' ? 'Recria semanal estruturada' : 'Marcos de desempenho estruturados'}</span><BookOpen size={19} /></div><h2>{guide.lineage}</h2><strong>{guide.title}</strong><p>{guide.publisher} · {guide.edition}</p><small>{guide.coverage}</small><a href={guide.url} target="_blank" rel="noreferrer">Consultar guia original</a></article>)}</div>
+              <div className="guide-library-grid">{layerGuideSources.map((guide) => <article className="panel guide-library-card" key={guide.id}><div className="guide-library-top"><span className="sample-count">{guide.dataStatus === 'weekly-rearing-and-production' ? 'Recria e produção semanais' : guide.dataStatus === 'weekly-rearing' ? 'Recria semanal estruturada' : 'Marcos de desempenho estruturados'}</span><BookOpen size={19} /></div><h2>{guide.lineage}</h2><strong>{guide.title}</strong><p>{guide.publisher} · {guide.edition}</p><small>{guide.coverage}</small><a href={guide.url} target="_blank" rel="noreferrer">Consultar guia original</a></article>)}</div>
               <p className="table-footnote">A cobertura não é idêntica entre linhagens. O sistema só compara metas em idades com valores efetivamente extraídos e revisados; ausência de ponto não será preenchida por interpolação automática. Documentos de matrizes e frangos de corte não são usados como referência de poedeiras comerciais.</p>
+              <section className="panel guide-standards-panel">
+                <div className="panel-heading">
+                  <div><h2>Padrões semanais de desempenho</h2><p>{lineage} · consulta por idade exata, sem interpolação.</p></div>
+                  <BookOpen size={20} />
+                </div>
+                <label className="field guide-lineage-filter"><span>Linhagem da tabela</span><select value={lineage} onChange={(event) => setLineage(event.target.value as LayerLineage)}><option>Hy-Line Brown</option><option>Lohmann Brown-Classic</option><option>NOVOgen Brown</option><option>Hy-Line W-36</option><option>Outra / não definida</option></select></label>
+                <div className="table-wrap guide-standards-table">
+                  <table>
+                    <thead><tr><th>Sem.</th><th>Fase</th><th>Peso corporal (g)</th><th>Ração (g/ave/dia)</th><th>Água (ml/ave/dia)</th><th>Mortalidade acum. (%)</th><th>Postura ave-dia (%)</th><th>Ovos/ave-dia acum.</th><th>Ovos/ave alojada acum.</th><th>Massa de ovos (kg)</th><th>Peso do ovo (g)</th></tr></thead>
+                    <tbody>{layerAgeReferences.filter((item) => item.lineage === lineage).sort((a, b) => a.ageWeeks - b.ageWeeks).map((item) => <tr key={item.lineage + '-' + item.ageWeeks}>
+                      <td>{item.ageWeeks}</td><td>{item.phase}</td>
+                      <td>{formatRange(item.bodyWeightMinGrams, item.bodyWeightMaxGrams, 0)}</td>
+                      <td>{formatRange(item.dailyFeedMinGrams, item.dailyFeedMaxGrams)}</td>
+                      <td>{formatRange(item.dailyWaterMinMl, item.dailyWaterMaxMl, 0)}</td>
+                      <td>{item.cumulativeMortalityPercent === undefined ? '—' : formatNumber(item.cumulativeMortalityPercent, 2)}</td>
+                      <td>{formatRange(item.layRateMinPercent, item.layRateMaxPercent)}</td>
+                      <td>{formatRange(item.eggsPerHenDayMin, item.eggsPerHenDayMax)}</td>
+                      <td>{formatRange(item.eggsPerHenHousedMin, item.eggsPerHenHousedMax)}</td>
+                      <td>{formatRange(item.eggMassPerHenHousedMinKg, item.eggMassPerHenHousedMaxKg, 2)}</td>
+                      <td>{formatRange(item.averageEggWeightMinGrams, item.averageEggWeightMaxGrams)}</td>
+                    </tr>)}
+                    {layerAgeReferences.every((item) => item.lineage !== lineage) && <tr><td colSpan={11} className="table-empty">Não há valores estruturados para esta linhagem.</td></tr>}
+                    </tbody>
+                  </table>
+                </div>
+                <p className="table-footnote">Hy-Line Brown: 100 idades semanais documentadas (1–100). O guia não estabelece semana obrigatória de abate/descarte nem calendário vacinal. Os dados foram transcritos e permanecem pendentes de revisão técnica independente; “—” indica que a tabela não publica aquele indicador para a idade selecionada.</p>
+              </section>
             </>
           )}
           <div hidden={section !== 'overview'} className="dashboard-flock-section">
