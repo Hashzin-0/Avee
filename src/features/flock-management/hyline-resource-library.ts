@@ -37,7 +37,7 @@ export const hyLineTechnicalResources: readonly HyLineTechnicalResource[] = [
     title: 'Hy-Line Brown — Guia de Desempenho, Poedeiras Comerciais, Sistemas Alternativos',
     publisher: 'Hy-Line International', category: 'Desempenho', language: 'Português', pages: 20,
     edition: 'Maio de 2026 — Padrões Internacionais', housingApplicability: 'Sistemas alternativos; o guia discrimina piso e sistemas multiníveis em recomendações de alojamento.',
-    summary: 'Contém padrões de linhagem, tabelas semanais de recria (1–17) e produção (18–100), recomendações de espaço, qualidade e distribuição do tamanho dos ovos, manejo de cria e transição, iluminação, nutrição por número e peso de ovos, vitaminas, minerais-traço e qualidade da água. Semana 100 é o último marco de desempenho publicado; não é uma determinação de descarte.',
+    summary: 'Contém padrões de linhagem, tabelas semanais de recria (1–17) e produção (18–100), recomendações de espaço, qualidade e distribuição do tamanho dos ovos, manejo de cria e transição, iluminação, nutrição por número e peso de ovos, vitaminas, minerais-traço e qualidade da água. Na recria, a densidade de transferência indicada cai de 15 aves/m² na semana 15 para 12 aves/m² na semana 18. Na produção em piso, publica 7–9 aves/m²; para multiníveis, não fixa densidade única e remete ao fabricante. Semana 100 é o último marco de desempenho publicado, não uma determinação de descarte.',
     topics: ['Tabelas semanais 1–100', 'Densidade e equipamentos para piso/multinível', 'Iluminação e transição', 'Nutrição e água', 'Qualidade de ovos'],
     url: 'https://www.hyline.com/resources', extractionStatus: 'summary-extracted',
   },
