@@ -98,8 +98,14 @@ test('keeps Hy-Line Brown conventional and alternative performance standards sep
   assert.equal(getLayerAgeReference('Hy-Line Brown', 100, 'alternative')?.cumulativeMortalityPercent, 10.04);
   assert.equal(getLayerAgeReference('Hy-Line Brown', 18, 'alternative')?.dailyFeedMinGrams, 87);
   assert.equal(getLayerAgeReference('Hy-Line Brown', 18, 'alternative')?.dailyWaterMinMl, 130);
-  assert.equal(getLayerAgeReference('Hy-Line Brown', 2, 'alternative')?.uniformityMinPercent, 85);
-  assert.equal(getLayerAgeReference('Hy-Line Brown', 11, 'alternative')?.uniformityMinPercent, 85);
+  assert.equal(getLayerAgeReference('Hy-Line Brown', 1, 'alternative')?.uniformityMinPercent, 85);
+  assert.equal(getLayerAgeReference('Hy-Line Brown', 4, 'alternative')?.uniformityMinPercent, 85);
+  assert.equal(getLayerAgeReference('Hy-Line Brown', 5, 'alternative')?.uniformityMinPercent, 80);
+  assert.equal(getLayerAgeReference('Hy-Line Brown', 7, 'alternative')?.uniformityMinPercent, 80);
+  assert.equal(getLayerAgeReference('Hy-Line Brown', 8, 'alternative')?.uniformityMinPercent, 85);
+  assert.equal(getLayerAgeReference('Hy-Line Brown', 15, 'alternative')?.uniformityMinPercent, 85);
+  assert.equal(getLayerAgeReference('Hy-Line Brown', 16, 'alternative')?.uniformityMinPercent, 90);
+  assert.equal(getLayerAgeReference('Hy-Line Brown', 17, 'alternative')?.uniformityMinPercent, 90);
   assert.equal(getLayerAgeReference('Hy-Line Brown', 101, 'alternative'), null);
   assert.equal(getLayerGuideSource('Hy-Line Brown', 'alternative')?.id, 'hyline-brown-2026-alternative');
   assert.equal(getLayerAgeReference('Lohmann Brown-Classic', 24, 'alternative'), null);
