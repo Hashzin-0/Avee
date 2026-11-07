@@ -55,7 +55,7 @@ export type SourcedLayerAgeReference = LayerAgeReference & {
 };
 
 export const layerGuideSources: LayerGuideSource[] = [
-  { id: 'hyline-brown-2025-conventional', lineage: 'Hy-Line Brown', publisher: 'Hy-Line International', title: 'Hy-Line Brown Commercial Layers — Conventional Systems, International Standards', edition: 'Dezembro de 2025', url: 'https://www.hyline.com/filesimages/Hy-Line-Products/Hy-Line-Product-PDFs/Brown/BRN%20STD%20ENG.pdf', coverage: 'Sistemas convencionais. Tabela semanal de recria 1–17 semanas; tabela de produção semanal 18–100 incorporada em atualização separada. Não aplicar estes dados automaticamente a sistemas alternativos.', dataStatus: 'weekly-rearing', housingSystem: 'conventional' },
+  { id: 'hyline-brown-2025-conventional', lineage: 'Hy-Line Brown', publisher: 'Hy-Line International', title: 'Hy-Line Brown Commercial Layers — Conventional Systems, International Standards', edition: 'Dezembro de 2025', url: 'https://www.hyline.com/filesimages/Hy-Line-Products/Hy-Line-Product-PDFs/Brown/BRN%20STD%20ENG.pdf', coverage: 'Sistemas convencionais. Tabelas semanais completas de recria 1–17 e produção 18–100 semanas. Não aplicar estes dados automaticamente a sistemas alternativos.', dataStatus: 'weekly-rearing-and-production', housingSystem: 'conventional' },
   { id: 'hyline-brown-2026-alternative', lineage: 'Hy-Line Brown', publisher: 'Hy-Line International', title: 'Hy-Line Brown Commercial Layers — Alternative Systems, International Standards', edition: 'Maio de 2026', url: 'https://www.hyline.com/resources', coverage: 'Sistemas alternativos. Tabelas semanais de recria 1–17 e produção 18–100; inclui alojamento multinível e piso, manejo, iluminação, transição, nutrição, vitaminas, minerais e qualidade da água.', dataStatus: 'weekly-rearing-and-production', housingSystem: 'alternative' },
   { id: 'lohmann-brown-classic-2020', lineage: 'Lohmann Brown-Classic', publisher: 'LOHMANN BREEDERS', title: 'LOHMANN BROWN-CLASSIC Layers — Management Guide, Cage Housing', edition: 'Guia oficial publicado em 2020; consultar a edição vigente do fabricante', url: 'https://lohmann-breeders.com/media/2020/07/ManagementGuideLBClassicCage-EN.pdf', coverage: 'Metas publicadas de recria e produção, incluindo consumo total na recria, consumo diário em produção, peso, viabilidade e ovos por ave alojada.', dataStatus: 'milestones' },
   { id: 'novogen-brown-commercial-2024', lineage: 'NOVOgen Brown', publisher: 'NOVOGEN', title: 'Guía de Manejo para Ponedoras Comerciales — NOVOgen BROWN', edition: 'Documento 202402; versão em espanhol', url: 'https://novocenter.novogen-layers.com/wp-content/uploads/2021/11/202402-Guide_management_CS_Brown_V2-EScomp.pdf', coverage: 'O manual contém tabelas semanais de recria e produção; a estrutura atual inclui recria 1–17, pontos de produção 18–26/60/100 e faixa de consumo de 26–100 semanas. É o guia de poedeiras comerciais, não Parent Stock.', dataStatus: 'weekly-rearing' },
@@ -247,7 +247,4 @@ export function getLayerGuideSource(
   return layerGuideSources.find((source) =>
     source.lineage === lineage && (lineage !== 'Hy-Line Brown' || source.housingSystem === housingSystem),
   ) ?? null;
-}
-export function getLayerGuideSource(lineage: LayerLineage): LayerGuideSource | null {
-  return layerGuideSources.find((source) => source.lineage === lineage) ?? null;
 }
