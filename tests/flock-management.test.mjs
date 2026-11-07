@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { calculateFlockDashboard } from '../src/features/flock-management/domain.ts';
-import { getLayerAgeReference, getManagementPhase, layerGuideSources } from '../src/features/flock-management/management-library.ts';
+import { getLayerAgeReference, getManagementPhase, layerAgeReferences, layerGuideSources } from '../src/features/flock-management/management-library.ts';
+import { hyLineTechnicalResources } from '../src/features/flock-management/hyline-resource-library.ts';
 
 const base = {
   id: 'd1', date: '2026-11-01', deaths: 5, culls: 2,
@@ -78,4 +79,27 @@ test('provides source-backed Hy-Line Brown weekly rearing references and lineage
   assert.equal(getLayerAgeReference('NOVOgen Brown', 35)?.dailyFeedMaxGrams, 119);
   assert.equal(getLayerAgeReference('Lohmann Brown-Classic', 45)?.dailyFeedMaxGrams, 120);
   assert.equal(week12?.reviewStatus, 'transcribed-unreviewed');
+});
+
+
+test('keeps Hy-Line Brown conventional and alternative performance standards separate', () => {
+  const conventional = layerAgeReferences.filter((item) => item.lineage === 'Hy-Line Brown' && item.sourceId === 'hyline-brown-2025-conventional');
+  const alternative = layerAgeReferences.filter((item) => item.lineage === 'Hy-Line Brown' && item.sourceId === 'hyline-brown-2026-alternative');
+  assert.equal(conventional.length, 100);
+  assert.equal(alternative.length, 100);
+  assert.deepEqual(conventional.map((item) => item.ageWeeks).sort((a, b) => a - b), Array.from({ length: 100 }, (_, index) => index + 1));
+  assert.deepEqual(alternative.map((item) => item.ageWeeks).sort((a, b) => a - b), Array.from({ length: 100 }, (_, index) => index + 1));
+  assert.equal(getLayerAgeReference('Hy-Line Brown', 100, 'conventional')?.eggsPerHenHousedMax, 497.9);
+  assert.equal(getLayerAgeReference('Hy-Line Brown', 100, 'alternative')?.eggsPerHenHousedMax, 489.1);
+  assert.equal(getLayerAgeReference('Hy-Line Brown', 100, 'conventional')?.cumulativeMortalityPercent, 8.6);
+  assert.equal(getLayerAgeReference('Hy-Line Brown', 100, 'alternative')?.cumulativeMortalityPercent, 10.04);
+  assert.equal(getLayerAgeReference('Hy-Line Brown', 101, 'alternative'), null);
+  assert.equal(getLayerGuideSource('Hy-Line Brown', 'alternative')?.id, 'hyline-brown-2026-alternative');
+});
+
+test('catalogs Hy-Line PDFs with source, category, applicability and concise extraction', () => {
+  assert.ok(hyLineTechnicalResources.length >= 20);
+  assert.ok(hyLineTechnicalResources.every((resource) => resource.url.startsWith('https://')));
+  assert.ok(hyLineTechnicalResources.every((resource) => resource.summary.length > 50));
+  assert.ok(hyLineTechnicalResources.some((resource) => resource.id === 'vaccination-recommendations' && resource.language === 'Português'));
 });
