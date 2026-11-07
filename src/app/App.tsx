@@ -336,10 +336,11 @@ export function App() {
                 <div className="resource-card-meta"><span className="sample-count">{resource.category}</span><small>{resource.pages} pág. · {resource.language}</small></div>
                 <h3>{resource.title}</h3>
                 <small>{resource.publisher}{resource.edition ? ` · ${resource.edition}` : ''}</small>
+                {resource.sourceNote && <small className="resource-applicability">{resource.sourceNote}</small>}
                 <p>{resource.summary}</p>
                 <small className="resource-applicability">Aplicabilidade: {resource.housingApplicability}</small>
                 <div className="resource-topics">{resource.topics.map((topic) => <span key={topic}>{topic}</span>)}</div>
-                <a href={resource.url} target="_blank" rel="noreferrer">Abrir documento original</a>
+                <a href={resource.url} target="_blank" rel="noreferrer">{resource.sourceNote ? 'Consultar catálogo oficial' : 'Abrir documento original'}</a>
               </article>)}</div>
               <p className="table-footnote">Os resumos são notas técnicas originais e concisas, não cópias integrais dos PDFs. A página de recursos também contém versões em outros idiomas, cartazes, calculadoras e vídeos; itens equivalentes foram agrupados quando o conteúdo é duplicado. Recomendações sanitárias, vacinais e nutricionais dependem de avaliação profissional e contexto regional.</p>
             </>
