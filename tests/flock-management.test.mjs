@@ -101,6 +101,8 @@ test('keeps Hy-Line Brown conventional and alternative performance standards sep
   assert.equal(getLayerAgeReference('Hy-Line Brown', 11, 'alternative')?.uniformityMinPercent, 85);
   assert.equal(getLayerAgeReference('Hy-Line Brown', 101, 'alternative'), null);
   assert.equal(getLayerGuideSource('Hy-Line Brown', 'alternative')?.id, 'hyline-brown-2026-alternative');
+  assert.equal(getLayerAgeReference('Lohmann Brown-Classic', 24, 'alternative'), null);
+  assert.equal(getLayerGuideSource('Lohmann Brown-Classic', 'alternative'), null);
 });
 
 test('catalogs Hy-Line PDFs with source, category, applicability and concise extraction', () => {
