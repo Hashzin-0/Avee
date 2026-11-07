@@ -56,6 +56,11 @@ function formatNumber(value: number, digits = 0) {
   return new Intl.NumberFormat('pt-BR', { maximumFractionDigits: digits, minimumFractionDigits: digits }).format(value);
 }
 
+function formatRange(min?: number, max?: number, digits = 1) {
+  if (min === undefined || max === undefined) return '—';
+  return min === max ? formatNumber(min, digits) : `${formatNumber(min, digits)}–${formatNumber(max, digits)}`;
+}
+
 function Metric({ label, value, detail, icon: Icon }: { label: string; value: string; detail: string; icon: typeof Bird }) {
   return (
     <article className="metric-card">
