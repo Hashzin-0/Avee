@@ -130,9 +130,9 @@ export function getLayerTechnicalRecommendation(input: {
     if (housingSystem === 'Aviário / multinível' && ageWeeks >= 18 && ageWeeks <= 100) {
       return {
         ...input, reviewStatus: 'transcribed-unreviewed', ageRangeLabel: '18–100 semanas',
-        values: { birdsPerNipple: 12.5, feederCmPerBird: 2.5 },
+        values: { birdsPerNipple: 10, feederCmPerBird: 5 },
         source: HYLINE_BROWN_ALTERNATIVE,
-        note: 'O guia de sistemas alternativos (maio de 2026, p. 7) não fixa uma densidade única de aves/m² para aviários; informa que densidades maiores podem ser utilizadas conforme o fabricante do equipamento. Para multiníveis, publica 12,5 aves por nipple, 2,5 cm/ave de comedouro com acesso bilateral (ou 5 cm/ave com acesso por um lado) e 10–15 cm/ave de poleiro. Não foi preenchida densidade de alojamento.',
+        note: 'O guia de sistemas alternativos (maio de 2026, p. 7) não fixa uma densidade única de aves/m² para aviários; informa que densidades maiores podem ser utilizadas conforme o fabricante do equipamento. Para produção em multiníveis, a tabela de alojamento publica 1 nipple/copo para 10 aves, 5 cm/ave de comedouro com acesso bilateral (ou 10 cm/ave com acesso por um lado) e 10–15 cm/ave de poleiro. Não foi preenchida densidade de alojamento.',
       };
     }
   }
