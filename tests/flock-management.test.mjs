@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { calculateFlockDashboard } from '../src/features/flock-management/domain.ts';
 import { getLayerAgeReference, getLayerGuideSource, getManagementPhase, layerAgeReferences, layerGuideSources } from '../src/features/flock-management/management-library.ts';
 import { hyLineTechnicalResources } from '../src/features/flock-management/hyline-resource-library.ts';
+import { getLayerTechnicalRecommendation } from '../src/features/farm-builder/technical-recommendations.ts';
 
 const base = {
   id: 'd1', date: '2026-11-01', deaths: 5, culls: 2,
@@ -110,4 +111,39 @@ test('catalogs Hy-Line PDFs with source, category, applicability and concise ext
   assert.ok(hyLineTechnicalResources.every((resource) => resource.url.startsWith('https://')));
   assert.ok(hyLineTechnicalResources.every((resource) => resource.summary.length > 50));
   assert.ok(hyLineTechnicalResources.some((resource) => resource.id === 'vaccination-recommendations' && resource.language === 'Português'));
+});
+
+
+test('uses documented 2026 alternative housing coefficients without inventing aviary density', () => {
+  const floor = getLayerTechnicalRecommendation({
+    lineage: 'Hy-Line Brown',
+    housingSystem: 'Sistema de piso',
+    phase: 'Produção',
+    ageWeeks: 24,
+    climateProfile: 'Outro / não informado',
+  });
+  assert.equal(floor?.values.areaPerBirdCm2, 1429);
+  assert.equal(floor?.values.birdsPerNipple, 10);
+  assert.equal(floor?.values.feederCmPerBird, 10);
+  assert.equal(floor?.source.edition, 'Maio de 2026');
+  assert.equal(floor?.reviewStatus, 'transcribed-unreviewed');
+
+  const aviary = getLayerTechnicalRecommendation({
+    lineage: 'Hy-Line Brown',
+    housingSystem: 'Aviário / multinível',
+    phase: 'Produção',
+    ageWeeks: 24,
+    climateProfile: 'Outro / não informado',
+  });
+  assert.equal(aviary?.values.areaPerBirdCm2, undefined);
+  assert.equal(aviary?.values.birdsPerNipple, 10);
+  assert.equal(aviary?.values.feederCmPerBird, 5);
+
+  assert.equal(getLayerTechnicalRecommendation({
+    lineage: 'Hy-Line Brown',
+    housingSystem: 'Gaiolas enriquecidas',
+    phase: 'Produção',
+    ageWeeks: 24,
+    climateProfile: 'Outro / não informado',
+  }), null);
 });
