@@ -217,6 +217,7 @@ export function getLayerAgeReference(
   housingSystem: 'conventional' | 'alternative' = 'conventional',
 ): SourcedLayerAgeReference | null {
   if (!Number.isFinite(ageWeeks) || ageWeeks < 0) return null;
+  if (lineage !== 'Hy-Line Brown' && housingSystem === 'alternative') return null;
   const exact = layerAgeReferences.find((item) =>
     item.lineage === lineage
     && item.ageWeeks === Math.floor(ageWeeks)
@@ -246,6 +247,7 @@ export function getLayerGuideSource(
   lineage: LayerLineage,
   housingSystem: 'conventional' | 'alternative' = 'conventional',
 ): LayerGuideSource | null {
+  if (lineage !== 'Hy-Line Brown' && housingSystem === 'alternative') return null;
   return layerGuideSources.find((source) =>
     source.lineage === lineage && (lineage !== 'Hy-Line Brown' || source.housingSystem === housingSystem),
   ) ?? null;
