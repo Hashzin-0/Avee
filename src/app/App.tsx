@@ -305,9 +305,10 @@ export function App() {
                 </div>
                 <div className="table-wrap guide-standards-table">
                   <table>
-                    <thead><tr><th>Sem.</th><th>Fase</th><th>Peso corporal (g)</th><th>Ração (g/ave/dia)</th><th>Água (ml/ave/dia)</th><th>Mortalidade acum. (%)</th><th>Postura ave-dia (%)</th><th>Ovos/ave-dia acum.</th><th>Ovos/ave alojada acum.</th><th>Massa de ovos (kg)</th><th>Peso do ovo (g)</th></tr></thead>
+                    <thead><tr><th>Sem.</th><th>Fase</th><th>Uniformidade mínima (%)</th><th>Peso corporal (g)</th><th>Ração (g/ave/dia)</th><th>Água (ml/ave/dia)</th><th>Mortalidade acum. (%)</th><th>Postura ave-dia (%)</th><th>Ovos/ave-dia acum.</th><th>Ovos/ave alojada acum.</th><th>Massa de ovos (kg)</th><th>Peso do ovo (g)</th></tr></thead>
                     <tbody>{layerAgeReferences.filter((item) => item.lineage === 'Hy-Line Brown' && item.sourceId === (libraryHousingSystem === 'alternative' ? 'hyline-brown-2026-alternative' : 'hyline-brown-2025-conventional')).sort((a, b) => a.ageWeeks - b.ageWeeks).map((item) => <tr key={item.sourceId + '-' + item.ageWeeks}>
                       <td>{item.ageWeeks}</td><td>{item.phase}</td>
+                      <td>{item.uniformityMinPercent === undefined ? '—' : `> ${formatNumber(item.uniformityMinPercent, 0)}`}</td>
                       <td>{formatRange(item.bodyWeightMinGrams, item.bodyWeightMaxGrams, 0)}</td>
                       <td>{formatRange(item.dailyFeedMinGrams, item.dailyFeedMaxGrams)}</td>
                       <td>{formatRange(item.dailyWaterMinMl, item.dailyWaterMaxMl, 0)}</td>
