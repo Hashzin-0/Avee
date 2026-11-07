@@ -112,7 +112,7 @@ export function App() {
   const [manualOverrides, setManualOverrides] = useState<Set<TechnicalParameterKey>>(() => new Set());
   const alternativeHousing = housingSystem === 'Sistema de piso' || housingSystem === 'Aviário / multinível' || housingSystem === 'Free-range';
   const flockReferenceSystem = housingSystem === 'Gaiolas enriquecidas' ? 'unsupported' : housingSystem === 'Gaiolas convencionais' ? 'conventional' : 'alternative';
-  const performanceProfile = useMemo(() => lineage === 'Hy-Line Brown' && alternativeHousing ? null : getLayerPerformanceProfile(lineage), [lineage, alternativeHousing]);
+  const performanceProfile = useMemo(() => housingSystem === 'Gaiolas convencionais' ? getLayerPerformanceProfile(lineage) : null, [lineage, housingSystem]);
   const technicalRecommendation = useMemo(() => getLayerTechnicalRecommendation({ lineage, housingSystem, phase: productionPhase, ageWeeks, climateProfile }), [lineage, housingSystem, productionPhase, ageWeeks, climateProfile]);
 
   useEffect(() => {
