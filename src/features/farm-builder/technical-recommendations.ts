@@ -1,5 +1,5 @@
 export type LayerLineage = 'Hy-Line Brown' | 'Hy-Line W-36' | 'Lohmann Brown-Classic' | 'NOVOgen Brown' | 'Outra / não definida';
-export type HousingSystem = 'Gaiolas convencionais' | 'Gaiolas enriquecidas' | 'Sistema de piso' | 'Free-range';
+export type HousingSystem = 'Gaiolas convencionais' | 'Gaiolas enriquecidas' | 'Sistema de piso' | 'Aviário / multinível' | 'Free-range';
 export type ProductionPhase = 'Cria' | 'Recria' | 'Pré-postura' | 'Produção';
 export type ClimateProfile = 'Quente' | 'Temperado' | 'Frio' | 'Outro / não informado';
 
