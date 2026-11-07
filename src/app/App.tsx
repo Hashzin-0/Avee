@@ -104,6 +104,7 @@ export function App() {
   const [libraryHousingSystem, setLibraryHousingSystem] = useState<'conventional' | 'alternative'>('conventional');
   const [resourceQuery, setResourceQuery] = useState('');
   const [resourceCategory, setResourceCategory] = useState('Todas');
+  const [resourceLanguage, setResourceLanguage] = useState('Todos');
   const [housingSystem, setHousingSystem] = useState<HousingSystem>('Gaiolas convencionais');
   const [ageWeeks, setAgeWeeks] = useState(24);
   const productionPhase = Number.isFinite(ageWeeks) && ageWeeks >= 0 ? getManagementPhase(ageWeeks) : 'Cria';
@@ -329,10 +330,12 @@ export function App() {
               <div className="resource-library-filters">
                 <label className="search-field"><Search size={17} /><input value={resourceQuery} onChange={(event) => setResourceQuery(event.target.value)} placeholder="Buscar título, assunto ou palavra-chave" /></label>
                 <label className="field"><span>Categoria</span><select value={resourceCategory} onChange={(event) => setResourceCategory(event.target.value)}><option>Todas</option>{Array.from(new Set(hyLineTechnicalResources.map((resource) => resource.category))).sort().map((category) => <option key={category}>{category}</option>)}</select></label>
+                <label className="field"><span>Idioma</span><select value={resourceLanguage} onChange={(event) => setResourceLanguage(event.target.value)}><option>Todos</option>{Array.from(new Set(hyLineTechnicalResources.map((resource) => resource.language))).sort().map((language) => <option key={language}>{language}</option>)}</select></label>
               </div>
-              <div className="resource-library-grid">{hyLineTechnicalResources.filter((resource) => (resourceCategory === 'Todas' || resource.category === resourceCategory) && (resource.title + ' ' + resource.summary + ' ' + resource.topics.join(' ')).toLocaleLowerCase().includes(resourceQuery.toLocaleLowerCase())).map((resource) => <article className="panel resource-library-card" key={resource.id}>
+              <div className="resource-library-grid">{hyLineTechnicalResources.filter((resource) => (resourceCategory === 'Todas' || resource.category === resourceCategory) && (resourceLanguage === 'Todos' || resource.language === resourceLanguage) && (resource.title + ' ' + resource.summary + ' ' + resource.topics.join(' ')).toLocaleLowerCase().includes(resourceQuery.toLocaleLowerCase())).map((resource) => <article className="panel resource-library-card" key={resource.id}>
                 <div className="resource-card-meta"><span className="sample-count">{resource.category}</span><small>{resource.pages} pág. · {resource.language}</small></div>
                 <h3>{resource.title}</h3>
+                <small>{resource.publisher}{resource.edition ? ` · ${resource.edition}` : ''}</small>
                 <p>{resource.summary}</p>
                 <small className="resource-applicability">Aplicabilidade: {resource.housingApplicability}</small>
                 <div className="resource-topics">{resource.topics.map((topic) => <span key={topic}>{topic}</span>)}</div>
