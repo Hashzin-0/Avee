@@ -274,3 +274,8 @@ td { padding: 11px 8px; border-bottom: 1px solid #f0f3f0; color: #536158; font-s
 .guide-library-card a { display: inline-block; margin-top: 8px; color: #3c7951; font-size: 9px; font-weight: 700; text-decoration: underline; }
 @media (max-width: 780px) { .flock-entry-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .guide-library-grid { grid-template-columns: 1fr; } }
 @media (max-width: 480px) { .flock-entry-grid, .flock-metrics-grid { grid-template-columns: 1fr; } }
+
+
+.dashboard-flock-section:not([hidden]) { display: grid; gap: 14px; }
+.dashboard-flock-settings { padding: 14px 18px 0; }
+.dashboard-flock-settings .field-grid { margin-bottom: 0; }
