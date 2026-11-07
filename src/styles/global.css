@@ -287,7 +287,7 @@ td { padding: 11px 8px; border-bottom: 1px solid #f0f3f0; color: #536158; font-s
 .guide-standards-table { max-height: 560px; overflow: auto; }
 .guide-standards-table table { min-width: 1180px; }
 .guide-standards-table thead { position: sticky; top: 0; z-index: 1; }
-.resource-library-filters { display: grid; grid-template-columns: minmax(240px, 2fr) minmax(190px, 1fr); gap: 14px; margin-bottom: 16px; }
+.resource-library-filters { display: grid; grid-template-columns: minmax(240px, 2fr) minmax(170px, 1fr) minmax(150px, 1fr); gap: 14px; margin-bottom: 16px; }
 .resource-library-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 16px; }
 .resource-library-card { display: flex; flex-direction: column; gap: 10px; padding: 18px; }
 .resource-card-meta { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
