@@ -180,7 +180,7 @@ const hylineBrownAlternativeRearing: SourcedLayerAgeReference[] = hyLineBrownAlt
   cumulativeMortalityPercent: row[1], bodyWeightMinGrams: row[2], bodyWeightMaxGrams: row[3],
   dailyWaterMinMl: row[4], dailyWaterMaxMl: row[5], dailyFeedMinGrams: row[6], dailyFeedMaxGrams: row[7],
   cumulativeFeedMinGrams: row[8] * 1000, cumulativeFeedMaxGrams: row[9] * 1000,
-  uniformityMinPercent: ({ 2: 85, 5: 80, 11: 85, 17: 90 } as Record<number, number>)[row[0]],
+  uniformityMinPercent: row[0] <= 4 ? 85 : row[0] <= 7 ? 80 : row[0] <= 15 ? 85 : 90,
   sourceId: 'hyline-brown-2026-alternative', page: '4',
   housingSystemApplicability: 'Sistemas alternativos; metas de desempenho do guia de maio de 2026.',
   reviewStatus: 'transcribed-unreviewed',
