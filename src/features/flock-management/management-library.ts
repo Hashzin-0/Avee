@@ -1,4 +1,5 @@
 import type { LayerLineage } from '../farm-builder/technical-recommendations';
+import { hyLineBrownAlternativeProductionRows, hyLineBrownAlternativeRearingRows } from './hyline-brown-alternative';
 
 export type ManagementPhase = 'Cria' | 'Recria' | 'Pré-postura' | 'Produção';
 
@@ -10,7 +11,8 @@ export type LayerGuideSource = {
   edition: string;
   url: string;
   coverage: string;
-  dataStatus: 'weekly-rearing' | 'milestones';
+  dataStatus: 'weekly-rearing' | 'weekly-rearing-and-production' | 'milestones';
+  housingSystem: 'conventional' | 'alternative';
 };
 
 export type LayerAgeReference = {
@@ -50,7 +52,8 @@ export type SourcedLayerAgeReference = LayerAgeReference & {
 };
 
 export const layerGuideSources: LayerGuideSource[] = [
-  { id: 'hyline-brown-2025', lineage: 'Hy-Line Brown', publisher: 'Hy-Line International', title: 'Hy-Line Brown Commercial Layers — International Standards', edition: 'Dezembro de 2025', url: 'https://www.hyline.com/filesimages/Hy-Line-Products/Hy-Line-Product-PDFs/Brown/BRN%20STD%20ENG.pdf', coverage: 'Tabela semanal de recria 1–17 semanas; estrutura atual inclui marcos de produção 18, 24, 60 e 100 semanas e faixa média de consumo de 19–100 semanas.', dataStatus: 'weekly-rearing' },
+  { id: 'hyline-brown-2025-conventional', lineage: 'Hy-Line Brown', publisher: 'Hy-Line International', title: 'Hy-Line Brown Commercial Layers — Conventional Systems, International Standards', edition: 'Dezembro de 2025', url: 'https://www.hyline.com/filesimages/Hy-Line-Products/Hy-Line-Product-PDFs/Brown/BRN%20STD%20ENG.pdf', coverage: 'Sistemas convencionais. Tabela semanal de recria 1–17 semanas; tabela de produção semanal 18–100 incorporada em atualização separada. Não aplicar estes dados automaticamente a sistemas alternativos.', dataStatus: 'weekly-rearing', housingSystem: 'conventional' },
+  { id: 'hyline-brown-2026-alternative', lineage: 'Hy-Line Brown', publisher: 'Hy-Line International', title: 'Hy-Line Brown Commercial Layers — Alternative Systems, International Standards', edition: 'Maio de 2026', url: 'https://www.hyline.com/resources', coverage: 'Sistemas alternativos. Tabelas semanais de recria 1–17 e produção 18–100; inclui alojamento multinível e piso, manejo, iluminação, transição, nutrição, vitaminas, minerais e qualidade da água.', dataStatus: 'weekly-rearing-and-production', housingSystem: 'alternative' },
   { id: 'lohmann-brown-classic-2020', lineage: 'Lohmann Brown-Classic', publisher: 'LOHMANN BREEDERS', title: 'LOHMANN BROWN-CLASSIC Layers — Management Guide, Cage Housing', edition: 'Guia oficial publicado em 2020; consultar a edição vigente do fabricante', url: 'https://lohmann-breeders.com/media/2020/07/ManagementGuideLBClassicCage-EN.pdf', coverage: 'Metas publicadas de recria e produção, incluindo consumo total na recria, consumo diário em produção, peso, viabilidade e ovos por ave alojada.', dataStatus: 'milestones' },
   { id: 'novogen-brown-commercial-2024', lineage: 'NOVOgen Brown', publisher: 'NOVOGEN', title: 'Guía de Manejo para Ponedoras Comerciales — NOVOgen BROWN', edition: 'Documento 202402; versão em espanhol', url: 'https://novocenter.novogen-layers.com/wp-content/uploads/2021/11/202402-Guide_management_CS_Brown_V2-EScomp.pdf', coverage: 'O manual contém tabelas semanais de recria e produção; a estrutura atual inclui recria 1–17, pontos de produção 18–26/60/100 e faixa de consumo de 26–100 semanas. É o guia de poedeiras comerciais, não Parent Stock.', dataStatus: 'weekly-rearing' },
   { id: 'hyline-w36-commercial', lineage: 'Hy-Line W-36', publisher: 'Hy-Line International', title: 'Hy-Line W-36 Commercial Layers — Performance Standards', edition: 'Janeiro de 2020; confirmar edição vigente na página de literatura W-36', url: 'https://www.hyline.com/filesimages/Hy-Line-Products/Hy-Line-Product-PDFs/W-36/36%20COM%20ENG.pdf', coverage: 'Tabela semanal de recria (1–17 semanas), marcos de produção e consumo médio de produção; manual inclui tabelas até 100 semanas.', dataStatus: 'weekly-rearing' },
@@ -154,27 +157,66 @@ const milestoneReferences: LayerAgeReference[] = [
 ];
 
 const sourceMetadata: Record<LayerLineage, { id: string; pageForAge: (ageWeeks: number) => string; housing: string }> = {
-  'Hy-Line Brown': { id: 'hyline-brown-2025', pageForAge: (age) => age <= 17 ? '4' : '5–6', housing: 'Sistemas convencionais; os dados de performance não substituem recomendações específicas de alojamento.' },
+  'Hy-Line Brown': { id: 'hyline-brown-2025-conventional', pageForAge: (age) => age <= 17 ? '4' : '5–6', housing: 'Sistema convencional; não aplicar a gaiolas enriquecidas, piso, aviário ou free-range sem fonte específica.' },
   'Lohmann Brown-Classic': { id: 'lohmann-brown-classic-2020', pageForAge: () => '7', housing: 'Gaiolas convencionais; não extrapolar para alojamento alternativo.' },
   'NOVOgen Brown': { id: 'novogen-brown-commercial-2024', pageForAge: (age) => age <= 17 ? '38' : '41', housing: 'Poedeiras comerciais; confirmar sistema e clima nas recomendações de alojamento do manual.' },
   'Hy-Line W-36': { id: 'hyline-w36-commercial', pageForAge: (age) => age <= 48 ? '2' : '3', housing: 'Sistemas convencionais; confirmar o guia de alojamento antes de dimensionar equipamentos.' },
   'Outra / não definida': { id: 'unsupported', pageForAge: () => '—', housing: 'Sem aplicabilidade definida.' },
 };
 
-export const layerAgeReferences: SourcedLayerAgeReference[] = [...hylineRearing, ...hylineProductionMilestones, ...hylineW36Rearing, ...hylineW36ProductionMilestones, ...novogenRearing, ...milestoneReferences]
+const hylineBrownAlternativeRearing: LayerAgeReference[] = hyLineBrownAlternativeRearingRows.map((row) => ({
+  lineage: 'Hy-Line Brown', ageWeeks: row[0], phase: getManagementPhase(row[0]),
+  cumulativeMortalityPercent: row[1], bodyWeightMinGrams: row[2], bodyWeightMaxGrams: row[3],
+  dailyWaterMinMl: row[4], dailyWaterMaxMl: row[5], dailyFeedMinGrams: row[6], dailyFeedMaxGrams: row[7],
+  cumulativeFeedMinGrams: row[8] * 1000, cumulativeFeedMaxGrams: row[9] * 1000,
+  sourceId: 'hyline-brown-2026-alternative', page: '4',
+  housingSystemApplicability: 'Sistemas alternativos; metas de desempenho do guia de maio de 2026.',
+  reviewStatus: 'transcribed-unreviewed',
+}));
+
+const hylineBrownAlternativeProduction: LayerAgeReference[] = hyLineBrownAlternativeProductionRows.map((row) => ({
+  lineage: 'Hy-Line Brown', ageWeeks: row[0], phase: 'Produção',
+  layRateMinPercent: row[1], layRateMaxPercent: row[2],
+  eggsPerHenDayMin: row[3], eggsPerHenDayMax: row[4],
+  eggsPerHenHousedMin: row[5], eggsPerHenHousedMax: row[6],
+  cumulativeMortalityPercent: row[7], bodyWeightMinGrams: row[8], bodyWeightMaxGrams: row[9],
+  dailyWaterMinMl: row[10], dailyWaterMaxMl: row[11], dailyFeedMinGrams: row[12], dailyFeedMaxGrams: row[13],
+  eggMassPerHenHousedMinKg: row[14], eggMassPerHenHousedMaxKg: row[15],
+  averageEggWeightMinGrams: row[16], averageEggWeightMaxGrams: row[17],
+  sourceId: 'hyline-brown-2026-alternative', page: '5–6',
+  housingSystemApplicability: 'Sistemas alternativos; metas de desempenho do guia de maio de 2026.',
+  reviewStatus: 'transcribed-unreviewed',
+}));
+
+const conventionalReferences = [...hylineRearing, ...hylineProductionMilestones, ...hylineW36Rearing, ...hylineW36ProductionMilestones, ...novogenRearing, ...milestoneReferences]
   .map((reference) => {
     const metadata = sourceMetadata[reference.lineage];
     return { ...reference, sourceId: metadata.id, page: metadata.pageForAge(reference.ageWeeks), housingSystemApplicability: metadata.housing, reviewStatus: 'transcribed-unreviewed' as const };
   });
 
-export function getLayerAgeReference(lineage: LayerLineage, ageWeeks: number): SourcedLayerAgeReference | null {
+export const layerAgeReferences: SourcedLayerAgeReference[] = [
+  ...conventionalReferences,
+  ...hylineBrownAlternativeRearing,
+  ...hylineBrownAlternativeProduction,
+];
+export function getLayerAgeReference(
+  lineage: LayerLineage,
+  ageWeeks: number,
+  housingSystem: 'conventional' | 'alternative' = 'conventional',
+): SourcedLayerAgeReference | null {
   if (!Number.isFinite(ageWeeks) || ageWeeks < 0) return null;
-  const exact = layerAgeReferences.find((item) => item.lineage === lineage && item.ageWeeks === Math.floor(ageWeeks));
+  const exact = layerAgeReferences.find((item) =>
+    item.lineage === lineage
+    && item.ageWeeks === Math.floor(ageWeeks)
+    && (lineage !== 'Hy-Line Brown' || (housingSystem === 'alternative'
+      ? item.sourceId === 'hyline-brown-2026-alternative'
+      : item.sourceId === 'hyline-brown-2025-conventional')),
+  );
   if (exact) return exact;
 
   const metadata = sourceMetadata[lineage];
-  if (lineage === 'Hy-Line Brown' && ageWeeks >= 19 && ageWeeks <= 100) {
-    return { lineage, ageWeeks, ageRangeLabel: '19–100 semanas', phase: 'Produção', dailyFeedMinGrams: 109.1, dailyFeedMaxGrams: 116.9, sourceId: metadata.id, page: '3', housingSystemApplicability: metadata.housing, reviewStatus: 'transcribed-unreviewed', note: 'Média diária publicada para o período completo de 19 a 100 semanas; não representa uma meta individual semanal.' };
+  if (lineage === 'Hy-Line Brown' && housingSystem === 'conventional' && ageWeeks >= 19 && ageWeeks <= 100) {
+    return { lineage, ageWeeks, ageRangeLabel: '19–100 semanas', phase: 'Produção', dailyFeedMinGrams: 109.1, dailyFeedMaxGrams: 116.9, sourceId: metadata.id, page: '3', housingSystemApplicability: metadata.housing, reviewStatus: 'transcribed-unreviewed', note: 'Faixa média diária publicada no resumo do guia convencional; não representa uma meta individual semanal.' };
   }
   if (lineage === 'Lohmann Brown-Classic' && ageWeeks >= 20 && ageWeeks <= 95) {
     return { lineage, ageWeeks, ageRangeLabel: 'Período de produção', phase: 'Produção', dailyFeedMinGrams: 110, dailyFeedMaxGrams: 120, sourceId: metadata.id, page: '7', housingSystemApplicability: metadata.housing, reviewStatus: 'transcribed-unreviewed', note: 'Faixa diária geral publicada para produção; o guia não discrimina o consumo em cada semana nesta tabela.' };
@@ -188,6 +230,14 @@ export function getLayerAgeReference(lineage: LayerLineage, ageWeeks: number): S
   return null;
 }
 
+export function getLayerGuideSource(
+  lineage: LayerLineage,
+  housingSystem: 'conventional' | 'alternative' = 'conventional',
+): LayerGuideSource | null {
+  return layerGuideSources.find((source) =>
+    source.lineage === lineage && (lineage !== 'Hy-Line Brown' || source.housingSystem === housingSystem),
+  ) ?? null;
+}
 export function getLayerGuideSource(lineage: LayerLineage): LayerGuideSource | null {
   return layerGuideSources.find((source) => source.lineage === lineage) ?? null;
 }
