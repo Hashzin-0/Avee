@@ -26,6 +26,7 @@ export type HyLineTechnicalResource = {
   summary: string;
   topics: string[];
   url: string;
+  sourceNote?: string;
   extractionStatus: 'summary-extracted' | 'source-indexed';
 };
 
@@ -39,7 +40,7 @@ export const hyLineTechnicalResources: readonly HyLineTechnicalResource[] = [
     edition: 'Maio de 2026 — Padrões Internacionais', housingApplicability: 'Sistemas alternativos; o guia discrimina piso e sistemas multiníveis em recomendações de alojamento.',
     summary: 'Contém padrões de linhagem, tabelas semanais de recria (1–17) e produção (18–100), recomendações de espaço, qualidade e distribuição do tamanho dos ovos, manejo de cria e transição, iluminação, nutrição por número e peso de ovos, vitaminas, minerais-traço e qualidade da água. Na recria, a densidade de transferência indicada cai de 15 aves/m² na semana 15 para 12 aves/m² na semana 18. Na produção em piso, publica 7–9 aves/m²; para multiníveis, não fixa densidade única e remete ao fabricante. Semana 100 é o último marco de desempenho publicado, não uma determinação de descarte.',
     topics: ['Tabelas semanais 1–100', 'Densidade e equipamentos para piso/multinível', 'Iluminação e transição', 'Nutrição e água', 'Qualidade de ovos'],
-    url: 'https://www.hyline.com/resources', extractionStatus: 'summary-extracted',
+    url: 'https://www.hyline.com/resources', sourceNote: 'PDF anexado à conversa, edição maio de 2026. O link abre o catálogo oficial; o endereço direto deste arquivo específico não foi confirmado.', extractionStatus: 'summary-extracted',
   },
   {
     id: 'brown-conventional-2025',
@@ -553,6 +554,15 @@ export const hyLineTechnicalResources: readonly HyLineTechnicalResource[] = [
     summary: 'Revisa a emergência e disseminação global do clado H5 2.3.4.4b, circulação em aves domésticas e silvestres, eventos de recombinação, risco zoonótico, vigilância, diagnóstico e controle. Por ser uma atualização epidemiológica, não usar como retrato em tempo real da situação sanitária.',
     topics: ['Influenza aviária de alta patogenicidade', 'H5N1', 'Clado 2.3.4.4b', 'Vigilância', 'Biossegurança'],
     url: 'https://www.hyline.com/Upload/Resources/TU%20HPAIV%20Update%20SPN.pdf', extractionStatus: 'summary-extracted',
+  },
+  {
+    id: 'brown-alternative-management-2024',
+    title: 'Hy-Line Brown — Sistemas Alternativos, Guia de Desempenho e Manejo',
+    publisher: 'Hy-Line International', category: 'Desempenho', language: 'Português', pages: 20,
+    edition: 'Janeiro de 2024', housingApplicability: 'Sistemas alternativos; guia anterior ao documento de padrões de maio de 2026.',
+    summary: 'Guia completo de sistemas alternativos com padrões de linhagem e tabelas semanais de recria e produção até 90 semanas, recomendações de espaço para recria e produção, qualidade e tamanho do ovo, manejo de cria e transição, programas de iluminação, nutrição por desempenho econômico e ideal, vitaminas, minerais-traço e água. É uma edição distinta do PDF de maio de 2026, que acompanha o lote até a semana 100; não misturar suas metas.',
+    topics: ['Padrões de desempenho até 90 semanas', 'Densidade de piso e multinível', 'Iluminação', 'Nutrição', 'Água', 'Manejo alternativo'],
+    url: 'https://www.hyline.com/filesimages/Hy-Line-Products/Hy-Line-Product-PDFs/Brown/Brown%20Alt/HLB%20ALT%20STD%20POR.pdf', extractionStatus: 'summary-extracted',
   }
 ];
 
