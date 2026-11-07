@@ -32,6 +32,8 @@ export type LayerAgeReference = {
   cumulativeFeedMaxGrams?: number;
   layRateMinPercent?: number;
   layRateMaxPercent?: number;
+  eggsPerHenDayMin?: number;
+  eggsPerHenDayMax?: number;
   eggsPerHenHousedMin?: number;
   eggsPerHenHousedMax?: number;
   averageEggWeightMinGrams?: number;
