@@ -78,6 +78,11 @@ test('provides source-backed Hy-Line Brown weekly rearing references and lineage
   assert.equal(getLayerAgeReference('NOVOgen Brown', 35)?.dailyFeedMaxGrams, 119);
   assert.equal(getLayerAgeReference('Lohmann Brown-Classic', 45)?.dailyFeedMaxGrams, 120);
   assert.equal(week12?.reviewStatus, 'transcribed-unreviewed');
+  assert.equal(getLayerAgeReference('Hy-Line Brown', 2)?.uniformityMinPercent, 85);
+  assert.equal(getLayerAgeReference('Hy-Line Brown', 5)?.uniformityMinPercent, 80);
+  assert.equal(getLayerAgeReference('Hy-Line Brown', 7)?.uniformityMinPercent, 85);
+  assert.equal(getLayerAgeReference('Hy-Line Brown', 17)?.uniformityMinPercent, 90);
+  assert.equal(getLayerAgeReference('Hy-Line Brown', 12)?.uniformityMinPercent, undefined);
 });
 
 
