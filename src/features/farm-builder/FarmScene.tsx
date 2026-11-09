@@ -12,7 +12,7 @@ interface FarmSceneProps {
   fans?: number;
 }
 
-function House({ length, width, sideHeight, ridgeHeight, rows }: FarmSceneProps) {
+function House({ length, width, sideHeight, ridgeHeight, rows, fans }: FarmSceneProps) {
   const safeLength = Math.max(length, 1);
   const safeWidth = Math.max(width, 1);
   const safeRows = Math.max(0, Math.floor(rows));
