@@ -230,7 +230,18 @@ export function getLayerAgeReference(
 ): SourcedLayerAgeReference | null {
   if (!Number.isFinite(ageWeeks) || ageWeeks < 0) return null;
   if (lineage === 'Hy-Line Brown' && ageWeeks > 100) return null;
-  const exact = layerAgeReferences.find((item) => item.lineage === lineage && item.ageWeeks === Math.floor(ageWeeks));
+  if (housingSystem === 'alternative' && lineage !== 'Hy-Line Brown') return null;
+
+  const expectedSourceId = lineage === 'Hy-Line Brown'
+    ? housingSystem === 'alternative'
+      ? 'hyline-brown-2026-alternative'
+      : 'hyline-brown-2025-conventional'
+    : undefined;
+  const exact = layerAgeReferences.find((item) =>
+    item.lineage === lineage &&
+    item.ageWeeks === Math.floor(ageWeeks) &&
+    (expectedSourceId === undefined || item.sourceId === expectedSourceId),
+  );
   if (exact) return exact;
 
   const metadata = sourceMetadata[lineage];

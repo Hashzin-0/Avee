@@ -175,3 +175,21 @@ test('uses documented 2026 alternative housing coefficients without inventing av
     climateProfile: 'Outro / não informado',
   }), null);
 });
+
+
+test('selects Hy-Line Brown age references only from the requested housing system', () => {
+  const conventional = getLayerAgeReference('Hy-Line Brown', 12, 'conventional');
+  const alternative = getLayerAgeReference('Hy-Line Brown', 12, 'alternative');
+  const fractionalAlternative = getLayerAgeReference('Hy-Line Brown', 12.5, 'alternative');
+
+  assert.equal(conventional?.sourceId, 'hyline-brown-2025-conventional');
+  assert.equal(alternative?.sourceId, 'hyline-brown-2026-alternative');
+  assert.equal(fractionalAlternative?.sourceId, 'hyline-brown-2026-alternative');
+  assert.equal(fractionalAlternative?.ageWeeks, 12);
+});
+
+test('does not expose conventional age references when an unsupported alternative system is requested', () => {
+  assert.equal(getLayerAgeReference('Lohmann Brown-Classic', 17, 'alternative'), null);
+  assert.equal(getLayerAgeReference('NOVOgen Brown', 12, 'alternative'), null);
+  assert.equal(getLayerAgeReference('Hy-Line W-36', 17, 'alternative'), null);
+});
