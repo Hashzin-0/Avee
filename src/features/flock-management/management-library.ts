@@ -1,5 +1,6 @@
 import type { LayerLineage } from '../farm-builder/technical-recommendations';
 import { hyLineBrownProductionRows } from './hyline-brown-production';
+import { hyLineBrownAlternativeProductionRows, hyLineBrownAlternativeRearingRows } from './hyline-brown-alternative';
 
 export type ManagementPhase = 'Cria' | 'Recria' | 'Pré-postura' | 'Produção';
 
