@@ -55,3 +55,22 @@ test('returns empty metrics when there are no valid weights', () => {
   assert.equal(result.count, 0);
   assert.equal(result.meanGrams, null);
 });
+
+
+test('calculates the maximum floor-system capacity from usable area and a documented area coefficient', () => {
+  const result = calculateFarm({
+    ...baseInput,
+    houseWidthM: 20,
+    usableAreaPercent: 80,
+    areaPerBirdCm2: 1_429,
+  });
+  assert.equal(result.grossAreaM2, 2_000);
+  assert.equal(result.usableAreaM2, 1_600);
+  assert.equal(result.areaBasedCapacity, Math.floor((1_600 * 10_000) / 1_429));
+});
+
+test('does not infer maximum capacity when the applicable area coefficient is missing', () => {
+  const result = calculateFarm({ ...baseInput, houseWidthM: 20 });
+  assert.equal(result.areaBasedCapacity, null);
+  assert.equal(result.areaCapacityStatus, 'missing-parameter');
+});

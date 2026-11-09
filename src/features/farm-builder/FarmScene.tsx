@@ -9,12 +9,14 @@ interface FarmSceneProps {
   sideHeight: number;
   ridgeHeight: number;
   rows: number;
+  fans?: number;
 }
 
-function House({ length, width, sideHeight, ridgeHeight, rows }: FarmSceneProps) {
+function House({ length, width, sideHeight, ridgeHeight, rows, fans }: FarmSceneProps) {
   const safeLength = Math.max(length, 1);
   const safeWidth = Math.max(width, 1);
   const safeRows = Math.max(0, Math.floor(rows));
+  const safeFans = Math.max(0, Math.floor(fans ?? 0));
   const scale = Math.min(14 / safeLength, 8 / safeWidth, 4 / Math.max(ridgeHeight, 1));
   const l = safeLength * scale;
   const w = safeWidth * scale;
@@ -65,10 +67,10 @@ function House({ length, width, sideHeight, ridgeHeight, rows }: FarmSceneProps)
         </group>
       ))}
 
-      {Array.from({ length: 5 }, (_, index) => (
+      {Array.from({ length: safeFans }, (_, index) => (
         <mesh
           key={`fan-${index}`}
-          position={[l / 2 - 0.2 * scale, wallHeight * 0.52, -w / 2 + ((index + 1) * w) / 6]}
+          position={[l / 2 - 0.2 * scale, wallHeight * 0.52, -w / 2 + ((index + 1) * w) / (safeFans + 1)]}
           rotation={[0, Math.PI / 2, 0]}
         >
           <cylinderGeometry args={[0.28 * scale, 0.28 * scale, 0.08 * scale, 24]} />

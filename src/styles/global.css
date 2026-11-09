@@ -151,6 +151,10 @@ td { padding: 11px 8px; border-bottom: 1px solid #f0f3f0; color: #536158; font-s
 .builder-layout { display: grid; grid-template-columns: minmax(340px, .95fr) minmax(0, 1.05fr); gap: 16px; align-items: start; }
 .form-section { padding-top: 16px; margin-top: 16px; border-top: 1px solid #edf0ed; }
 .form-section h3 { margin: 0 0 12px; color: #526057; font-size: 10px; font-weight: 700; }
+.capacity-mode-summary { display: flex; flex-direction: column; justify-content: center; min-height: 58px; padding: 10px 12px; margin-bottom: 12px; border: 1px solid #dfe8df; border-radius: 8px; background: #f6f9f6; }
+.capacity-mode-summary strong { color: #355d40; font-size: 13px; }
+.capacity-mode-summary span { color: #718076; font-size: 9px; }
+.capacity-mode-summary p { margin: 5px 0 0; color: #7d8a80; font-size: 9px; line-height: 1.5; }
 .field-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 12px; }
 .form-section-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
 .form-section-heading h3 { margin-bottom: 4px; }
