@@ -66,8 +66,10 @@ test('provides source-backed Hy-Line Brown weekly rearing references and lineage
   assert.equal(week12?.dailyFeedMaxGrams, 68);
   assert.equal(week12?.dailyWaterMinMl, 94);
   assert.equal(week12?.cumulativeMortalityPercent, 1.55);
-  assert.equal(layerGuideSources.length, 4);
+  assert.equal(layerGuideSources.length, 5);
   assert.ok(layerGuideSources.every((source) => source.url.startsWith('https://')));
+  assert.equal(getLayerGuideSource('Hy-Line Brown', 'conventional')?.id, 'hyline-brown-2025-conventional');
+  assert.equal(getLayerGuideSource('Hy-Line Brown', 'alternative')?.id, 'hyline-brown-2026-alternative');
   assert.equal(getLayerAgeReference('Lohmann Brown-Classic', 17)?.bodyWeightMinGrams, 1380);
   assert.equal(getLayerAgeReference('NOVOgen Brown', 60)?.eggsPerHenHousedMin, 254);
   assert.equal(getLayerAgeReference('Hy-Line Brown', 100)?.cumulativeMortalityPercent, 8.6);
