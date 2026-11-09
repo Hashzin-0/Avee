@@ -279,3 +279,9 @@ td { padding: 11px 8px; border-bottom: 1px solid #f0f3f0; color: #536158; font-s
 .dashboard-flock-section:not([hidden]) { display: grid; gap: 14px; }
 .dashboard-flock-settings { padding: 14px 18px 0; }
 .dashboard-flock-settings .field-grid { margin-bottom: 0; }
+
+
+.guide-lineage-filter { max-width: 360px; margin: 0 18px 14px; }
+.guide-standards-table { max-height: 560px; overflow: auto; }
+.guide-standards-table table { min-width: 1180px; }
+.guide-standards-table thead { position: sticky; top: 0; z-index: 1; }
