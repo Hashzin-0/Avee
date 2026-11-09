@@ -124,3 +124,14 @@ test('reports every constraint tied for the lowest capacity', () => {
   assert.equal(result.availableBirdCapacity, 1_500);
   assert.deepEqual(result.limitingConstraints.map(({ key }) => key), ['area', 'drinkers', 'feeders']);
 });
+
+
+test('treats explicitly zero installed equipment as a zero-capacity constraint', () => {
+  const result = calculateFarm({
+    ...baseInput,
+    birdsPerNipple: 10,
+    installedNipples: 0,
+  });
+  assert.equal(result.availableBirdCapacity, 0);
+  assert.deepEqual(result.limitingConstraints.map(({ key }) => key), ['drinkers']);
+});
