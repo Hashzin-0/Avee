@@ -1,5 +1,5 @@
 export type LayerLineage = 'Hy-Line Brown' | 'Hy-Line W-36' | 'Lohmann Brown-Classic' | 'NOVOgen Brown' | 'Outra / não definida';
-export type HousingSystem = 'Gaiolas convencionais' | 'Gaiolas enriquecidas' | 'Sistema de piso' | 'Free-range';
+export type HousingSystem = 'Gaiolas convencionais' | 'Gaiolas enriquecidas' | 'Sistema de piso' | 'Aviário / multinível' | 'Free-range';
 export type ProductionPhase = 'Cria' | 'Recria' | 'Pré-postura' | 'Produção';
 export type ClimateProfile = 'Quente' | 'Temperado' | 'Frio' | 'Outro / não informado';
 
@@ -49,10 +49,10 @@ const HYLINE_BROWN_PERFORMANCE: TechnicalSource = {
 
 const HYLINE_BROWN_ALTERNATIVE: TechnicalSource = {
   publisher: 'Hy-Line International',
-  title: 'Hy-Line Brown Alternative Systems — Management Guide',
-  edition: 'Junho de 2021 (código do documento: BRN ALT ENG 062921)',
-  page: '8',
-  url: 'https://www.hyline.com/filesimages/Hy-Line-Products/Hy-Line-Product-PDFs/Brown/Brown%20Alt/BRN%20ALT%20COM%20ENG.pdf',
+  title: 'Hy-Line Brown Commercial Layers — Alternative Systems, International Standards',
+  edition: 'Maio de 2026',
+  page: '7',
+  url: 'https://www.hyline.com/resources',
 };
 
 const LOHMANN_BROWN: TechnicalSource = {
@@ -118,12 +118,21 @@ export function getLayerTechnicalRecommendation(input: {
       };
     }
 
-    if ((housingSystem === 'Sistema de piso' || housingSystem === 'Free-range') && ageWeeks >= 18 && ageWeeks <= 90) {
+    if ((housingSystem === 'Sistema de piso' || housingSystem === 'Free-range') && ageWeeks >= 18 && ageWeeks <= 100) {
       return {
-        ...input, reviewStatus: 'transcribed-unreviewed', ageRangeLabel: '18–90 semanas',
+        ...input, reviewStatus: 'transcribed-unreviewed', ageRangeLabel: '18–100 semanas',
         values: { areaPerBirdCm2: 1429, birdsPerNipple: 10, feederCmPerBird: 10 },
         source: HYLINE_BROWN_ALTERNATIVE,
-        note: 'Para piso, o guia informa 7–9 aves/m², nipple/copo 1/10 aves e comedouro 5 cm/ave com acesso dos dois lados ou 10 cm/ave com acesso por um lado. Foram aplicados 1.429 cm²/ave (7 aves/m²) e 10 cm/ave. Em free-range, a área calculada é apenas a área interna útil; a área externa/pasto não está incluída. O perfil climático fica registrado, mas não altera estes coeficientes da tabela.',
+        note: 'O guia de sistemas alternativos (maio de 2026, p. 7) informa 7–9 aves/m² de área útil em piso, 1 nipple/copo para 10 aves e comedouros de 5 cm/ave com acesso bilateral ou 10 cm/ave com acesso por um lado. Para o cálculo foi adotado o limite conservador de 7 aves/m² (1.429 cm²/ave) e 10 cm/ave. Em free-range, a área calculada representa somente a área interna; a área externa não é dimensionada nesta tabela.',
+      };
+    }
+
+    if (housingSystem === 'Aviário / multinível' && ageWeeks >= 18 && ageWeeks <= 100) {
+      return {
+        ...input, reviewStatus: 'transcribed-unreviewed', ageRangeLabel: '18–100 semanas',
+        values: { birdsPerNipple: 10, feederCmPerBird: 5 },
+        source: HYLINE_BROWN_ALTERNATIVE,
+        note: 'O guia de sistemas alternativos (maio de 2026, p. 7) não fixa uma densidade única de aves/m² para aviários; informa que densidades maiores podem ser utilizadas conforme o fabricante do equipamento. Para produção em multiníveis, a tabela de alojamento publica 1 nipple/copo para 10 aves, 5 cm/ave de comedouro com acesso bilateral (ou 10 cm/ave com acesso por um lado) e 10–15 cm/ave de poleiro. Não foi preenchida densidade de alojamento.',
       };
     }
   }

@@ -177,28 +177,62 @@ const milestoneReferences: LayerAgeReference[] = [
 ];
 
 const sourceMetadata: Record<LayerLineage, { id: string; pageForAge: (ageWeeks: number) => string; housing: string }> = {
-  'Hy-Line Brown': { id: 'hyline-brown-2025', pageForAge: (age) => age <= 17 ? '4' : '5–6', housing: 'Sistemas convencionais; os dados de performance não substituem recomendações específicas de alojamento.' },
+  'Hy-Line Brown': { id: 'hyline-brown-2025-conventional', pageForAge: (age) => age <= 17 ? '4' : '5–6', housing: 'Sistema convencional; não aplicar a gaiolas enriquecidas, piso, aviário ou free-range sem fonte específica.' },
   'Lohmann Brown-Classic': { id: 'lohmann-brown-classic-2020', pageForAge: () => '7', housing: 'Gaiolas convencionais; não extrapolar para alojamento alternativo.' },
   'NOVOgen Brown': { id: 'novogen-brown-commercial-2024', pageForAge: (age) => age <= 17 ? '38' : '41', housing: 'Poedeiras comerciais; confirmar sistema e clima nas recomendações de alojamento do manual.' },
   'Hy-Line W-36': { id: 'hyline-w36-commercial', pageForAge: (age) => age <= 48 ? '2' : '3', housing: 'Sistemas convencionais; confirmar o guia de alojamento antes de dimensionar equipamentos.' },
   'Outra / não definida': { id: 'unsupported', pageForAge: () => '—', housing: 'Sem aplicabilidade definida.' },
 };
 
-export const layerAgeReferences: SourcedLayerAgeReference[] = [...hylineRearing, ...hylineProductionMilestones, ...hylineW36Rearing, ...hylineW36ProductionMilestones, ...novogenRearing, ...milestoneReferences]
+const hylineBrownAlternativeRearing: SourcedLayerAgeReference[] = hyLineBrownAlternativeRearingRows.map((row) => ({
+  lineage: 'Hy-Line Brown', ageWeeks: row[0], phase: getManagementPhase(row[0]),
+  cumulativeMortalityPercent: row[1], bodyWeightMinGrams: row[2], bodyWeightMaxGrams: row[3],
+  dailyWaterMinMl: row[4], dailyWaterMaxMl: row[5], dailyFeedMinGrams: row[6], dailyFeedMaxGrams: row[7],
+  cumulativeFeedMinGrams: row[8] * 1000, cumulativeFeedMaxGrams: row[9] * 1000,
+  uniformityMinPercent: row[0] <= 4 ? 85 : row[0] <= 7 ? 80 : row[0] <= 15 ? 85 : 90,
+  sourceId: 'hyline-brown-2026-alternative', page: '4',
+  housingSystemApplicability: 'Sistemas alternativos; metas de desempenho do guia de maio de 2026.',
+  reviewStatus: 'transcribed-unreviewed',
+}));
+
+const hylineBrownAlternativeProduction: SourcedLayerAgeReference[] = hyLineBrownAlternativeProductionRows.map((row) => ({
+  lineage: 'Hy-Line Brown', ageWeeks: row[0], phase: 'Produção',
+  layRateMinPercent: row[1], layRateMaxPercent: row[2],
+  eggsPerHenDayMin: row[3], eggsPerHenDayMax: row[4],
+  eggsPerHenHousedMin: row[5], eggsPerHenHousedMax: row[6],
+  cumulativeMortalityPercent: row[7], bodyWeightMinGrams: row[8], bodyWeightMaxGrams: row[9],
+  dailyFeedMinGrams: row[10], dailyFeedMaxGrams: row[11], dailyWaterMinMl: row[12], dailyWaterMaxMl: row[13],
+  eggMassPerHenHousedMinKg: row[14], eggMassPerHenHousedMaxKg: row[15],
+  averageEggWeightMinGrams: row[16], averageEggWeightMaxGrams: row[17],
+  sourceId: 'hyline-brown-2026-alternative', page: '5–6',
+  housingSystemApplicability: 'Sistemas alternativos; metas de desempenho do guia de maio de 2026.',
+  reviewStatus: 'transcribed-unreviewed',
+}));
+
+const conventionalReferences = [...hylineRearing, ...hylineProductionMilestones, ...hylineW36Rearing, ...hylineW36ProductionMilestones, ...novogenRearing, ...milestoneReferences]
   .map((reference) => {
     const metadata = sourceMetadata[reference.lineage];
     return { ...reference, sourceId: metadata.id, page: metadata.pageForAge(reference.ageWeeks), housingSystemApplicability: metadata.housing, reviewStatus: 'transcribed-unreviewed' as const };
   });
 
-export function getLayerAgeReference(lineage: LayerLineage, ageWeeks: number): SourcedLayerAgeReference | null {
+export const layerAgeReferences: SourcedLayerAgeReference[] = [
+  ...conventionalReferences,
+  ...hylineBrownAlternativeRearing,
+  ...hylineBrownAlternativeProduction,
+];
+export function getLayerAgeReference(
+  lineage: LayerLineage,
+  ageWeeks: number,
+  housingSystem: 'conventional' | 'alternative' = 'conventional',
+): SourcedLayerAgeReference | null {
   if (!Number.isFinite(ageWeeks) || ageWeeks < 0) return null;
   if (lineage === 'Hy-Line Brown' && ageWeeks > 100) return null;
   const exact = layerAgeReferences.find((item) => item.lineage === lineage && item.ageWeeks === Math.floor(ageWeeks));
   if (exact) return exact;
 
   const metadata = sourceMetadata[lineage];
-  if (lineage === 'Hy-Line Brown' && ageWeeks >= 19 && ageWeeks <= 100) {
-    return { lineage, ageWeeks, ageRangeLabel: '19–100 semanas', phase: 'Produção', dailyFeedMinGrams: 109.1, dailyFeedMaxGrams: 116.9, sourceId: metadata.id, page: '3', housingSystemApplicability: metadata.housing, reviewStatus: 'transcribed-unreviewed', note: 'Média diária publicada para o período completo de 19 a 100 semanas; não representa uma meta individual semanal.' };
+  if (lineage === 'Hy-Line Brown' && housingSystem === 'conventional' && ageWeeks >= 19 && ageWeeks <= 100) {
+    return { lineage, ageWeeks, ageRangeLabel: '19–100 semanas', phase: 'Produção', dailyFeedMinGrams: 109.1, dailyFeedMaxGrams: 116.9, sourceId: metadata.id, page: '3', housingSystemApplicability: metadata.housing, reviewStatus: 'transcribed-unreviewed', note: 'Faixa média diária publicada no resumo do guia convencional; não representa uma meta individual semanal.' };
   }
   if (lineage === 'Lohmann Brown-Classic' && ageWeeks >= 20 && ageWeeks <= 95) {
     return { lineage, ageWeeks, ageRangeLabel: 'Período de produção', phase: 'Produção', dailyFeedMinGrams: 110, dailyFeedMaxGrams: 120, sourceId: metadata.id, page: '7', housingSystemApplicability: metadata.housing, reviewStatus: 'transcribed-unreviewed', note: 'Faixa diária geral publicada para produção; o guia não discrimina o consumo em cada semana nesta tabela.' };
@@ -212,6 +246,12 @@ export function getLayerAgeReference(lineage: LayerLineage, ageWeeks: number): S
   return null;
 }
 
-export function getLayerGuideSource(lineage: LayerLineage): LayerGuideSource | null {
-  return layerGuideSources.find((source) => source.lineage === lineage) ?? null;
+export function getLayerGuideSource(
+  lineage: LayerLineage,
+  housingSystem: 'conventional' | 'alternative' = 'conventional',
+): LayerGuideSource | null {
+  if (lineage !== 'Hy-Line Brown' && housingSystem === 'alternative') return null;
+  return layerGuideSources.find((source) =>
+    source.lineage === lineage && (lineage !== 'Hy-Line Brown' || source.housingSystem === housingSystem),
+  ) ?? null;
 }

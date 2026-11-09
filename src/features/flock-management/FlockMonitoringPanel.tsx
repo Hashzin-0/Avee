@@ -17,10 +17,11 @@ function todayLocal() {
   return date.toISOString().slice(0, 10);
 }
 
-export function FlockMonitoringPanel({ lineage, ageWeeks, defaultBirds }: {
+export function FlockMonitoringPanel({ lineage, ageWeeks, defaultBirds, referenceSystem = 'conventional' }: {
   lineage: LayerLineage;
   ageWeeks: number;
   defaultBirds: number;
+  referenceSystem?: 'conventional' | 'alternative' | 'unsupported';
 }) {
   const [initialBirds, setInitialBirds] = useState(String(defaultBirds));
 
@@ -43,8 +44,8 @@ export function FlockMonitoringPanel({ lineage, ageWeeks, defaultBirds }: {
     if (!Number.isInteger(count) || count <= 0) return null;
     try { return calculateFlockDashboard(count, entries); } catch { return null; }
   }, [initialBirds, entries]);
-  const reference = getLayerAgeReference(lineage, ageWeeks);
-  const guide = getLayerGuideSource(lineage);
+  const reference = referenceSystem === 'unsupported' ? null : getLayerAgeReference(lineage, ageWeeks, referenceSystem);
+  const guide = referenceSystem === 'unsupported' ? null : getLayerGuideSource(lineage, referenceSystem);
   const phase = Number.isFinite(ageWeeks) && ageWeeks >= 0 ? getManagementPhase(ageWeeks) : 'Cria';
   const latest = dashboard?.latest ?? null;
 
@@ -99,6 +100,7 @@ export function FlockMonitoringPanel({ lineage, ageWeeks, defaultBirds }: {
         <strong>{lineage}</strong>
         <span>Idade informada: {number(ageWeeks, 1)} semanas</span>
         <span>Fase identificada: {phase}</span>
+        {lineage === 'Hy-Line Brown' && <span>Sistema de referência: {referenceSystem === 'conventional' ? 'convencional' : referenceSystem === 'alternative' ? 'alternativo' : 'sem guia compatível'}</span>}
         {reference && <span>Referência técnica disponível para esta idade</span>}
       </div>
       <div className="flock-entry-grid">
