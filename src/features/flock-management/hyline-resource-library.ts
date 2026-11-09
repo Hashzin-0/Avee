@@ -284,7 +284,7 @@ export const hyLineTechnicalResources: readonly HyLineTechnicalResource[] = [
     summary: 'Reúne práticas para manter aves de acesso externo confortáveis durante confinamento temporário: cama adequada e seca, ventilação mínima, observação de aglomerações, enriquecimento ambiental, intensidade luminosa controlada, avaliação de fibra e granulometria e prevenção de doenças.',
     topics: ['Free-range', 'Confinamento temporário', 'Cama', 'Enriquecimento', 'Influenza aviária'],
     url: HYLINE + 'TU%20TIPS%20ENG.pdf', extractionStatus: 'summary-extracted',
-  },,
+  },
   {
     id: 'feed-preparation',
     title: 'Feed Preparation: Key Areas of Opportunity',
