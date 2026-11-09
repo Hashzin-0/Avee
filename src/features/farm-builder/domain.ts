@@ -11,6 +11,10 @@ export interface FarmInput {
   fanCapacityM3h?: number;
   airflowM3hPerBird?: number;
   cageCapacity?: number;
+  installedNipples?: number;
+  installedFeederLengthM?: number;
+  installedFanCount?: number;
+  installedCageModules?: number;
 }
 
 export interface CalculationResult {
@@ -18,6 +22,9 @@ export interface CalculationResult {
   usableAreaM2: number;
   areaBasedCapacity: number | null;
   areaCapacityStatus: 'calculated' | 'missing-parameter';
+  availableBirdCapacity: number | null;
+  capacityStatus: 'calculated' | 'missing-parameters';
+  limitingConstraints: Array<{ key: 'area' | 'drinkers' | 'feeders' | 'ventilation' | 'housing'; label: string; capacity: number }>;
   nipplesRequired: number | null;
   feederLengthM: number | null;
   fansRequired: number | null;
@@ -49,6 +56,13 @@ function validateFarmInput(input: FarmInput) {
   assertPositive('Vazão do ventilador', input.fanCapacityM3h);
   assertPositive('Necessidade de ar por ave', input.airflowM3hPerBird);
   assertPositive('Capacidade por gaiola', input.cageCapacity);
+  assertPositive('Nipples instalados', input.installedNipples);
+  assertPositive('Comprimento instalado de comedouro', input.installedFeederLengthM);
+  assertPositive('Ventiladores instalados', input.installedFanCount);
+  assertPositive('Módulos de gaiola instalados', input.installedCageModules);
+  for (const [label, value] of [['Nipples instalados', input.installedNipples], ['Ventiladores instalados', input.installedFanCount], ['Módulos de gaiola instalados', input.installedCageModules]] as const) {
+    if (value !== undefined && !Number.isInteger(value)) throw new RangeError(`${label} deve ser um número inteiro.`);
+  }
 }
 
 const ceilPositive = (value: number): number => Math.ceil(value);
@@ -73,11 +87,35 @@ export function calculateFarm(input: FarmInput): CalculationResult {
     ? ceilPositive(input.targetBirds / input.cageCapacity)
     : null;
 
+  const capacityCandidates: CalculationResult['limitingConstraints'] = [];
+  if (areaBasedCapacity !== null) capacityCandidates.push({ key: 'area', label: 'Área útil', capacity: areaBasedCapacity });
+  if (input.installedNipples !== undefined && input.birdsPerNipple !== undefined) {
+    capacityCandidates.push({ key: 'drinkers', label: 'Bebedouros (nipples)', capacity: Math.floor(input.installedNipples * input.birdsPerNipple) });
+  }
+  if (input.installedFeederLengthM !== undefined && input.feederCmPerBird !== undefined) {
+    capacityCandidates.push({ key: 'feeders', label: 'Comprimento de comedouros', capacity: Math.floor((input.installedFeederLengthM * 100) / input.feederCmPerBird) });
+  }
+  if (input.installedFanCount !== undefined && input.fanCapacityM3h !== undefined && input.airflowM3hPerBird !== undefined) {
+    capacityCandidates.push({ key: 'ventilation', label: 'Ventilação instalada', capacity: Math.floor((input.installedFanCount * input.fanCapacityM3h) / input.airflowM3hPerBird) });
+  }
+  if (input.installedCageModules !== undefined && input.cageCapacity !== undefined) {
+    capacityCandidates.push({ key: 'housing', label: 'Módulos de alojamento', capacity: Math.floor(input.installedCageModules * input.cageCapacity) });
+  }
+  const availableBirdCapacity = capacityCandidates.length > 0
+    ? Math.min(...capacityCandidates.map((candidate) => candidate.capacity))
+    : null;
+  const limitingConstraints = availableBirdCapacity === null
+    ? []
+    : capacityCandidates.filter((candidate) => candidate.capacity === availableBirdCapacity);
+
   return {
     grossAreaM2,
     usableAreaM2,
     areaBasedCapacity,
     areaCapacityStatus: areaBasedCapacity === null ? 'missing-parameter' : 'calculated',
+    availableBirdCapacity,
+    capacityStatus: availableBirdCapacity === null ? 'missing-parameters' : 'calculated',
+    limitingConstraints,
     nipplesRequired,
     feederLengthM,
     fansRequired,
@@ -86,6 +124,7 @@ export function calculateFarm(input: FarmInput): CalculationResult {
       'A área útil é calculada pela porcentagem informada sobre a área bruta do galpão.',
       'A capacidade por área é uma estimativa geométrica e não substitui limites legais, bem-estar, equipamentos ou validação técnica.',
       'Ventiladores são estimados pela vazão nominal informada; pressão estática, curva do equipamento e perdas de carga ainda precisam ser avaliadas.',
+      'A capacidade final é o menor limite entre os fatores com quantidade instalada e coeficiente técnico informados; fatores ausentes não são presumidos.',
     ],
   };
 }
