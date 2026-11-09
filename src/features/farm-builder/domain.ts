@@ -56,10 +56,9 @@ function validateFarmInput(input: FarmInput) {
   assertPositive('Vazão do ventilador', input.fanCapacityM3h);
   assertPositive('Necessidade de ar por ave', input.airflowM3hPerBird);
   assertPositive('Capacidade por gaiola', input.cageCapacity);
-  assertPositive('Nipples instalados', input.installedNipples);
-  assertPositive('Comprimento instalado de comedouro', input.installedFeederLengthM);
-  assertPositive('Ventiladores instalados', input.installedFanCount);
-  assertPositive('Módulos de gaiola instalados', input.installedCageModules);
+  for (const [label, value] of [['Nipples instalados', input.installedNipples], ['Comprimento instalado de comedouro', input.installedFeederLengthM], ['Ventiladores instalados', input.installedFanCount], ['Módulos de gaiola instalados', input.installedCageModules]] as const) {
+    if (value !== undefined && (!Number.isFinite(value) || value < 0)) throw new RangeError(`${label} deve ser um número finito maior ou igual a zero.`);
+  }
   for (const [label, value] of [['Nipples instalados', input.installedNipples], ['Ventiladores instalados', input.installedFanCount], ['Módulos de gaiola instalados', input.installedCageModules]] as const) {
     if (value !== undefined && !Number.isInteger(value)) throw new RangeError(`${label} deve ser um número inteiro.`);
   }
