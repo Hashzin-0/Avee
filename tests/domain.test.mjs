@@ -110,3 +110,17 @@ test('reports all tied limiting constraints and does not infer capacity from rat
 test('rejects fractional installed equipment counts', () => {
   assert.throws(() => calculateFarm({ ...baseInput, installedNipples: 2.5 }), /inteiro/);
 });
+
+
+test('reports every constraint tied for the lowest capacity', () => {
+  const result = calculateFarm({
+    ...baseInput,
+    areaPerBirdCm2: 6_400,
+    birdsPerNipple: 10,
+    installedNipples: 150,
+    feederCmPerBird: 10,
+    installedFeederLengthM: 150,
+  });
+  assert.equal(result.availableBirdCapacity, 1_500);
+  assert.deepEqual(result.limitingConstraints.map(({ key }) => key), ['area', 'drinkers', 'feeders']);
+});
