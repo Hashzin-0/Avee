@@ -1,9 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { calculateFlockDashboard } from '../src/features/flock-management/domain.ts';
-import { getLayerAgeReference, getLayerGuideSource, getManagementPhase, layerAgeReferences, layerGuideSources } from '../src/features/flock-management/management-library.ts';
-import { hyLineTechnicalResources } from '../src/features/flock-management/hyline-resource-library.ts';
-import { getLayerTechnicalRecommendation } from '../src/features/farm-builder/technical-recommendations.ts';
+import { getLayerAgeReference, getManagementPhase, layerAgeReferences, layerGuideSources } from '../src/features/flock-management/management-library.ts';
 
 const base = {
   id: 'd1', date: '2026-11-01', deaths: 5, culls: 2,
@@ -80,6 +78,28 @@ test('provides source-backed Hy-Line Brown weekly rearing references and lineage
   assert.equal(getLayerAgeReference('NOVOgen Brown', 35)?.dailyFeedMaxGrams, 119);
   assert.equal(getLayerAgeReference('Lohmann Brown-Classic', 45)?.dailyFeedMaxGrams, 120);
   assert.equal(week12?.reviewStatus, 'transcribed-unreviewed');
+  assert.equal(getLayerAgeReference('Hy-Line Brown', 2)?.uniformityMinPercent, 85);
+  assert.equal(getLayerAgeReference('Hy-Line Brown', 5)?.uniformityMinPercent, 80);
+  assert.equal(getLayerAgeReference('Hy-Line Brown', 7)?.uniformityMinPercent, 85);
+  assert.equal(getLayerAgeReference('Hy-Line Brown', 17)?.uniformityMinPercent, 90);
+  assert.equal(getLayerAgeReference('Hy-Line Brown', 12)?.uniformityMinPercent, undefined);
+});
+
+
+test('contains every Hy-Line Brown weekly reference from week 1 through week 100', () => {
+  const weekly = layerAgeReferences
+    .filter((item) => item.lineage === 'Hy-Line Brown')
+    .sort((a, b) => a.ageWeeks - b.ageWeeks);
+
+  assert.equal(weekly.length, 100);
+  assert.deepEqual(weekly.map((item) => item.ageWeeks), Array.from({ length: 100 }, (_, index) => index + 1));
+  assert.equal(getLayerAgeReference('Hy-Line Brown', 18)?.eggsPerHenDayMin, 0.5);
+  assert.equal(getLayerAgeReference('Hy-Line Brown', 60)?.eggsPerHenDayMax, 274.7);
+  assert.equal(getLayerAgeReference('Hy-Line Brown', 100)?.eggsPerHenHousedMax, 497.9);
+  assert.equal(getLayerAgeReference('Hy-Line Brown', 100)?.cumulativeMortalityPercent, 8.6);
+  assert.equal(getLayerAgeReference('Hy-Line Brown', 18)?.eggMassPerHenHousedMinKg, undefined);
+  assert.equal(getLayerAgeReference('Hy-Line Brown', 101), null);
+  assert.equal(getLayerAgeReference('Hy-Line Brown', 100.5), null);
 });
 
 

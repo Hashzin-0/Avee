@@ -29,7 +29,6 @@ import {
 import { FarmScene } from '../features/farm-builder/FarmScene';
 import { FlockMonitoringPanel } from '../features/flock-management/FlockMonitoringPanel';
 import { getManagementPhase, layerAgeReferences, layerGuideSources } from '../features/flock-management/management-library';
-import { hyLineTechnicalResources } from '../features/flock-management/hyline-resource-library';
 import { getLayerPerformanceProfile, getLayerTechnicalRecommendation, type ClimateProfile, type HousingSystem, type LayerLineage, type TechnicalParameterKey } from '../features/farm-builder/technical-recommendations';
 import { calculateFarm, calculateUniformity, type FarmInput } from '../features/farm-builder/domain';
 import { connectionOptions, scaleCatalog } from '../features/weighing/catalog';
@@ -295,18 +294,20 @@ export function App() {
 
           {section === 'technical' && (
             <>
-              <div className="page-heading"><div><span className="eyebrow">BASE DE CONHECIMENTO</span><h1>Biblioteca técnica</h1><p>Fontes oficiais catalogadas por linhagem, sistema, tema, edição e aplicabilidade.</p></div></div>
+              <div className="page-heading"><div><span className="eyebrow">BASE DE CONHECIMENTO</span><h1>Biblioteca técnica</h1><p>Parâmetros zootécnicos precisam manter origem, versão e contexto de aplicação.</p></div><button className="button button-primary" onClick={() => setNotice('O cadastro e a revisão documental serão ampliados junto com o armazenamento dos manuais originais.')}><Plus size={17} />Adicionar manual</button></div>
+              <div className="page-heading"><div><span className="eyebrow">BASE DE CONHECIMENTO</span><h1>Biblioteca técnica</h1><p>Guias oficiais catalogados por linhagem, versão e cobertura dos dados.</p></div></div>
+              <div className="guide-library-grid">{layerGuideSources.map((guide) => <article className="panel guide-library-card" key={guide.id}><div className="guide-library-top"><span className="sample-count">{guide.dataStatus === 'weekly-rearing-and-production' ? 'Recria e produção semanais' : guide.dataStatus === 'weekly-rearing' ? 'Recria semanal estruturada' : 'Marcos de desempenho estruturados'}</span><BookOpen size={19} /></div><h2>{guide.lineage}</h2><strong>{guide.title}</strong><p>{guide.publisher} · {guide.edition}</p><small>{guide.coverage}</small><a href={guide.url} target="_blank" rel="noreferrer">Consultar guia original</a></article>)}</div>
+              <p className="table-footnote">A cobertura não é idêntica entre linhagens. O sistema só compara metas em idades com valores efetivamente extraídos e revisados; ausência de ponto não será preenchida por interpolação automática. Documentos de matrizes e frangos de corte não são usados como referência de poedeiras comerciais.</p>
               <section className="panel guide-standards-panel">
-                <div className="panel-heading"><div><h2>Referência semanal Hy-Line Brown</h2><p>Selecione o sistema antes de consultar metas. Não misture padrões convencionais e alternativos.</p></div><BookOpen size={20} /></div>
-                <label className="field guide-lineage-filter"><span>Sistema de criação do guia</span><select value={libraryHousingSystem} onChange={(event) => setLibraryHousingSystem(event.target.value as 'conventional' | 'alternative')}><option value="conventional">Sistemas convencionais · Dezembro de 2025</option><option value="alternative">Sistemas alternativos · Maio de 2026</option></select></label>
-                <div className="guide-source-context">
-                  <strong>{libraryHousingSystem === 'conventional' ? 'Hy-Line Brown — Sistemas convencionais' : 'Hy-Line Brown — Sistemas alternativos'}</strong>
-                  <span>{libraryHousingSystem === 'conventional' ? 'Guia de dezembro de 2025. Não aplicar estes padrões a piso, aviário ou free-range sem fonte específica.' : 'Guia de maio de 2026. Recomendações de espaço distinguem piso e sistemas multiníveis; não presumir equivalência entre todos os alojamentos alternativos.'}</span>
+                <div className="panel-heading">
+                  <div><h2>Padrões semanais de desempenho</h2><p>{lineage} · consulta por idade exata, sem interpolação.</p></div>
+                  <BookOpen size={20} />
                 </div>
+                <label className="field guide-lineage-filter"><span>Linhagem da tabela</span><select value={lineage} onChange={(event) => setLineage(event.target.value as LayerLineage)}><option>Hy-Line Brown</option><option>Lohmann Brown-Classic</option><option>NOVOgen Brown</option><option>Hy-Line W-36</option><option>Outra / não definida</option></select></label>
                 <div className="table-wrap guide-standards-table">
                   <table>
                     <thead><tr><th>Sem.</th><th>Fase</th><th>Uniformidade mínima (%)</th><th>Peso corporal (g)</th><th>Ração (g/ave/dia)</th><th>Água (ml/ave/dia)</th><th>Mortalidade acum. (%)</th><th>Postura ave-dia (%)</th><th>Ovos/ave-dia acum.</th><th>Ovos/ave alojada acum.</th><th>Massa de ovos (kg)</th><th>Peso do ovo (g)</th></tr></thead>
-                    <tbody>{layerAgeReferences.filter((item) => item.lineage === 'Hy-Line Brown' && item.sourceId === (libraryHousingSystem === 'alternative' ? 'hyline-brown-2026-alternative' : 'hyline-brown-2025-conventional')).sort((a, b) => a.ageWeeks - b.ageWeeks).map((item) => <tr key={item.sourceId + '-' + item.ageWeeks}>
+                    <tbody>{layerAgeReferences.filter((item) => item.lineage === lineage).sort((a, b) => a.ageWeeks - b.ageWeeks).map((item) => <tr key={item.lineage + '-' + item.ageWeeks}>
                       <td>{item.ageWeeks}</td><td>{item.phase}</td>
                       <td>{item.uniformityMinPercent === undefined ? '—' : `> ${formatNumber(item.uniformityMinPercent, 0)}`}</td>
                       <td>{formatRange(item.bodyWeightMinGrams, item.bodyWeightMaxGrams, 0)}</td>
@@ -318,30 +319,13 @@ export function App() {
                       <td>{formatRange(item.eggsPerHenHousedMin, item.eggsPerHenHousedMax)}</td>
                       <td>{formatRange(item.eggMassPerHenHousedMinKg, item.eggMassPerHenHousedMaxKg, 2)}</td>
                       <td>{formatRange(item.averageEggWeightMinGrams, item.averageEggWeightMaxGrams)}</td>
-                    </tr>)}</tbody>
+                    </tr>)}
+                    {layerAgeReferences.every((item) => item.lineage !== lineage) && <tr><td colSpan={12} className="table-empty">Não há valores estruturados para esta linhagem.</td></tr>}
+                    </tbody>
                   </table>
                 </div>
-                <p className="table-footnote">A tabela apresenta valores exatamente publicados nas páginas 4–6 do guia selecionado. “—” significa que o indicador não foi publicado naquela idade. Os ovos acumulados por ave-dia e por ave alojada são métricas distintas. Transcrição pendente de revisão técnica independente.</p>
+                <p className="table-footnote">Hy-Line Brown: 100 idades semanais documentadas (1–100). O guia não estabelece semana obrigatória de abate/descarte nem calendário vacinal. Os dados foram transcritos e permanecem pendentes de revisão técnica independente; “—” indica que a tabela não publica aquele indicador para a idade selecionada.</p>
               </section>
-              <div className="section-title-row"><div><h2>Guias de linhagem</h2><p>As referências de alojamento permanecem separadas por sistema.</p></div></div>
-              <div className="guide-library-grid">{layerGuideSources.filter((guide) => guide.lineage !== 'Hy-Line Brown' || guide.housingSystem === libraryHousingSystem).map((guide) => <article className="panel guide-library-card" key={guide.id}><div className="guide-library-top"><span className="sample-count">{guide.dataStatus === 'weekly-rearing-and-production' ? 'Recria e produção semanais' : guide.dataStatus === 'weekly-rearing' ? 'Recria semanal estruturada' : 'Marcos de desempenho estruturados'}</span><BookOpen size={19} /></div><h2>{guide.lineage}</h2><strong>{guide.title}</strong><p>{guide.publisher} · {guide.edition}</p><small>{guide.coverage}</small><a href={guide.url} target="_blank" rel="noreferrer">Consultar guia original</a></article>)}</div>
-              <div className="section-title-row"><div><h2>Documentos técnicos Hy-Line</h2><p>{hyLineTechnicalResources.length} documentos catalogados nesta etapa; resumos e tópicos extraídos dos PDFs consultados.</p></div></div>
-              <div className="resource-library-filters">
-                <label className="search-field"><Search size={17} /><input value={resourceQuery} onChange={(event) => setResourceQuery(event.target.value)} placeholder="Buscar título, assunto ou palavra-chave" /></label>
-                <label className="field"><span>Categoria</span><select value={resourceCategory} onChange={(event) => setResourceCategory(event.target.value)}><option>Todas</option>{Array.from(new Set(hyLineTechnicalResources.map((resource) => resource.category))).sort().map((category) => <option key={category}>{category}</option>)}</select></label>
-                <label className="field"><span>Idioma</span><select value={resourceLanguage} onChange={(event) => setResourceLanguage(event.target.value)}><option>Todos</option>{Array.from(new Set(hyLineTechnicalResources.map((resource) => resource.language))).sort().map((language) => <option key={language}>{language}</option>)}</select></label>
-              </div>
-              <div className="resource-library-grid">{hyLineTechnicalResources.filter((resource) => (resourceCategory === 'Todas' || resource.category === resourceCategory) && (resourceLanguage === 'Todos' || resource.language === resourceLanguage) && (resource.title + ' ' + resource.summary + ' ' + resource.topics.join(' ')).toLocaleLowerCase().includes(resourceQuery.toLocaleLowerCase())).map((resource) => <article className="panel resource-library-card" key={resource.id}>
-                <div className="resource-card-meta"><span className="sample-count">{resource.category}</span><small>{resource.pages} pág. · {resource.language}</small></div>
-                <h3>{resource.title}</h3>
-                <small>{resource.publisher}{resource.edition ? ` · ${resource.edition}` : ''}</small>
-                {resource.sourceNote && <small className="resource-applicability">{resource.sourceNote}</small>}
-                <p>{resource.summary}</p>
-                <small className="resource-applicability">Aplicabilidade: {resource.housingApplicability}</small>
-                <div className="resource-topics">{resource.topics.map((topic) => <span key={topic}>{topic}</span>)}</div>
-                <a href={resource.url} target="_blank" rel="noreferrer">{resource.sourceNote ? 'Consultar catálogo oficial' : 'Abrir documento original'}</a>
-              </article>)}</div>
-              <p className="table-footnote">Os resumos são notas técnicas originais e concisas, não cópias integrais dos PDFs. A página de recursos também contém versões em outros idiomas, cartazes, calculadoras e vídeos; itens equivalentes foram agrupados quando o conteúdo é duplicado. Recomendações sanitárias, vacinais e nutricionais dependem de avaliação profissional e contexto regional.</p>
             </>
           )}
           <div hidden={section !== 'overview'} className="dashboard-flock-section">
