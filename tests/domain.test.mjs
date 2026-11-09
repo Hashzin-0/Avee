@@ -74,3 +74,39 @@ test('does not infer maximum capacity when the applicable area coefficient is mi
   assert.equal(result.areaBasedCapacity, null);
   assert.equal(result.areaCapacityStatus, 'missing-parameter');
 });
+
+
+test('limits existing-house capacity by the lowest documented installed-system constraint', () => {
+  const result = calculateFarm({
+    ...baseInput,
+    houseWidthM: 20,
+    areaPerBirdCm2: 1_429,
+    birdsPerNipple: 10,
+    installedNipples: 150,
+    feederCmPerBird: 10,
+    installedFeederLengthM: 1_200,
+    fanCapacityM3h: 40_000,
+    airflowM3hPerBird: 4,
+    installedFanCount: 2,
+    cageCapacity: 100,
+    installedCageModules: 30,
+  });
+  assert.equal(result.areaBasedCapacity, 11_196);
+  assert.equal(result.availableBirdCapacity, 1_500);
+  assert.deepEqual(result.limitingConstraints.map(({ key }) => key), ['drinkers']);
+});
+
+test('reports all tied limiting constraints and does not infer capacity from ratios alone', () => {
+  const result = calculateFarm({
+    ...baseInput,
+    birdsPerNipple: 10,
+    feederCmPerBird: 10,
+  });
+  assert.equal(result.availableBirdCapacity, null);
+  assert.equal(result.capacityStatus, 'missing-parameters');
+  assert.deepEqual(result.limitingConstraints, []);
+});
+
+test('rejects fractional installed equipment counts', () => {
+  assert.throws(() => calculateFarm({ ...baseInput, installedNipples: 2.5 }), /inteiro/);
+});
