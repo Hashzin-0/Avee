@@ -70,6 +70,7 @@ export function FlockMonitoringPanel({ lineage, ageWeeks, defaultBirds, lotId = 
     if (loadedLotId !== lotId) return;
     try {
       window.localStorage.setItem(`granja.flock-entries.v1.${lotId}`, JSON.stringify(entries));
+      window.dispatchEvent(new CustomEvent("granja:flock-entries-updated", { detail: { lotId } }));
     } catch {
       setError('Não foi possível salvar o histórico local deste lote. Verifique o espaço disponível no navegador.');
     }
