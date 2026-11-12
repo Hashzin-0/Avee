@@ -339,3 +339,7 @@ td { padding: 11px 8px; border-bottom: 1px solid #f0f3f0; color: #536158; font-s
 .profile-summary p { margin: 0; color: #89958c; font-size: 9px; }
 @media (max-width: 780px) { .farm-registry-grid { grid-template-columns: 1fr; } }
 @media (max-width: 480px) { .farm-card-stats { grid-template-columns: 1fr; } .lot-row { align-items: flex-start; flex-direction: column; } .settings-row { align-items: flex-start; } .settings-row select { max-width: 155px; } }
+
+
+.compact-tables table th, .compact-tables table td { padding-top: 6px; padding-bottom: 6px; }
+.compact-tables .table-wrap { font-size: 9px; }
