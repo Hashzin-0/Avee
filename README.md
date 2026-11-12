@@ -56,4 +56,12 @@ A definir pelo proprietário do projeto antes de publicação pública.
 
 ## Framework e rotas
 
-A aplicação usa Next.js com App Router. A rota `/` é definida em `app/page.tsx`; o layout raiz e os metadados ficam em `app/layout.tsx`. A interface existente é um Client Component porque utiliza estado React e renderização 3D no navegador.
+A aplicação usa Next.js com App Router. O shell interativo permanece montado no layout raiz para preservar o estado local durante a navegação entre páginas. As rotas disponíveis são:
+
+- `/` — dashboard geral, com indicadores operacionais e acesso rápido.
+- `/granja` — construtor paramétrico 3D, dimensionamento e indicadores zootécnicos de referência.
+- `/pesagem` — registro de pesagens por amostragem ou identificação por anilha e catálogo de balanças.
+- `/registros` — lançamentos diários do lote e acompanhamento zootécnico.
+- `/biblioteca` — guias técnicos, cobertura documental e tabelas semanais.
+
+As páginas usam o mesmo shell e os mesmos estados locais enquanto a navegação ocorre no cliente. A aplicação ainda não possui persistência em banco; recarregar o navegador reinicia os dados mantidos em memória.
