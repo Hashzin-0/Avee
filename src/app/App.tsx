@@ -256,7 +256,7 @@ export function App() {
         </div>
         <div className="workspace-switcher">
           <div className="workspace-avatar">GF</div>
-          <div><strong>Granja Fazenda</strong><span>Ambiente de trabalho</span></div>
+          <div><strong>{activeFarm?.name ?? 'Cadastrar granja'}</strong><span>{activeLot?.name ?? 'Nenhum lote selecionado'}</span></div>
           <ChevronDown size={16} />
         </div>
         <nav className="primary-nav" aria-label="Navegação principal">
@@ -268,11 +268,13 @@ export function App() {
           <span className="nav-label nav-label-spaced">PLANEJAMENTO</span>
           <button className={section === 'builder' ? 'nav-item active' : 'nav-item'} onClick={() => navigate('builder')}><Boxes size={18} />Montar minha granja <span className="new-pill">3D</span></button>
           <button className={section === 'technical' ? 'nav-item active' : 'nav-item'} onClick={() => navigate('technical')}><BookOpen size={18} />Biblioteca técnica</button>
+          <span className="nav-label nav-label-spaced">ADMINISTRAÇÃO</span>
+          <button className={section === 'farms' ? 'nav-item active' : 'nav-item'} onClick={() => navigate('farms')}><House size={18} />Minhas granjas</button>
         </nav>
         <div className="sidebar-bottom">
           <div className="sync-status"><span className="status-dot" /><div><strong>Modo local</strong><small>Sincronização em nuvem não configurada</small></div></div>
-          <button className="nav-item" onClick={() => setNotice('Configurações de conta serão habilitadas após a integração de autenticação.')}><Settings2 size={18} />Configurações</button>
-          <div className="profile-row"><div className="profile-avatar">K</div><div><strong>Administrador</strong><small>Perfil da granja</small></div><ChevronDown size={16} /></div>
+          <button className={section === 'settings' ? 'nav-item active' : 'nav-item'} onClick={() => navigate('settings')}><Settings2 size={18} />Configurações</button>
+          <button className="profile-row profile-button" onClick={() => navigate('profile')}><div className="profile-avatar">{workspace.profile.fullName.trim().charAt(0).toUpperCase() || 'A'}</div><div><strong>{workspace.profile.fullName || 'Administrador'}</strong><small>Perfil do administrador</small></div><ChevronDown size={16} /></button>
         </div>
       </aside>
 
@@ -281,7 +283,7 @@ export function App() {
       <main className="main-area">
         <header className="topbar">
           <button className="icon-button mobile-menu" aria-label="Abrir menu" onClick={() => setMobileNavOpen(true)}><Menu size={20} /></button>
-          <div className="breadcrumb">Granja Fazenda <span>/</span> {section === 'builder' ? 'Construtor 3D' : section === 'weighing' ? 'Pesagem' : section === 'technical' ? 'Biblioteca técnica' : section === 'records' ? 'Registros diários' : 'Visão geral'}</div>
+          <div className="breadcrumb">{activeFarm?.name ?? 'Granja'} <span>/</span> {section === 'builder' ? 'Construtor 3D' : section === 'weighing' ? 'Pesagem' : section === 'technical' ? 'Biblioteca técnica' : section === 'records' ? 'Registros diários' : section === 'farms' ? 'Minhas granjas' : section === 'settings' ? 'Configurações' : section === 'profile' ? 'Perfil do administrador' : 'Visão geral'}</div>
           <div className="topbar-actions"><span className="environment-chip"><span className="status-dot" />Ambiente de desenvolvimento</span><button className="icon-button" aria-label="Ajuda" onClick={() => setNotice('Este é um protótipo local. Consulte o README para conhecer os limites atuais.')}><CircleHelp size={19} /></button></div>
         </header>
 
@@ -314,7 +316,7 @@ export function App() {
             <>
               <div className="page-heading"><div><span className="eyebrow">PAINEL DA GRANJA</span><h1>Visão geral</h1><p>Acompanhe a operação e acesse as ferramentas de manejo.</p></div><button className="button button-primary" onClick={() => navigate('weighing')}><Plus size={17} />Nova pesagem</button></div>
               <div className="metrics-grid">
-                <Metric label="Plantel de referência" value="5.000" detail="Quantidade informada no planejamento" icon={Bird} />
+                <Metric label="Plantel de referência" value={formatNumber(activeLot?.currentBirds ?? farm.targetBirds ?? 0)} detail={activeLot?.name ?? 'Quantidade informada no planejamento'} icon={Bird} />
                 <Metric label="Pesagens nesta sessão" value={String(records.length)} detail="Registros locais ainda não sincronizados" icon={Scale} />
                 <Metric label="Peso médio da amostra" value={stats.meanGrams === null ? '—' : `${formatNumber(stats.meanGrams)} g`} detail="Calculado sobre os registros desta sessão" icon={Gauge} />
                 <Metric label="Uniformidade da amostra" value={stats.uniformityPercent === null ? '—' : `${formatNumber(stats.uniformityPercent, 1)}%`} detail="Faixa de ±10% da média amostral" icon={ChartLine} />
@@ -434,7 +436,7 @@ export function App() {
                 <Field label="Idade atual do lote" value={ageWeeks} onChange={(value) => setAgeWeeks(value ?? 0)} unit="semanas" step={0.1} hint={`Fase identificada automaticamente: ${productionPhase}.`} />
               </div>
             </section>
-            <FlockMonitoringPanel lineage={lineage} ageWeeks={ageWeeks} defaultBirds={farm.targetBirds ?? 1} referenceSystem={flockReferenceSystem} />
+            <FlockMonitoringPanel lineage={lineage} ageWeeks={ageWeeks} defaultBirds={activeLot?.currentBirds ?? farm.targetBirds ?? 1} referenceSystem={flockReferenceSystem} />
           </div>}
         </div>
         <footer className="app-footer"><span>Granja · Gestão Avícola Inteligente</span><span>Protótipo inicial · Dados locais</span></footer>
