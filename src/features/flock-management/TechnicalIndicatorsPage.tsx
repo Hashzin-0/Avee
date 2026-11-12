@@ -79,6 +79,87 @@ export function TechnicalIndicatorsPage({ initialLineage, initialHousingSystem, 
     try { return calculateFlockDashboard(initialBirds, entries); } catch { return null; }
   }, [initialBirds, entries]);
   const latest = dashboard?.latest ?? null;
+  const comparisonRows = currentReference && dashboard && latest ? [
+    {
+      indicator: 'Peso corporal médio',
+      actual: latest.averageBodyWeightGrams,
+      target: range(currentReference.bodyWeightMinGrams, currentReference.bodyWeightMaxGrams, 0),
+      status: latest.averageBodyWeightGrams === undefined || currentReference.bodyWeightMinGrams === undefined || currentReference.bodyWeightMaxGrams === undefined
+        ? 'Sem dados comparáveis'
+        : latest.averageBodyWeightGrams < currentReference.bodyWeightMinGrams ? 'Abaixo da faixa'
+          : latest.averageBodyWeightGrams > currentReference.bodyWeightMaxGrams ? 'Acima da faixa' : 'Dentro da faixa',
+      unit: 'g',
+    },
+    {
+      indicator: 'Consumo de ração',
+      actual: latest.feedGramsPerBirdDay,
+      target: range(currentReference.dailyFeedMinGrams, currentReference.dailyFeedMaxGrams),
+      status: latest.feedGramsPerBirdDay === null || currentReference.dailyFeedMinGrams === undefined || currentReference.dailyFeedMaxGrams === undefined
+        ? 'Sem dados comparáveis'
+        : latest.feedGramsPerBirdDay < currentReference.dailyFeedMinGrams ? 'Abaixo da faixa'
+          : latest.feedGramsPerBirdDay > currentReference.dailyFeedMaxGrams ? 'Acima da faixa' : 'Dentro da faixa',
+      unit: 'g/ave/dia',
+    },
+    {
+      indicator: 'Consumo de água',
+      actual: latest.waterMlPerBirdDay,
+      target: range(currentReference.dailyWaterMinMl, currentReference.dailyWaterMaxMl, 0),
+      status: latest.waterMlPerBirdDay === null || currentReference.dailyWaterMinMl === undefined || currentReference.dailyWaterMaxMl === undefined
+        ? 'Sem dados comparáveis'
+        : latest.waterMlPerBirdDay < currentReference.dailyWaterMinMl ? 'Abaixo da faixa'
+          : latest.waterMlPerBirdDay > currentReference.dailyWaterMaxMl ? 'Acima da faixa' : 'Dentro da faixa',
+      unit: 'ml/ave/dia',
+    },
+    {
+      indicator: 'Mortalidade acumulada',
+      actual: dashboard.cumulativeMortalityPercent,
+      target: currentReference.cumulativeMortalityPercent === undefined ? '—' : `até ${number(currentReference.cumulativeMortalityPercent, 2)}%`,
+      status: currentReference.cumulativeMortalityPercent === undefined
+        ? 'Sem meta publicada'
+        : dashboard.cumulativeMortalityPercent > currentReference.cumulativeMortalityPercent ? 'Acima da referência' : 'Dentro/abaixo da referência',
+      unit: '%',
+    },
+    {
+      indicator: 'Postura hen-day',
+      actual: latest.henDayProductionPercent,
+      target: range(currentReference.layRateMinPercent, currentReference.layRateMaxPercent),
+      status: latest.henDayProductionPercent === null || currentReference.layRateMinPercent === undefined || currentReference.layRateMaxPercent === undefined
+        ? 'Sem dados comparáveis'
+        : latest.henDayProductionPercent < currentReference.layRateMinPercent ? 'Abaixo da faixa'
+          : latest.henDayProductionPercent > currentReference.layRateMaxPercent ? 'Acima da faixa' : 'Dentro da faixa',
+      unit: '%',
+    },
+    {
+      indicator: 'Ovos acumulados por ave alojada',
+      actual: dashboard.eggsPerHousedBird,
+      target: range(currentReference.eggsPerHenHousedMin, currentReference.eggsPerHenHousedMax),
+      status: currentReference.eggsPerHenHousedMin === undefined || currentReference.eggsPerHenHousedMax === undefined
+        ? 'Sem meta publicada'
+        : dashboard.eggsPerHousedBird < currentReference.eggsPerHenHousedMin ? 'Abaixo da faixa'
+          : dashboard.eggsPerHousedBird > currentReference.eggsPerHenHousedMax ? 'Acima da faixa' : 'Dentro da faixa',
+      unit: 'ovos/ave',
+    },
+    {
+      indicator: 'Peso médio do ovo',
+      actual: latest.averageEggWeightGrams,
+      target: range(currentReference.averageEggWeightMinGrams, currentReference.averageEggWeightMaxGrams),
+      status: latest.averageEggWeightGrams === undefined || currentReference.averageEggWeightMinGrams === undefined || currentReference.averageEggWeightMaxGrams === undefined
+        ? 'Sem dados comparáveis'
+        : latest.averageEggWeightGrams < currentReference.averageEggWeightMinGrams ? 'Abaixo da faixa'
+          : latest.averageEggWeightGrams > currentReference.averageEggWeightMaxGrams ? 'Acima da faixa' : 'Dentro da faixa',
+      unit: 'g',
+    },
+    {
+      indicator: 'Massa de ovos por ave alojada',
+      actual: dashboard.eggMassPerHousedBirdKg,
+      target: range(currentReference.eggMassPerHenHousedMinKg, currentReference.eggMassPerHenHousedMaxKg, 2),
+      status: dashboard.eggMassPerHousedBirdKg === null || currentReference.eggMassPerHenHousedMinKg === undefined || currentReference.eggMassPerHenHousedMaxKg === undefined
+        ? 'Sem dados comparáveis'
+        : dashboard.eggMassPerHousedBirdKg < currentReference.eggMassPerHenHousedMinKg ? 'Abaixo da faixa'
+          : dashboard.eggMassPerHousedBirdKg > currentReference.eggMassPerHenHousedMaxKg ? 'Acima da faixa' : 'Dentro da faixa',
+      unit: 'kg/ave',
+    },
+  ] : [];
 
   const visibleResources = useMemo(() => hyLineTechnicalResources.filter((resource) => {
     const query = resourceQuery.trim().toLocaleLowerCase('pt-BR');
@@ -138,7 +219,8 @@ export function TechnicalIndicatorsPage({ initialLineage, initialHousingSystem, 
               <article><small>Peso corporal medido</small><strong>{latest.averageBodyWeightGrams ? `${number(latest.averageBodyWeightGrams, 0)} g` : '—'}</strong><span>Última amostra informada</span></article>
               <article><small>Peso médio do ovo</small><strong>{latest.averageEggWeightGrams ? `${number(latest.averageEggWeightGrams)} g` : '—'}</strong><span>Última amostra informada</span></article>
             </div>
-            {currentReference && <p className="flock-comparison"><strong>Comparação na idade cadastrada:</strong> ração {latest.feedGramsPerBirdDay !== null && currentReference.dailyFeedMinGrams !== undefined && currentReference.dailyFeedMaxGrams !== undefined ? latest.feedGramsPerBirdDay < currentReference.dailyFeedMinGrams ? 'abaixo da faixa' : latest.feedGramsPerBirdDay > currentReference.dailyFeedMaxGrams ? 'acima da faixa' : 'dentro da faixa' : 'sem meta disponível'}; peso corporal {latest.averageBodyWeightGrams && currentReference.bodyWeightMinGrams !== undefined && currentReference.bodyWeightMaxGrams !== undefined ? latest.averageBodyWeightGrams < currentReference.bodyWeightMinGrams ? 'abaixo da faixa' : latest.averageBodyWeightGrams > currentReference.bodyWeightMaxGrams ? 'acima da faixa' : 'dentro da faixa' : 'sem meta disponível'}.</p>}
+            {currentReference && <div className="section-title-row"><div><h3>Comparação direta por idade</h3><p>Resultado real confrontado com a meta publicada para {number(ageWeeks, 1)} semanas. Indicadores sem dados ou sem meta permanecem sem classificação.</p></div></div>}
+            {comparisonRows.length > 0 && <div className="table-wrap"><table><thead><tr><th>Indicador</th><th>Resultado real</th><th>Referência do guia</th><th>Comparação</th></tr></thead><tbody>{comparisonRows.map((row) => <tr key={row.indicator}><td>{row.indicator}</td><td>{number(typeof row.actual === 'number' ? row.actual : null, 2)} {row.actual === null || row.actual === undefined ? '' : row.unit}</td><td>{typeof row.target === 'string' ? row.target : `${row.target} ${row.unit}`}</td><td>{row.status}</td></tr>)}</tbody></table></div>}
           </>
         ) : <p className="table-empty">Ainda não há registros diários válidos para este lote. Registre dados no Acompanhamento Diário para preencher a tabela de resultados reais.</p>}
         <div className="table-wrap">
