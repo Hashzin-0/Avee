@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import '../src/styles/global.css';
+import 'pullcord/pullcord.css';
 import { App } from '../src/app/App';
 
 export const metadata: Metadata = {
