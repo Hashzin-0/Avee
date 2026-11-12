@@ -35,6 +35,7 @@ import { calculateFarm, calculateUniformity, type FarmInput } from '../features/
 import { connectionOptions, scaleCatalog } from '../features/weighing/catalog';
 import type { IdentificationMode, WeighingRecord } from '../features/weighing/types';
 import { WorkspacePages } from '../features/workspace/WorkspacePages';
+import { FarmActivityCalendar } from '../features/dashboard/FarmActivityCalendar';
 import { createInitialWorkspace, parseWorkspaceData, WORKSPACE_STORAGE_KEY } from '../features/workspace/storage';
 import type { FarmRecord, FlockLot, WorkspaceData } from '../features/workspace/types';
 
@@ -254,7 +255,7 @@ export function App() {
   };
 
   return (
-    <div className={workspace.settings.compactTables ? "app-shell compact-tables" : "app-shell"}>
+    <div className={workspace.settings.compactTables ? "app-shell compact-tables" : "app-shell"} data-theme={workspace.settings.theme}>
       <aside className={`sidebar ${mobileNavOpen ? 'sidebar-open' : ''}`}>
         <div className="brand-lockup">
           <div className="brand-mark"><Bird size={23} weight="fill" /></div>
@@ -321,6 +322,7 @@ export function App() {
           />}
           {section === 'overview' && (
             <>
+              <FarmActivityCalendar farms={workspace.farms} />
               <div className="page-heading"><div><span className="eyebrow">PAINEL DA GRANJA</span><h1>Visão geral</h1><p>Acompanhe a operação e acesse as ferramentas de manejo.</p></div><button className="button button-primary" onClick={() => navigate('weighing')}><Plus size={17} />Nova pesagem</button></div>
               <div className="metrics-grid">
                 <Metric label="Plantel de referência" value={formatNumber(activeLot?.currentBirds ?? farm.targetBirds ?? 0)} detail={activeLot?.name ?? 'Quantidade informada no planejamento'} icon={Bird} />
