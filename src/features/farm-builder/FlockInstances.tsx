@@ -8,8 +8,8 @@ import {
   Quaternion,
   SphereGeometry,
   Vector3,
+  Mesh,
   type Material,
-  type Mesh,
 } from 'three';
 import { getBirdGridPosition, getVisibleBirdCount } from './scene-layout';
 
@@ -42,11 +42,11 @@ function ChickenInstances({ count, length, width, scale }: FlockProps) {
 
   const asset = useMemo(() => {
     scene.updateMatrixWorld(true);
-    let sourceMesh: Mesh | null = null;
-    scene.traverse((object) => {
-      if (!sourceMesh && (object as Mesh).isMesh) sourceMesh = object as Mesh;
-    });
-    if (!sourceMesh) throw new Error('O modelo de galinha não contém uma malha renderizável.');
+    const candidate = scene.getObjectByProperty('isMesh', true);
+    if (!(candidate instanceof Mesh)) {
+      throw new Error('O modelo de galinha não contém uma malha renderizável.');
+    }
+    const sourceMesh = candidate;
 
     const geometry = sourceMesh.geometry.clone();
     geometry.applyMatrix4(sourceMesh.matrixWorld);
