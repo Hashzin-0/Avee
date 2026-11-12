@@ -35,6 +35,7 @@ export interface WorkspaceSettings {
   areaUnit: 'm2' | 'ha';
   notifications: boolean;
   compactTables: boolean;
+  theme: 'dark' | 'light';
 }
 
 export interface WorkspaceData {
