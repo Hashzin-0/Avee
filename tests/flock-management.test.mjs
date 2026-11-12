@@ -228,6 +228,7 @@ test('exposes guide-backed housing coefficients from the same technical library 
 
   assert.equal(conventionalRearing?.values.birdsPerNipple, 8);
   assert.equal(conventionalProduction?.values.feederCmPerBird, 9);
+  assert.equal(getLayerHousingRecommendation('Hy-Line Brown', 'Gaiolas convencionais', 15)?.ageRangeLabel, '15 semanas ou mais');
   assert.equal(alternativeFloor?.values.areaPerBirdCm2, 1429);
   assert.equal(alternativeAviary?.values.areaPerBirdCm2, undefined);
   assert.equal(getLayerHousingRecommendation('Hy-Line Brown', 'Sistema de piso', 16), null);
