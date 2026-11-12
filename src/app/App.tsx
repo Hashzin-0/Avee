@@ -71,6 +71,10 @@ function formatRange(min?: number, max?: number, digits = 1) {
   return min === max ? formatNumber(min, digits) : `${formatNumber(min, digits)}–${formatNumber(max, digits)}`;
 }
 
+function formatOptionalNumber(value: number | null | undefined, digits = 0) {
+  return value === null || value === undefined ? '—' : formatNumber(value, digits);
+}
+
 function readFlockEntries(raw: string | null): FlockDailyEntry[] {
   if (!raw) return [];
   try {
@@ -368,10 +372,10 @@ export function App() {
                 <Metric label="Mortalidade acumulada" value={latestFlockDay ? `${formatNumber(flockDashboard?.cumulativeMortalityPercent ?? 0, 2)}%` : '—'} detail="Óbitos ÷ aves alojadas inicialmente" icon={Activity} />
                 <Metric label="Eliminações acumuladas" value={latestFlockDay ? `${formatNumber(flockDashboard?.cumulativeCullsPercent ?? 0, 2)}%` : '—'} detail="Eliminações, sem classificar como morte" icon={Bird} />
                 <Metric label="Viabilidade atual" value={latestFlockDay ? `${formatNumber(flockDashboard?.liveabilityPercent ?? 0, 2)}%` : '—'} detail="Aves vivas ÷ aves alojadas inicialmente" icon={CheckCircle} />
-                <Metric label="Ração por ave/dia" value={latestFlockDay ? `${formatNumber(latestFlockDay.feedGramsPerBirdDay)} g` : '—'} detail="Último dia registrado" icon={Activity} />
-                <Metric label="Água por ave/dia" value={latestFlockDay ? `${formatNumber(latestFlockDay.waterMlPerBirdDay)} ml` : '—'} detail="Último dia registrado" icon={Activity} />
-                <Metric label="Postura hen-day" value={latestFlockDay ? `${formatNumber(latestFlockDay.henDayProductionPercent)}%` : '—'} detail="Ovos ÷ aves vivas no fim do dia" icon={Egg} />
-                <Metric label="Postura hen-housed" value={latestFlockDay ? `${formatNumber(latestFlockDay.henHousedProductionPercent)}%` : '—'} detail="Ovos ÷ aves alojadas inicialmente" icon={Egg} />
+                <Metric label="Ração por ave/dia" value={latestFlockDay ? `${formatOptionalNumber(latestFlockDay.feedGramsPerBirdDay)} g` : '—'} detail="Último dia registrado" icon={Activity} />
+                <Metric label="Água por ave/dia" value={latestFlockDay ? `${formatOptionalNumber(latestFlockDay.waterMlPerBirdDay)} ml` : '—'} detail="Último dia registrado" icon={Activity} />
+                <Metric label="Postura hen-day" value={latestFlockDay ? `${formatOptionalNumber(latestFlockDay.henDayProductionPercent)}%` : '—'} detail="Ovos ÷ aves vivas no fim do dia" icon={Egg} />
+                <Metric label="Postura hen-housed" value={latestFlockDay ? `${formatOptionalNumber(latestFlockDay.henHousedProductionPercent)}%` : '—'} detail="Ovos ÷ aves alojadas inicialmente" icon={Egg} />
                 <Metric label="Massa de ovos acumulada" value={latestFlockDay ? `${formatNumber(flockDashboard?.eggMassTotalKg ?? 0)} kg` : '—'} detail={flockDashboard?.eggMassCoverageComplete ? 'Cobertura completa dos dias com postura' : 'Parcial: falta peso médio em dias com ovos'} icon={Egg} />
                 <Metric label="Conversão alimentar acumulada" value={!latestFlockDay || !flockDashboard?.eggMassCoverageComplete || flockDashboard.cumulativeFeedConversion === null ? '—' : `${formatNumber(flockDashboard.cumulativeFeedConversion, 2)} kg/kg`} detail="Ração acumulada ÷ massa de ovos acumulada" icon={Gauge} />
                 <Metric label="Ovos acumulados" value={latestFlockDay ? formatNumber(flockDashboard?.eggsTotal ?? 0) : '—'} detail="Total dos dias registrados" icon={Egg} />
