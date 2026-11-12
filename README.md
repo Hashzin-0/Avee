@@ -68,7 +68,8 @@ A aplicação usa Next.js com App Router. O shell interativo permanece montado n
 - `/granja` — construtor paramétrico 3D, dimensionamento e indicadores zootécnicos de referência.
 - `/pesagem` — registro de pesagens por amostragem ou identificação por anilha e catálogo de balanças.
 - `/registros` — lançamentos diários do lote e acompanhamento zootécnico.
-- `/biblioteca` — guias técnicos, cobertura documental e tabelas semanais.
+- `/indicadores-zootecnicos` — indicadores zootécnicos, metas semanais por linhagem/sistema, resultados reais do lote e biblioteca técnica integrada.
+- `/biblioteca` — rota legada redirecionada para os indicadores zootécnicos.
 - `/granjas` — cadastro e seleção de granjas, dimensões, lotes, linhagem, alojamento, idade e quantidade inicial de aves.
 - `/configuracoes` — preferências locais de unidades, notificações e densidade de tabelas.
 - `/perfil` — dados de identificação e contato do administrador local.
