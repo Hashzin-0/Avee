@@ -299,7 +299,7 @@ export function App() {
             onSelectFarm={(selected: FarmRecord) => {
               const lot = selected.lots[0];
               setWorkspace((current) => ({ ...current, activeFarmId: selected.id, activeLotId: lot?.id ?? '' }));
-              setFarm({ ...initialFarm, ...selected.configuration, targetBirds: lot?.currentBirds ?? selected.configuration.targetBirds ?? 0 });
+              setFarm({ ...initialFarm, ...selected.configuration, targetBirds: lot?.initialBirds ?? selected.configuration.targetBirds ?? 0 });
               if (lot) {
                 setLineage(lot.lineage as LayerLineage);
                 setHousingSystem(lot.housingSystem as HousingSystem);
@@ -308,7 +308,7 @@ export function App() {
             }}
             onSelectLot={(selected: FarmRecord, lot: FlockLot) => {
               setWorkspace((current) => ({ ...current, activeFarmId: selected.id, activeLotId: lot.id }));
-              setFarm({ ...initialFarm, ...selected.configuration, targetBirds: lot.currentBirds });
+              setFarm({ ...initialFarm, ...selected.configuration, targetBirds: lot.initialBirds });
               setLineage(lot.lineage as LayerLineage);
               setHousingSystem(lot.housingSystem as HousingSystem);
               setAgeWeeks(lot.ageWeeks);
@@ -432,7 +432,7 @@ export function App() {
             <div className="section-title-row">
               <div><h2>Cálculos reais da granja</h2><p>Registros diários, indicadores do lote e comparação com referências da linhagem.</p></div>
             </div>
-            <FlockMonitoringPanel key={activeLot?.id ?? "unassigned"} lineage={lineage} ageWeeks={ageWeeks} initialBirds={activeLot?.initialBirds ?? farm.targetBirds ?? 1} lotId={activeLot?.id ?? "unassigned"} referenceSystem={flockReferenceSystem} />
+            <FlockMonitoringPanel key={activeLot?.id ?? "unassigned"} lineage={activeLot?.lineage as LayerLineage ?? lineage} ageWeeks={activeLot?.ageWeeks ?? ageWeeks} initialBirds={activeLot?.initialBirds ?? farm.targetBirds ?? 1} lotId={activeLot?.id ?? "unassigned"} referenceSystem={activeLot ? (activeLot.housingSystem === 'Gaiolas enriquecidas' ? 'unsupported' : activeLot.housingSystem === 'Gaiolas convencionais' ? 'conventional' : 'alternative') : flockReferenceSystem} />
           </div>}
         </div>
         <footer className="app-footer"><span>Granja · Gestão Avícola Inteligente</span><span>Protótipo inicial · Dados locais</span></footer>
