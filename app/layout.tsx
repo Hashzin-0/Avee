@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import '../src/styles/global.css';
+import 'pullcord/pullcord.css';
+import { App } from '../src/app/App';
 
 export const metadata: Metadata = {
   title: 'Granja | Gestão Avícola',
@@ -9,7 +11,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="pt-BR">
-      <body>{children}</body>
+      <body><App />{children}</body>
     </html>
   );
 }

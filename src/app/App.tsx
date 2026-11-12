@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   PulseIcon as Activity,
   BirdIcon as Bird,
@@ -33,8 +34,12 @@ import { getLayerPerformanceProfile, getLayerTechnicalRecommendation, type Clima
 import { calculateFarm, calculateUniformity, type FarmInput } from '../features/farm-builder/domain';
 import { connectionOptions, scaleCatalog } from '../features/weighing/catalog';
 import type { IdentificationMode, WeighingRecord } from '../features/weighing/types';
+import { WorkspacePages } from '../features/workspace/WorkspacePages';
+import { FarmActivityCalendar } from '../features/dashboard/FarmActivityCalendar';
+import { createInitialWorkspace, parseWorkspaceData, WORKSPACE_STORAGE_KEY } from '../features/workspace/storage';
+import type { FarmRecord, FlockLot, WorkspaceData } from '../features/workspace/types';
 
-type Section = 'overview' | 'weighing' | 'builder' | 'technical';
+type Section = 'overview' | 'weighing' | 'builder' | 'technical' | 'records' | 'farms' | 'settings' | 'profile';
 
 const initialFarm: FarmInput = {
   houseLengthM: 100,
@@ -91,8 +96,14 @@ function Field({ label, value, onChange, unit, min = 0, step = 1, hint }: {
 }
 
 export function App() {
-  const [section, setSection] = useState<Section>('overview');
+  const pathname = usePathname();
+  const router = useRouter();
+  const section: Section = pathname === '/granja' ? 'builder' : pathname === '/pesagem' ? 'weighing' : pathname === '/registros' ? 'records' : pathname === '/biblioteca' ? 'technical' : pathname === '/granjas' ? 'farms' : pathname === '/configuracoes' ? 'settings' : pathname === '/perfil' ? 'profile' : 'overview';
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [workspace, setWorkspace] = useState<WorkspaceData>(() => createInitialWorkspace());
+  const [workspaceReady, setWorkspaceReady] = useState(false);
+  const activeFarm = workspace.farms.find((item) => item.id === workspace.activeFarmId) ?? workspace.farms[0];
+  const activeLot = activeFarm?.lots.find((item) => item.id === workspace.activeLotId) ?? activeFarm?.lots.find((item) => item.status === 'active');
   const [farm, setFarm] = useState<Partial<FarmInput>>(initialFarm);
   const [planningMode, setPlanningMode] = useState<'birds' | 'house'>('birds');
   const [layoutRows, setLayoutRows] = useState(3);
@@ -118,6 +129,50 @@ export function App() {
   const flockReferenceSystem = housingSystem === 'Gaiolas enriquecidas' ? 'unsupported' : housingSystem === 'Gaiolas convencionais' ? 'conventional' : 'alternative';
   const performanceProfile = useMemo(() => housingSystem === 'Gaiolas convencionais' ? getLayerPerformanceProfile(lineage) : null, [lineage, housingSystem]);
   const technicalRecommendation = useMemo(() => getLayerTechnicalRecommendation({ lineage, housingSystem, phase: productionPhase, ageWeeks, climateProfile }), [lineage, housingSystem, productionPhase, ageWeeks, climateProfile]);
+
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem(WORKSPACE_STORAGE_KEY);
+      const next = saved ? (parseWorkspaceData(saved) ?? createInitialWorkspace()) : createInitialWorkspace();
+      setWorkspace(next);
+      const selectedFarm = next.farms.find((item) => item.id === next.activeFarmId) ?? next.farms[0];
+      const selectedLot = selectedFarm?.lots.find((item) => item.id === next.activeLotId) ?? selectedFarm?.lots[0];
+      if (selectedFarm) setFarm({ ...initialFarm, ...selectedFarm.configuration, targetBirds: selectedLot?.currentBirds ?? selectedFarm.configuration.targetBirds ?? initialFarm.targetBirds });
+      if (selectedLot) {
+        setLineage(selectedLot.lineage as LayerLineage);
+        setHousingSystem(selectedLot.housingSystem as HousingSystem);
+        setAgeWeeks(selectedLot.ageWeeks);
+      }
+    } catch {
+      setNotice('Não foi possível ler o cadastro local. Os dados atuais permanecem disponíveis nesta sessão.');
+    }
+    setWorkspaceReady(true);
+  }, []);
+
+  useEffect(() => {
+    if (!workspaceReady) return;
+    try {
+      window.localStorage.setItem(WORKSPACE_STORAGE_KEY, JSON.stringify(workspace));
+    } catch {
+      setNotice('O armazenamento local está indisponível ou cheio. Exporte seus dados antes de fechar o navegador.');
+    }
+  }, [workspace, workspaceReady]);
+
+  useEffect(() => {
+    if (!workspaceReady || !activeFarm) return;
+    setWorkspace((current) => ({
+      ...current,
+      farms: current.farms.map((item) => item.id === activeFarm.id
+        ? {
+            ...item,
+            configuration: { ...item.configuration, ...farm },
+            lots: item.lots.map((lot) => lot.id === activeLot?.id
+              ? { ...lot, currentBirds: Math.max(0, Math.floor(farm.targetBirds ?? lot.currentBirds)), lineage, housingSystem, ageWeeks }
+              : lot),
+          }
+        : item),
+    }));
+  }, [farm, workspaceReady, activeFarm?.id, activeLot?.id, lineage, housingSystem, ageWeeks]);
 
   useEffect(() => {
     setManualOverrides(new Set());
@@ -193,13 +248,14 @@ export function App() {
   };
 
   const navigate = (next: Section) => {
-    setSection(next);
+    const routes: Record<Section, string> = { overview: '/', builder: '/granja', weighing: '/pesagem', records: '/registros', technical: '/biblioteca', farms: '/granjas', settings: '/configuracoes', profile: '/perfil' };
+    router.push(routes[next]);
     setMobileNavOpen(false);
     setNotice('');
   };
 
   return (
-    <div className="app-shell">
+    <div className={workspace.settings.compactTables ? "app-shell compact-tables" : "app-shell"} data-theme={workspace.settings.theme}>
       <aside className={`sidebar ${mobileNavOpen ? 'sidebar-open' : ''}`}>
         <div className="brand-lockup">
           <div className="brand-mark"><Bird size={23} weight="fill" /></div>
@@ -208,23 +264,25 @@ export function App() {
         </div>
         <div className="workspace-switcher">
           <div className="workspace-avatar">GF</div>
-          <div><strong>Granja Fazenda</strong><span>Ambiente de trabalho</span></div>
+          <div><strong>{activeFarm?.name ?? 'Cadastrar granja'}</strong><span>{activeLot?.name ?? 'Nenhum lote selecionado'}</span></div>
           <ChevronDown size={16} />
         </div>
         <nav className="primary-nav" aria-label="Navegação principal">
           <span className="nav-label">GESTÃO</span>
           <button className={section === 'overview' ? 'nav-item active' : 'nav-item'} onClick={() => navigate('overview')}><House size={18} />Visão geral</button>
           <button className={section === 'weighing' ? 'nav-item active' : 'nav-item'} onClick={() => navigate('weighing')}><Scale size={18} />Pesagem <span className="nav-count">{records.length || '—'}</span></button>
-          <button className="nav-item" onClick={() => navigate('overview')}><Egg size={18} />Produção de ovos</button>
-          <button className="nav-item" onClick={() => navigate('overview')}><Activity size={18} />Indicadores zootécnicos</button>
+          <button className={section === 'records' ? 'nav-item active' : 'nav-item'} onClick={() => navigate('records')}><Egg size={18} />Registros diários</button>
+          <button className={section === 'builder' ? 'nav-item active' : 'nav-item'} onClick={() => navigate('builder')}><Activity size={18} />Indicadores zootécnicos</button>
           <span className="nav-label nav-label-spaced">PLANEJAMENTO</span>
           <button className={section === 'builder' ? 'nav-item active' : 'nav-item'} onClick={() => navigate('builder')}><Boxes size={18} />Montar minha granja <span className="new-pill">3D</span></button>
           <button className={section === 'technical' ? 'nav-item active' : 'nav-item'} onClick={() => navigate('technical')}><BookOpen size={18} />Biblioteca técnica</button>
+          <span className="nav-label nav-label-spaced">ADMINISTRAÇÃO</span>
+          <button className={section === 'farms' ? 'nav-item active' : 'nav-item'} onClick={() => navigate('farms')}><House size={18} />Minhas granjas</button>
         </nav>
         <div className="sidebar-bottom">
           <div className="sync-status"><span className="status-dot" /><div><strong>Modo local</strong><small>Sincronização em nuvem não configurada</small></div></div>
-          <button className="nav-item" onClick={() => setNotice('Configurações de conta serão habilitadas após a integração de autenticação.')}><Settings2 size={18} />Configurações</button>
-          <div className="profile-row"><div className="profile-avatar">K</div><div><strong>Administrador</strong><small>Perfil da granja</small></div><ChevronDown size={16} /></div>
+          <button className={section === 'settings' ? 'nav-item active' : 'nav-item'} onClick={() => navigate('settings')}><Settings2 size={18} />Configurações</button>
+          <button className="profile-row profile-button" onClick={() => navigate('profile')}><div className="profile-avatar">{workspace.profile.fullName.trim().charAt(0).toUpperCase() || 'A'}</div><div><strong>{workspace.profile.fullName || 'Administrador'}</strong><small>Perfil do administrador</small></div><ChevronDown size={16} /></button>
         </div>
       </aside>
 
@@ -233,18 +291,41 @@ export function App() {
       <main className="main-area">
         <header className="topbar">
           <button className="icon-button mobile-menu" aria-label="Abrir menu" onClick={() => setMobileNavOpen(true)}><Menu size={20} /></button>
-          <div className="breadcrumb">Granja Fazenda <span>/</span> {section === 'builder' ? 'Construtor 3D' : section === 'weighing' ? 'Pesagem' : section === 'technical' ? 'Biblioteca técnica' : 'Visão geral'}</div>
+          <div className="breadcrumb">{activeFarm?.name ?? 'Granja'} <span>/</span> {section === 'builder' ? 'Construtor 3D' : section === 'weighing' ? 'Pesagem' : section === 'technical' ? 'Biblioteca técnica' : section === 'records' ? 'Registros diários' : section === 'farms' ? 'Minhas granjas' : section === 'settings' ? 'Configurações' : section === 'profile' ? 'Perfil do administrador' : 'Visão geral'}</div>
           <div className="topbar-actions"><span className="environment-chip"><span className="status-dot" />Ambiente de desenvolvimento</span><button className="icon-button" aria-label="Ajuda" onClick={() => setNotice('Este é um protótipo local. Consulte o README para conhecer os limites atuais.')}><CircleHelp size={19} /></button></div>
         </header>
 
         <div className="page-content">
           {notice && <div className="notice" role="status"><CheckCircle size={17} />{notice}<button onClick={() => setNotice('')} aria-label="Fechar aviso"><X size={16} /></button></div>}
 
+          {(section === 'farms' || section === 'settings' || section === 'profile') && <WorkspacePages
+            page={section}
+            data={workspace}
+            onChange={setWorkspace}
+            onSelectFarm={(selected: FarmRecord) => {
+              const lot = selected.lots[0];
+              setWorkspace((current) => ({ ...current, activeFarmId: selected.id, activeLotId: lot?.id ?? '' }));
+              setFarm({ ...initialFarm, ...selected.configuration, targetBirds: lot?.currentBirds ?? selected.configuration.targetBirds ?? 0 });
+              if (lot) {
+                setLineage(lot.lineage as LayerLineage);
+                setHousingSystem(lot.housingSystem as HousingSystem);
+                setAgeWeeks(lot.ageWeeks);
+              }
+            }}
+            onSelectLot={(selected: FarmRecord, lot: FlockLot) => {
+              setWorkspace((current) => ({ ...current, activeFarmId: selected.id, activeLotId: lot.id }));
+              setFarm({ ...initialFarm, ...selected.configuration, targetBirds: lot.currentBirds });
+              setLineage(lot.lineage as LayerLineage);
+              setHousingSystem(lot.housingSystem as HousingSystem);
+              setAgeWeeks(lot.ageWeeks);
+            }}
+          />}
           {section === 'overview' && (
             <>
+              <FarmActivityCalendar farms={workspace.farms} />
               <div className="page-heading"><div><span className="eyebrow">PAINEL DA GRANJA</span><h1>Visão geral</h1><p>Acompanhe a operação e acesse as ferramentas de manejo.</p></div><button className="button button-primary" onClick={() => navigate('weighing')}><Plus size={17} />Nova pesagem</button></div>
               <div className="metrics-grid">
-                <Metric label="Plantel de referência" value="5.000" detail="Quantidade informada no planejamento" icon={Bird} />
+                <Metric label="Plantel de referência" value={formatNumber(activeLot?.currentBirds ?? farm.targetBirds ?? 0)} detail={activeLot?.name ?? 'Quantidade informada no planejamento'} icon={Bird} />
                 <Metric label="Pesagens nesta sessão" value={String(records.length)} detail="Registros locais ainda não sincronizados" icon={Scale} />
                 <Metric label="Peso médio da amostra" value={stats.meanGrams === null ? '—' : `${formatNumber(stats.meanGrams)} g`} detail="Calculado sobre os registros desta sessão" icon={Gauge} />
                 <Metric label="Uniformidade da amostra" value={stats.uniformityPercent === null ? '—' : `${formatNumber(stats.uniformityPercent, 1)}%`} detail="Faixa de ±10% da média amostral" icon={ChartLine} />
@@ -304,11 +385,16 @@ export function App() {
                   <div className="form-section"><h3>Equipamentos já instalados</h3><p className="section-help">Informe as quantidades existentes para calcular a capacidade real limitada pelos equipamentos.</p><div className="field-grid"><Field label="Nipples instalados" value={farm.installedNipples} onChange={(value) => updateFarm('installedNipples', value)} unit="unidades" step={1} /><Field label="Comedouro linear instalado" value={farm.installedFeederLengthM} onChange={(value) => updateFarm('installedFeederLengthM', value)} unit="metros" step={0.1} /><Field label="Ventiladores instalados" value={farm.installedFanCount} onChange={(value) => updateFarm('installedFanCount', value)} unit="unidades" step={1} /><Field label="Módulos/gaiolas instalados" value={farm.installedCageModules} onChange={(value) => updateFarm('installedCageModules', value)} unit="unidades" step={1} /></div></div>
                 </section>
                 <div className="builder-preview-column">
-                  <section className="panel scene-panel"><div className="scene-heading"><div><h2>Pré-visualização 3D</h2><p>Modelo paramétrico simplificado · vista interativa</p></div><span className="scene-live"><span className="status-dot" />Atualizado</span></div><FarmScene length={farm.houseLengthM || 1} width={farm.houseWidthM || 1} sideHeight={farm.sideHeightM || 3} ridgeHeight={farm.ridgeHeightM || 4.5} rows={layoutRows} fans={planningMode === 'house' ? (farm.installedFanCount ?? 0) : (equipmentCalculation?.fansRequired ?? 0)} /><div className="scene-footer"><span><Layers3 size={15} />Estrutura ilustrativa</span><span>Arraste para orbitar · scroll para zoom</span></div></section>
+                  <section className="panel scene-panel"><div className="scene-heading"><div><h2>Pré-visualização 3D</h2><p>Modelo paramétrico detalhado · vista interativa</p></div><span className="scene-live"><span className="status-dot" />Atualizado</span></div><FarmScene length={farm.houseLengthM || 1} width={farm.houseWidthM || 1} sideHeight={farm.sideHeightM || 3} ridgeHeight={farm.ridgeHeightM || 4.5} rows={layoutRows} fans={planningMode === 'house' && farm.installedFanCount !== undefined ? farm.installedFanCount : (equipmentCalculation?.fansRequired ?? 0)} birds={planningMode === 'house' ? (calculation?.availableBirdCapacity ?? farm.targetBirds ?? 0) : (farm.targetBirds ?? 0)} nipples={equipmentCalculation?.nipplesRequired ?? farm.installedNipples ?? 0} /><div className="scene-footer"><span><Layers3 size={15} />Estrutura paramétrica · equipamentos ilustrativos</span><span>Plantel considerado: {formatNumber(planningMode === 'house' ? (calculation?.availableBirdCapacity ?? farm.targetBirds ?? 0) : (farm.targetBirds ?? 0))} aves · amostra visual otimizada · arraste para orbitar · scroll para zoom</span></div></section>
                   <section className="panel calculation-panel"><div className="panel-heading"><div><h2>Dimensionamento preliminar</h2><p>Resultados derivados exclusivamente das entradas.</p></div><Gauge size={20} /></div><div className="calculation-grid"><div><small>Área bruta</small><strong>{calculation ? `${formatNumber(calculation.grossAreaM2, 1)} m²` : 'Pendente'}</strong></div><div><small>Área útil estimada</small><strong>{calculation ? `${formatNumber(calculation.usableAreaM2, 1)} m²` : 'Pendente'}</strong></div><div><small>Capacidade pela área</small><strong>{!calculation || calculation.areaBasedCapacity === null ? 'Sem coeficiente' : `${formatNumber(calculation.areaBasedCapacity)} aves`}</strong></div><div><small>Menor limite conhecido</small><strong>{!calculation || calculation.availableBirdCapacity === null ? 'Dados insuficientes' : `${formatNumber(calculation.availableBirdCapacity)} aves`}</strong></div><div><small>Aves consideradas</small><strong>{planningMode === 'house' ? (calculation?.availableBirdCapacity !== null && calculation?.availableBirdCapacity !== undefined ? formatNumber(calculation.availableBirdCapacity) : 'Pendente') : formatNumber(farm.targetBirds ?? 0)}</strong></div><div><small>Nipples calculados</small><strong>{!equipmentCalculation || equipmentCalculation.nipplesRequired === null ? 'Pendente' : formatNumber(equipmentCalculation.nipplesRequired)}</strong></div><div><small>Comedouro linear</small><strong>{!equipmentCalculation || equipmentCalculation.feederLengthM === null ? 'Pendente' : `${formatNumber(equipmentCalculation.feederLengthM, 1)} m`}</strong></div><div><small>Ventiladores</small><strong>{!equipmentCalculation || equipmentCalculation.fansRequired === null ? 'Pendente' : formatNumber(equipmentCalculation.fansRequired)}</strong></div><div><small>Gaiolas/módulos</small><strong>{!equipmentCalculation || equipmentCalculation.cagesRequired === null ? 'Pendente' : formatNumber(equipmentCalculation.cagesRequired)}</strong></div></div><div className="capacity-constraints"><strong>{calculation?.limitingConstraints.length ? 'Fator(es) limitante(s) entre os dados informados' : 'Capacidade ainda não determinada'}</strong>{calculation?.limitingConstraints.length ? <ul>{calculation.limitingConstraints.map((item) => <li key={item.key}>{item.label}: {formatNumber(item.capacity)} aves</li>)}</ul> : <p>Informe coeficientes técnicos e quantidades instaladas compatíveis com o sistema para calcular a capacidade.</p>}</div><div className="calculation-disclaimer"><ShieldCheck size={17} /><p>Pré-dimensionamento. A capacidade considera somente os fatores com coeficiente e quantidade instalada informados. Não representa capacidade final enquanto os demais fatores aplicáveis não forem avaliados. Ainda não inclui perdas de carga, qualidade da água, vazão hidráulica, área externa, legislação local ou validação de engenharia.</p></div></section>
 
                 </div>
               </div>
+            {performanceProfile && <section className="panel performance-panel">
+              <div className="panel-heading"><div><h2>Indicadores zootécnicos de referência</h2><p>{performanceProfile.lineage} · metas e resultados publicados no guia · {performanceProfile.reviewStatus}</p></div><ChartLine size={20} /></div>
+              <div className="performance-grid">{performanceProfile.indicators.map((indicator, index) => <article className="performance-item" key={indicator.label + "-" + indicator.period + "-" + index}><small>{indicator.label}</small><strong>{indicator.value}</strong><span>{indicator.period}</span></article>)}</div>
+              <div className="performance-source"><strong>{performanceProfile.source.publisher}</strong> · {performanceProfile.source.title} · {performanceProfile.source.edition} · página {performanceProfile.source.page}. {performanceProfile.note}<a href={performanceProfile.source.url} target="_blank" rel="noreferrer">Consultar documento original</a></div>
+            </section>}
             </>
           )}
 
@@ -348,7 +434,7 @@ export function App() {
               </section>
             </>
           )}
-          <div hidden={section !== 'overview'} className="dashboard-flock-section">
+          {section === 'records' && <div className="dashboard-flock-section">
             <div className="section-title-row">
               <div><h2>Cálculos reais da granja</h2><p>Registros diários, indicadores do lote e comparação com referências da linhagem.</p></div>
             </div>
@@ -359,13 +445,8 @@ export function App() {
                 <Field label="Idade atual do lote" value={ageWeeks} onChange={(value) => setAgeWeeks(value ?? 0)} unit="semanas" step={0.1} hint={`Fase identificada automaticamente: ${productionPhase}.`} />
               </div>
             </section>
-            {performanceProfile && <section className="panel performance-panel">
-              <div className="panel-heading"><div><h2>Indicadores zootécnicos de referência</h2><p>{performanceProfile.lineage} · metas e resultados publicados no guia · {performanceProfile.reviewStatus}</p></div><ChartLine size={20} /></div>
-              <div className="performance-grid">{performanceProfile.indicators.map((indicator, index) => <article className="performance-item" key={indicator.label + "-" + indicator.period + "-" + index}><small>{indicator.label}</small><strong>{indicator.value}</strong><span>{indicator.period}</span></article>)}</div>
-              <div className="performance-source"><strong>{performanceProfile.source.publisher}</strong> · {performanceProfile.source.title} · {performanceProfile.source.edition} · página {performanceProfile.source.page}. {performanceProfile.note}<a href={performanceProfile.source.url} target="_blank" rel="noreferrer">Consultar documento original</a></div>
-            </section>}
-            <FlockMonitoringPanel lineage={lineage} ageWeeks={ageWeeks} defaultBirds={farm.targetBirds ?? 1} referenceSystem={flockReferenceSystem} />
-          </div>
+            <FlockMonitoringPanel key={activeLot?.id ?? "unassigned"} lineage={lineage} ageWeeks={ageWeeks} defaultBirds={activeLot?.currentBirds ?? farm.targetBirds ?? 1} lotId={activeLot?.id ?? "unassigned"} referenceSystem={flockReferenceSystem} />
+          </div>}
         </div>
         <footer className="app-footer"><span>Granja · Gestão Avícola Inteligente</span><span>Protótipo inicial · Dados locais</span></footer>
       </main>

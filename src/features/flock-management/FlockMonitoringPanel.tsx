@@ -17,10 +17,11 @@ function todayLocal() {
   return date.toISOString().slice(0, 10);
 }
 
-export function FlockMonitoringPanel({ lineage, ageWeeks, defaultBirds, referenceSystem = 'conventional' }: {
+export function FlockMonitoringPanel({ lineage, ageWeeks, defaultBirds, lotId = 'unassigned', referenceSystem = 'conventional' }: {
   lineage: LayerLineage;
   ageWeeks: number;
   defaultBirds: number;
+  lotId?: string;
   referenceSystem?: 'conventional' | 'alternative' | 'unsupported';
 }) {
   const [initialBirds, setInitialBirds] = useState(String(defaultBirds));
@@ -37,7 +38,43 @@ export function FlockMonitoringPanel({ lineage, ageWeeks, defaultBirds, referenc
   const [eggWeight, setEggWeight] = useState('');
   const [bodyWeight, setBodyWeight] = useState('');
   const [entries, setEntries] = useState<FlockDailyEntry[]>([]);
+  const [loadedLotId, setLoadedLotId] = useState('');
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    setLoadedLotId('');
+    setEntries([]);
+    try {
+      const raw = window.localStorage.getItem(`granja.flock-entries.v1.${lotId}`);
+      const parsed: unknown = raw ? JSON.parse(raw) : [];
+      if (Array.isArray(parsed)) {
+        const validEntries = parsed.filter((item): item is FlockDailyEntry => {
+          if (typeof item !== 'object' || item === null || Array.isArray(item)) return false;
+          const entry = item as Record<string, unknown>;
+          return typeof entry.id === 'string' && typeof entry.date === 'string'
+            && Number.isFinite(entry.deaths) && Number.isFinite(entry.culls)
+            && Number.isFinite(entry.feedKg) && Number.isFinite(entry.waterLiters)
+            && Number.isFinite(entry.eggsProduced)
+            && (entry.averageEggWeightGrams === undefined || Number.isFinite(entry.averageEggWeightGrams))
+            && (entry.averageBodyWeightGrams === undefined || Number.isFinite(entry.averageBodyWeightGrams));
+        });
+        setEntries(validEntries);
+      }
+    } catch {
+      setError('Não foi possível carregar o histórico local deste lote.');
+    }
+    setLoadedLotId(lotId);
+  }, [lotId]);
+
+  useEffect(() => {
+    if (loadedLotId !== lotId) return;
+    try {
+      window.localStorage.setItem(`granja.flock-entries.v1.${lotId}`, JSON.stringify(entries));
+      window.dispatchEvent(new CustomEvent("granja:flock-entries-updated", { detail: { lotId } }));
+    } catch {
+      setError('Não foi possível salvar o histórico local deste lote. Verifique o espaço disponível no navegador.');
+    }
+  }, [entries, loadedLotId, lotId]);
 
   const dashboard = useMemo(() => {
     const count = Number(initialBirds);
@@ -146,7 +183,7 @@ export function FlockMonitoringPanel({ lineage, ageWeeks, defaultBirds, referenc
           <tbody>{dashboard?.daily.length ? dashboard.daily.slice().reverse().map((item) => <tr key={item.id}><td>{item.date}</td><td>{number(item.birdsAtEnd, 0)}</td><td>{item.deaths}</td><td>{number(item.feedGramsPerBirdDay)}</td><td>{number(item.waterMlPerBirdDay)}</td><td>{item.eggsProduced}</td><td>{number(item.henDayProductionPercent)}%</td></tr>) : <tr><td colSpan={7} className="table-empty">Nenhum dia registrado. Cadastre os dados reais para iniciar os indicadores.</td></tr>}</tbody>
         </table>
       </div>
-      <p className="table-footnote">Os registros desta versão ficam apenas na memória da sessão do navegador. O cálculo usa inventário médio diário; a mortalidade é separada das eliminações. Para sincronizar entre dispositivos e manter histórico, será necessária persistência em banco de dados.</p>
+      <p className="table-footnote">Os registros diários são persistidos localmente neste navegador e separados por lote. O cálculo usa inventário médio diário; a mortalidade é separada das eliminações. Para sincronizar entre dispositivos e manter histórico centralizado, será necessária persistência em banco de dados.</p>
     </section>
   );
 }
