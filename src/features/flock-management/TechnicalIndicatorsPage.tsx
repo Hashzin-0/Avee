@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { LayerLineage } from '../farm-builder/technical-recommendations';
 import { calculateFlockDashboard, type FlockDailyEntry } from './domain';
 import { getLayerAgeReference, getLayerGuideSource, layerAgeReferences } from './management-library';
-import { hyLineTechnicalResources, type HyLineResourceCategory } from './hyline-resource-library';
+import { hyLineTechnicalResources } from './hyline-resource-library';
 
 type HousingVariant = 'conventional' | 'alternative';
 const lineages: LayerLineage[] = ['Hy-Line Brown', 'Lohmann Brown-Classic', 'NOVOgen Brown', 'Hy-Line W-36'];
@@ -67,9 +67,6 @@ export function TechnicalIndicatorsPage({ initialLineage, initialHousingSystem, 
     };
   }, [lotId]);
 
-  useEffect(() => {
-    setHousingSystem('conventional');
-  }, [lineage]);
 
   const referenceSystem: HousingVariant = lineage === 'Hy-Line Brown' ? housingSystem : 'conventional';
   const source = getLayerGuideSource(lineage, referenceSystem);
@@ -101,7 +98,7 @@ export function TechnicalIndicatorsPage({ initialLineage, initialHousingSystem, 
       <section className="panel guide-standards-panel">
         <div className="panel-heading"><div><h2>Referências técnicas e resultados do lote</h2><p>Selecione a linhagem e a variante do guia. As tabelas abaixo usam somente valores estruturados, sem interpolação.</p></div></div>
         <div className="field-grid">
-          <label className="field"><span>Espécie / linhagem</span><select value={lineage} onChange={(event) => setLineage(event.target.value as LayerLineage)}>{lineages.map((item) => <option key={item} value={item}>{item}</option>)}</select></label>
+          <label className="field"><span>Espécie / linhagem</span><select value={lineage} onChange={(event) => { setLineage(event.target.value as LayerLineage); setHousingSystem('conventional'); }}>{lineages.map((item) => <option key={item} value={item}>{item}</option>)}</select></label>
           <label className="field"><span>Variante do guia</span><select value={referenceSystem} disabled={lineage !== 'Hy-Line Brown'} onChange={(event) => setHousingSystem(event.target.value as HousingVariant)}><option value="conventional">Sistemas convencionais</option><option value="alternative">Sistemas alternativos</option></select></label>
           <div className="phase-indicator"><span>Idade cadastrada do lote</span><strong>{number(ageWeeks, 1)} semanas</strong></div>
         </div>
