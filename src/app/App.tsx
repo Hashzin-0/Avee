@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   PulseIcon as Activity,
   BirdIcon as Bird,
@@ -34,7 +35,7 @@ import { calculateFarm, calculateUniformity, type FarmInput } from '../features/
 import { connectionOptions, scaleCatalog } from '../features/weighing/catalog';
 import type { IdentificationMode, WeighingRecord } from '../features/weighing/types';
 
-type Section = 'overview' | 'weighing' | 'builder' | 'technical';
+type Section = 'overview' | 'weighing' | 'builder' | 'technical' | 'records';
 
 const initialFarm: FarmInput = {
   houseLengthM: 100,
@@ -91,7 +92,9 @@ function Field({ label, value, onChange, unit, min = 0, step = 1, hint }: {
 }
 
 export function App() {
-  const [section, setSection] = useState<Section>('overview');
+  const pathname = usePathname();
+  const router = useRouter();
+  const section: Section = pathname === '/granja' ? 'builder' : pathname === '/pesagem' ? 'weighing' : pathname === '/registros' ? 'records' : pathname === '/biblioteca' ? 'technical' : 'overview';
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [farm, setFarm] = useState<Partial<FarmInput>>(initialFarm);
   const [planningMode, setPlanningMode] = useState<'birds' | 'house'>('birds');
@@ -193,7 +196,8 @@ export function App() {
   };
 
   const navigate = (next: Section) => {
-    setSection(next);
+    const routes: Record<Section, string> = { overview: '/', builder: '/granja', weighing: '/pesagem', records: '/registros', technical: '/biblioteca' };
+    router.push(routes[next]);
     setMobileNavOpen(false);
     setNotice('');
   };
@@ -215,8 +219,8 @@ export function App() {
           <span className="nav-label">GESTÃO</span>
           <button className={section === 'overview' ? 'nav-item active' : 'nav-item'} onClick={() => navigate('overview')}><House size={18} />Visão geral</button>
           <button className={section === 'weighing' ? 'nav-item active' : 'nav-item'} onClick={() => navigate('weighing')}><Scale size={18} />Pesagem <span className="nav-count">{records.length || '—'}</span></button>
-          <button className="nav-item" onClick={() => navigate('overview')}><Egg size={18} />Produção de ovos</button>
-          <button className="nav-item" onClick={() => navigate('overview')}><Activity size={18} />Indicadores zootécnicos</button>
+          <button className="nav-item" onClick={() => navigate('records')}><Egg size={18} />Registros diários</button>
+          <button className="nav-item" onClick={() => navigate('builder')}><Activity size={18} />Indicadores zootécnicos</button>
           <span className="nav-label nav-label-spaced">PLANEJAMENTO</span>
           <button className={section === 'builder' ? 'nav-item active' : 'nav-item'} onClick={() => navigate('builder')}><Boxes size={18} />Montar minha granja <span className="new-pill">3D</span></button>
           <button className={section === 'technical' ? 'nav-item active' : 'nav-item'} onClick={() => navigate('technical')}><BookOpen size={18} />Biblioteca técnica</button>
@@ -233,7 +237,7 @@ export function App() {
       <main className="main-area">
         <header className="topbar">
           <button className="icon-button mobile-menu" aria-label="Abrir menu" onClick={() => setMobileNavOpen(true)}><Menu size={20} /></button>
-          <div className="breadcrumb">Granja Fazenda <span>/</span> {section === 'builder' ? 'Construtor 3D' : section === 'weighing' ? 'Pesagem' : section === 'technical' ? 'Biblioteca técnica' : 'Visão geral'}</div>
+          <div className="breadcrumb">Granja Fazenda <span>/</span> {section === 'builder' ? 'Construtor 3D' : section === 'weighing' ? 'Pesagem' : section === 'technical' ? 'Biblioteca técnica' : section === 'records' ? 'Registros diários' : 'Visão geral'}</div>
           <div className="topbar-actions"><span className="environment-chip"><span className="status-dot" />Ambiente de desenvolvimento</span><button className="icon-button" aria-label="Ajuda" onClick={() => setNotice('Este é um protótipo local. Consulte o README para conhecer os limites atuais.')}><CircleHelp size={19} /></button></div>
         </header>
 
@@ -309,6 +313,11 @@ export function App() {
 
                 </div>
               </div>
+            {performanceProfile && <section className="panel performance-panel">
+              <div className="panel-heading"><div><h2>Indicadores zootécnicos de referência</h2><p>{performanceProfile.lineage} · metas e resultados publicados no guia · {performanceProfile.reviewStatus}</p></div><ChartLine size={20} /></div>
+              <div className="performance-grid">{performanceProfile.indicators.map((indicator, index) => <article className="performance-item" key={indicator.label + "-" + indicator.period + "-" + index}><small>{indicator.label}</small><strong>{indicator.value}</strong><span>{indicator.period}</span></article>)}</div>
+              <div className="performance-source"><strong>{performanceProfile.source.publisher}</strong> · {performanceProfile.source.title} · {performanceProfile.source.edition} · página {performanceProfile.source.page}. {performanceProfile.note}<a href={performanceProfile.source.url} target="_blank" rel="noreferrer">Consultar documento original</a></div>
+            </section>}
             </>
           )}
 
@@ -348,7 +357,7 @@ export function App() {
               </section>
             </>
           )}
-          <div hidden={section !== 'overview'} className="dashboard-flock-section">
+          {section === 'records' && <div className="dashboard-flock-section">
             <div className="section-title-row">
               <div><h2>Cálculos reais da granja</h2><p>Registros diários, indicadores do lote e comparação com referências da linhagem.</p></div>
             </div>
@@ -359,13 +368,8 @@ export function App() {
                 <Field label="Idade atual do lote" value={ageWeeks} onChange={(value) => setAgeWeeks(value ?? 0)} unit="semanas" step={0.1} hint={`Fase identificada automaticamente: ${productionPhase}.`} />
               </div>
             </section>
-            {performanceProfile && <section className="panel performance-panel">
-              <div className="panel-heading"><div><h2>Indicadores zootécnicos de referência</h2><p>{performanceProfile.lineage} · metas e resultados publicados no guia · {performanceProfile.reviewStatus}</p></div><ChartLine size={20} /></div>
-              <div className="performance-grid">{performanceProfile.indicators.map((indicator, index) => <article className="performance-item" key={indicator.label + "-" + indicator.period + "-" + index}><small>{indicator.label}</small><strong>{indicator.value}</strong><span>{indicator.period}</span></article>)}</div>
-              <div className="performance-source"><strong>{performanceProfile.source.publisher}</strong> · {performanceProfile.source.title} · {performanceProfile.source.edition} · página {performanceProfile.source.page}. {performanceProfile.note}<a href={performanceProfile.source.url} target="_blank" rel="noreferrer">Consultar documento original</a></div>
-            </section>}
             <FlockMonitoringPanel lineage={lineage} ageWeeks={ageWeeks} defaultBirds={farm.targetBirds ?? 1} referenceSystem={flockReferenceSystem} />
-          </div>
+          </div>}
         </div>
         <footer className="app-footer"><span>Granja · Gestão Avícola Inteligente</span><span>Protótipo inicial · Dados locais</span></footer>
       </main>
