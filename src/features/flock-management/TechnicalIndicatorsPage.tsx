@@ -188,7 +188,7 @@ export function TechnicalIndicatorsPage({ initialLineage, initialHousingSystem, 
         <div className="section-title-row"><div><h3>1. Metas do guia</h3><p>{lineage} · {referenceSystem === 'alternative' ? 'sistemas alternativos' : 'sistemas convencionais'}</p></div></div>
         <div className="table-wrap guide-standards-table">
           <table>
-            <thead><tr><th>Sem.</th><th>Fase</th><th>Uniformidade mínima (%)</th><th>Peso corporal (g)</th><th>Ração (g/ave/dia)</th><th>Água (ml/ave/dia)</th><th>Mortalidade acum. (%)</th><th>Postura ave-dia (%)</th><th>Ovos/ave-dia acum.</th><th>Ovos/ave alojada acum.</th><th>Massa de ovos (kg)</th><th>Peso do ovo (g)</th></tr></thead>
+            <thead><tr><th>Sem.</th><th>Fase</th><th>Uniformidade mínima (%)</th><th>Peso corporal (g)</th><th>Ração (g/ave/dia)</th><th>Água (ml/ave/dia)</th><th>Mortalidade acum. (%)</th><th>Postura ave-dia (%)</th><th>Ovos/ave-dia acum.</th><th>Ovos/ave alojada acum.</th><th>Massa de ovos (kg)</th><th>Peso do ovo (g)</th><th>Fonte / página</th></tr></thead>
             <tbody>{referenceRows.map((item) => <tr key={item.lineage + '-' + item.sourceId + '-' + item.ageWeeks}>
               <td>{item.ageWeeks}</td><td>{item.phase}</td>
               <td>{item.uniformityMinPercent === undefined ? '—' : `> ${number(item.uniformityMinPercent, 0)}`}</td>
@@ -200,9 +200,9 @@ export function TechnicalIndicatorsPage({ initialLineage, initialHousingSystem, 
               <td>{range(item.eggsPerHenDayMin, item.eggsPerHenDayMax)}</td>
               <td>{range(item.eggsPerHenHousedMin, item.eggsPerHenHousedMax)}</td>
               <td>{range(item.eggMassPerHenHousedMinKg, item.eggMassPerHenHousedMaxKg, 2)}</td>
-              <td>{range(item.averageEggWeightMinGrams, item.averageEggWeightMaxGrams)}</td>
+              <td>{range(item.averageEggWeightMinGrams, item.averageEggWeightMaxGrams)}</td><td>{item.sourceId} · p. {item.page}</td>
             </tr>)}
-            {!referenceRows.length && <tr><td colSpan={12} className="table-empty">Não há metas estruturadas para esta linhagem e variante.</td></tr>}</tbody>
+            {!referenceRows.length && <tr><td colSpan={13} className="table-empty">Não há metas estruturadas para esta linhagem e variante.</td></tr>}</tbody>
           </table>
         </div>
         <p className="table-footnote">“—” significa que o guia não publica aquele indicador naquela idade. As transcrições permanecem com status transcribed-unreviewed e exigem revisão técnica independente antes de uso como norma de engenharia ou decisão sanitária.</p>
@@ -220,7 +220,7 @@ export function TechnicalIndicatorsPage({ initialLineage, initialHousingSystem, 
               <article><small>Peso médio do ovo</small><strong>{latest.averageEggWeightGrams ? `${number(latest.averageEggWeightGrams)} g` : '—'}</strong><span>Última amostra informada</span></article>
             </div>
             {currentReference && <div className="section-title-row"><div><h3>Comparação direta por idade</h3><p>Resultado real confrontado com a meta publicada para {number(ageWeeks, 1)} semanas. Indicadores sem dados ou sem meta permanecem sem classificação.</p></div></div>}
-            {comparisonRows.length > 0 && <div className="table-wrap"><table><thead><tr><th>Indicador</th><th>Resultado real</th><th>Referência do guia</th><th>Comparação</th></tr></thead><tbody>{comparisonRows.map((row) => <tr key={row.indicator}><td>{row.indicator}</td><td>{number(typeof row.actual === 'number' ? row.actual : null, 2)} {row.actual === null || row.actual === undefined ? '' : row.unit}</td><td>{typeof row.target === 'string' ? row.target : `${row.target} ${row.unit}`}</td><td>{row.status}</td></tr>)}</tbody></table></div>}
+            {comparisonRows.length > 0 && <div className="table-wrap"><table><thead><tr><th>Indicador</th><th>Resultado real</th><th>Referência do guia</th><th>Comparação</th></tr></thead><tbody>{comparisonRows.map((row) => <tr key={row.indicator}><td>{row.indicator}</td><td>{number(typeof row.actual === 'number' ? row.actual : null, 2)} {row.actual === null || row.actual === undefined ? '' : row.unit}</td><td>{row.target}{row.indicator === 'Mortalidade acumulada' || row.target === '—' ? '' : ` ${row.unit}`}</td><td>{row.status}</td></tr>)}</tbody></table></div>}
           </>
         ) : <p className="table-empty">Ainda não há registros diários válidos para este lote. Registre dados no Acompanhamento Diário para preencher a tabela de resultados reais.</p>}
         <div className="table-wrap">
