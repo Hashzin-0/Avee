@@ -66,9 +66,11 @@ function DrinkerNipples({ count, rows, length, scale }: {
 }
 
 export function FarmEquipment({ rows, length, width, wallHeight, scale, fans, nipples }: FarmEquipmentProps) {
-  const rowPositions = Array.from({ length: Math.min(12, Math.max(1, Math.floor(rows))) }, (_, index) =>
-    -width / 2 + ((index + 1) * width) / (Math.min(12, Math.max(1, Math.floor(rows))) + 1),
+  const safeRows = Math.min(12, Math.max(1, Math.floor(rows)));
+  const rowPositions = Array.from({ length: safeRows }, (_, index) =>
+    -width / 2 + ((index + 1) * width) / (safeRows + 1),
   );
+
   return (
     <group>
       {rowPositions.map((z, index) => (
@@ -93,14 +95,7 @@ export function FarmEquipment({ rows, length, width, wallHeight, scale, fans, ni
       ))}
 
       <DrinkerNipples count={nipples ?? 0} rows={rowPositions} length={length} scale={scale} />
-
       <FarmFanInstances count={fans ?? 0} length={length} width={width} wallHeight={wallHeight} scale={scale} />
-          <mesh position={[0, 0.19 * scale, 0]}>
-            <boxGeometry args={[1.08 * scale, 0.06 * scale, 1.08 * scale]} />
-            <meshStandardMaterial color="#354844" metalness={0.55} roughness={0.4} wireframe />
-          </mesh>
-        </group>
-      ))}
     </group>
   );
 }
