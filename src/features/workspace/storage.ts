@@ -49,10 +49,20 @@ export function parseWorkspaceData(raw: string): WorkspaceData | null {
     const value: unknown = JSON.parse(raw);
     if (!isRecord(value) || value.schemaVersion !== 1 || !Array.isArray(value.farms)) return null;
     const farms = value.farms.filter((farm): farm is WorkspaceData['farms'][number] => {
-      if (!isRecord(farm)) return false;
-      return typeof farm.id === 'string' && typeof farm.name === 'string'
-        && isRecord(farm.configuration) && Array.isArray(farm.lots)
-        && farm.lots.every((lot) => isRecord(lot) && typeof lot.id === 'string' && typeof lot.name === 'string');
+      if (!isRecord(farm) || !isRecord(farm.configuration) || !Array.isArray(farm.lots)) return false;
+      if (typeof farm.id !== 'string' || typeof farm.name !== 'string' || typeof farm.municipality !== 'string') return false;
+      if (farm.status !== 'active' && farm.status !== 'archived') return false;
+      if (typeof farm.createdAt !== 'string') return false;
+      return farm.lots.every((lot) => isRecord(lot)
+        && typeof lot.id === 'string'
+        && typeof lot.name === 'string'
+        && typeof lot.lineage === 'string'
+        && typeof lot.housingSystem === 'string'
+        && typeof lot.startDate === 'string'
+        && Number.isSafeInteger(lot.initialBirds) && Number(lot.initialBirds) >= 0
+        && Number.isSafeInteger(lot.currentBirds) && Number(lot.currentBirds) >= 0
+        && typeof lot.ageWeeks === 'number' && Number.isFinite(lot.ageWeeks) && lot.ageWeeks >= 0
+        && (lot.status === 'active' || lot.status === 'closed'));
     });
     if (farms.length === 0) return null;
     const profile = isRecord(value.profile) ? value.profile : {};
