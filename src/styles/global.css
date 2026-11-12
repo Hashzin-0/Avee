@@ -294,3 +294,48 @@ td { padding: 11px 8px; border-bottom: 1px solid #f0f3f0; color: #536158; font-s
 .guide-standards-table { max-height: 560px; overflow: auto; }
 .guide-standards-table table { min-width: 1180px; }
 .guide-standards-table thead { position: sticky; top: 0; z-index: 1; }
+
+
+.profile-button { width: 100%; border: 0; background: transparent; text-align: left; cursor: pointer; }
+.workspace-page { display: grid; gap: 16px; }
+.workspace-context { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 13px 16px; border: 1px solid #e5ebe5; border-radius: 10px; background: #f8faf7; color: #7d8a80; font-size: 10px; }
+.workspace-context strong { color: #304c37; font-size: 12px; }
+.workspace-message { margin: 0; padding: 10px 12px; border-radius: 8px; background: #edf5ed; color: #416b49; font-size: 10px; }
+.workspace-form { padding: 18px; }
+.workspace-form .field-grid { margin: 0; }
+.workspace-form .field input, .workspace-form .field select { width: 100%; min-height: 39px; padding: 0 10px; border: 1px solid #dfe6df; border-radius: 8px; background: #fff; color: #34443a; font-size: 10px; }
+.workspace-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 14px; }
+.button-secondary { display: inline-flex; align-items: center; justify-content: center; min-height: 36px; padding: 0 13px; border: 1px solid #dfe7df; border-radius: 7px; background: #fff; color: #526257; font-size: 10px; font-weight: 650; }
+.farm-registry-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.farm-registry-card { min-width: 0; padding: 17px; }
+.farm-registry-card.selected { border-color: #8cac91; box-shadow: 0 0 0 1px #8cac91 inset; }
+.farm-card-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.farm-card-heading h2 { margin: 5px 0 4px; color: #2b4031; font-size: 15px; }
+.farm-card-heading p { margin: 0; color: #89958c; font-size: 10px; }
+.farm-card-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; margin: 16px 0 12px; }
+.farm-card-stats > div { min-width: 0; padding: 9px; border-radius: 7px; background: #f6f8f5; }
+.farm-card-stats small, .farm-card-stats strong { display: block; }
+.farm-card-stats small { color: #87938a; font-size: 8px; }
+.farm-card-stats strong { margin-top: 5px; color: #3b5542; font-size: 11px; overflow-wrap: anywhere; }
+.lot-list { display: grid; gap: 7px; padding-top: 12px; margin-top: 12px; border-top: 1px solid #edf1ed; }
+.lot-list > p { margin: 0; color: #89958c; font-size: 9px; }
+.lot-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px; border-radius: 7px; background: #fafbf9; }
+.lot-row.active { background: #eff5ee; }
+.lot-row > div { min-width: 0; }
+.lot-row strong, .lot-row small { display: block; }
+.lot-row strong { color: #3c5142; font-size: 10px; }
+.lot-row small { margin-top: 3px; color: #87938a; font-size: 8px; line-height: 1.4; }
+.lot-row .text-button { flex: 0 0 auto; }
+.settings-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 0; border-bottom: 1px solid #edf1ed; }
+.settings-row:last-child { border-bottom: 0; }
+.settings-row > div { display: grid; gap: 4px; }
+.settings-row strong { color: #425347; font-size: 10px; }
+.settings-row small { color: #89958c; font-size: 9px; }
+.settings-row select { min-height: 36px; max-width: 210px; padding: 0 10px; border: 1px solid #dfe6df; border-radius: 7px; background: #fff; color: #34443a; font-size: 10px; }
+.settings-row input[type="checkbox"] { width: 17px; height: 17px; accent-color: #477b52; }
+.profile-summary { display: flex; align-items: center; gap: 13px; padding-bottom: 17px; margin-bottom: 17px; border-bottom: 1px solid #edf1ed; }
+.profile-avatar.large { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; background: #e6eee5; color: #466b4c; font-size: 19px; font-weight: 750; }
+.profile-summary h2 { margin: 0 0 5px; color: #304536; font-size: 15px; }
+.profile-summary p { margin: 0; color: #89958c; font-size: 9px; }
+@media (max-width: 780px) { .farm-registry-grid { grid-template-columns: 1fr; } }
+@media (max-width: 480px) { .farm-card-stats { grid-template-columns: 1fr; } .lot-row { align-items: flex-start; flex-direction: column; } .settings-row { align-items: flex-start; } .settings-row select { max-width: 155px; } }
