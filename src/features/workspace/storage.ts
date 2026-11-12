@@ -44,6 +44,10 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
+const farmConfigurationKeys = new Set(['houseLengthM', 'houseWidthM', 'sideHeightM', 'ridgeHeightM', 'targetBirds', 'usableAreaPercent', 'areaPerBirdCm2', 'birdsPerNipple', 'feederCmPerBird', 'fanCapacityM3h', 'airflowM3hPerBird', 'cageCapacity', 'installedNipples', 'installedFeederLengthM', 'installedFanCount', 'installedCageModules']);
+const allowedLineages = new Set(['Hy-Line Brown', 'Lohmann Brown-Classic', 'NOVOgen Brown', 'Hy-Line W-36', 'Outra / não definida']);
+const allowedHousingSystems = new Set(['Gaiolas convencionais', 'Gaiolas enriquecidas', 'Sistema de piso', 'Aviário / multinível', 'Free-range']);
+
 export function parseWorkspaceData(raw: string): WorkspaceData | null {
   try {
     const value: unknown = JSON.parse(raw);
@@ -53,12 +57,13 @@ export function parseWorkspaceData(raw: string): WorkspaceData | null {
       if (typeof farm.id !== 'string' || typeof farm.name !== 'string' || typeof farm.municipality !== 'string') return false;
       if (farm.status !== 'active' && farm.status !== 'archived') return false;
       if (typeof farm.createdAt !== 'string') return false;
+      if (!Object.entries(farm.configuration).every(([key, value]) => farmConfigurationKeys.has(key) && typeof value === 'number' && Number.isFinite(value) && value >= 0)) return false;
       return farm.lots.every((lot) => isRecord(lot)
         && typeof lot.id === 'string'
         && typeof lot.name === 'string'
-        && typeof lot.lineage === 'string'
-        && typeof lot.housingSystem === 'string'
-        && typeof lot.startDate === 'string'
+        && typeof lot.lineage === 'string' && allowedLineages.has(lot.lineage)
+        && typeof lot.housingSystem === 'string' && allowedHousingSystems.has(lot.housingSystem)
+        && typeof lot.startDate === 'string' && /^\\d{4}-\\d{2}-\\d{2}$/.test(lot.startDate) && Number.isFinite(Date.parse(lot.startDate))
         && Number.isSafeInteger(lot.initialBirds) && Number(lot.initialBirds) >= 0
         && Number.isSafeInteger(lot.currentBirds) && Number(lot.currentBirds) >= 0
         && typeof lot.ageWeeks === 'number' && Number.isFinite(lot.ageWeeks) && lot.ageWeeks >= 0
