@@ -2,11 +2,11 @@ import { Canvas, useThree } from '@react-three/fiber';
 import { Grid, OrbitControls, useGLTF } from '@react-three/drei';
 import { Component, Suspense, useEffect, useLayoutEffect, useMemo, useRef, type ReactNode } from 'react';
 import {
-  BoxGeometry,
   CylinderGeometry,
   InstancedMesh,
   Matrix4,
   Mesh,
+  MeshStandardMaterial,
   Quaternion,
   SphereGeometry,
   Vector3,
@@ -142,12 +142,20 @@ function ProceduralFlock({ count, length, width, scale }: {
     head: new SphereGeometry(1, 10, 7).scale(0.075, 0.075, 0.07),
     comb: new SphereGeometry(1, 7, 5).scale(0.025, 0.055, 0.025),
   }), []);
+  const materials = useMemo(() => ({
+    body: new MeshStandardMaterial({ color: '#9d542b', roughness: 0.88 }),
+    head: new MeshStandardMaterial({ color: '#b66a32', roughness: 0.82 }),
+    comb: new MeshStandardMaterial({ color: '#b72e2e', roughness: 0.72 }),
+  }), []);
 
   useEffect(() => () => {
     geometries.body.dispose();
     geometries.head.dispose();
     geometries.comb.dispose();
-  }, [geometries]);
+    materials.body.dispose();
+    materials.head.dispose();
+    materials.comb.dispose();
+  }, [geometries, materials]);
 
   useLayoutEffect(() => {
     const matrix = new Matrix4();
@@ -188,15 +196,9 @@ function ProceduralFlock({ count, length, width, scale }: {
 
   return (
     <group>
-      <instancedMesh ref={bodyRef} args={[geometries.body, undefined, visibleCount]}>
-        <meshStandardMaterial color="#9d542b" roughness={0.88} />
-      </instancedMesh>
-      <instancedMesh ref={headRef} args={[geometries.head, undefined, visibleCount]}>
-        <meshStandardMaterial color="#b66a32" roughness={0.82} />
-      </instancedMesh>
-      <instancedMesh ref={combRef} args={[geometries.comb, undefined, visibleCount]}>
-        <meshStandardMaterial color="#b72e2e" roughness={0.72} />
-      </instancedMesh>
+      <instancedMesh ref={bodyRef} args={[geometries.body, materials.body, visibleCount]} />
+      <instancedMesh ref={headRef} args={[geometries.head, materials.head, visibleCount]} />
+      <instancedMesh ref={combRef} args={[geometries.comb, materials.comb, visibleCount]} />
     </group>
   );
 }
@@ -211,9 +213,12 @@ function DrinkerNipples({ count, rows, length, width, scale }: {
   const instanceRef = useRef<InstancedMesh>(null);
   const visibleCount = Math.min(Math.max(0, Math.floor(count)), 300);
   const geometry = useMemo(() => new CylinderGeometry(0.018, 0.025, 0.11, 7), []);
-  const material = useMemo(() => ({ color: '#c3a65f', metalness: 0.42, roughness: 0.48 }), []);
+  const material = useMemo(() => new MeshStandardMaterial({ color: '#c3a65f', metalness: 0.42, roughness: 0.48 }), []);
 
-  useEffect(() => () => geometry.dispose(), [geometry]);
+  useEffect(() => () => {
+    geometry.dispose();
+    material.dispose();
+  }, [geometry, material]);
 
   useLayoutEffect(() => {
     const mesh = instanceRef.current;
@@ -242,9 +247,7 @@ function DrinkerNipples({ count, rows, length, width, scale }: {
   if (visibleCount === 0) return null;
 
   return (
-    <instancedMesh ref={instanceRef} args={[geometry, undefined, visibleCount]} material={undefined}>
-      <meshStandardMaterial {...material} />
-    </instancedMesh>
+    <instancedMesh ref={instanceRef} args={[geometry, material, visibleCount]} />
   );
 }
 
