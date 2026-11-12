@@ -137,7 +137,7 @@ export function App() {
       setWorkspace(next);
       const selectedFarm = next.farms.find((item) => item.id === next.activeFarmId) ?? next.farms[0];
       const selectedLot = selectedFarm?.lots.find((item) => item.id === next.activeLotId) ?? selectedFarm?.lots[0];
-      if (selectedFarm) setFarm({ ...initialFarm, ...selectedFarm.configuration, targetBirds: selectedLot?.currentBirds ?? selectedFarm.configuration.targetBirds ?? initialFarm.targetBirds });
+      if (selectedFarm) setFarm({ ...initialFarm, ...selectedFarm.configuration, targetBirds: selectedLot?.initialBirds ?? selectedFarm.configuration.targetBirds ?? initialFarm.targetBirds });
       if (selectedLot) {
         setLineage(selectedLot.lineage as LayerLineage);
         setHousingSystem(selectedLot.housingSystem as HousingSystem);
@@ -163,16 +163,10 @@ export function App() {
     setWorkspace((current) => ({
       ...current,
       farms: current.farms.map((item) => item.id === activeFarm.id
-        ? {
-            ...item,
-            configuration: { ...item.configuration, ...farm },
-            lots: item.lots.map((lot) => lot.id === activeLot?.id
-              ? { ...lot, currentBirds: Math.max(0, Math.floor(farm.targetBirds ?? lot.currentBirds)), lineage, housingSystem, ageWeeks }
-              : lot),
-          }
+        ? { ...item, configuration: { ...item.configuration, ...farm } }
         : item),
     }));
-  }, [farm, workspaceReady, activeFarm?.id, activeLot?.id, lineage, housingSystem, ageWeeks]);
+  }, [farm, workspaceReady, activeFarm?.id]);
 
   useEffect(() => {
     setManualOverrides(new Set());
@@ -438,14 +432,7 @@ export function App() {
             <div className="section-title-row">
               <div><h2>Cálculos reais da granja</h2><p>Registros diários, indicadores do lote e comparação com referências da linhagem.</p></div>
             </div>
-            <section className="panel dashboard-flock-settings">
-              <div className="field-grid">
-                <label className="field"><span>Linhagem do lote</span><select value={lineage} onChange={(event) => setLineage(event.target.value as LayerLineage)}><option>Hy-Line Brown</option><option>Lohmann Brown-Classic</option><option>NOVOgen Brown</option><option>Hy-Line W-36</option><option>Outra / não definida</option></select></label>
-                <label className="field"><span>Sistema de alojamento</span><select value={housingSystem} onChange={(event) => setHousingSystem(event.target.value as HousingSystem)}><option>Gaiolas convencionais</option><option>Gaiolas enriquecidas</option><option>Sistema de piso</option><option>Aviário / multinível</option><option>Free-range</option></select></label>
-                <Field label="Idade atual do lote" value={ageWeeks} onChange={(value) => setAgeWeeks(value ?? 0)} unit="semanas" step={0.1} hint={`Fase identificada automaticamente: ${productionPhase}.`} />
-              </div>
-            </section>
-            <FlockMonitoringPanel key={activeLot?.id ?? "unassigned"} lineage={lineage} ageWeeks={ageWeeks} defaultBirds={activeLot?.currentBirds ?? farm.targetBirds ?? 1} lotId={activeLot?.id ?? "unassigned"} referenceSystem={flockReferenceSystem} />
+            <FlockMonitoringPanel key={activeLot?.id ?? "unassigned"} lineage={lineage} ageWeeks={ageWeeks} initialBirds={activeLot?.initialBirds ?? farm.targetBirds ?? 1} lotId={activeLot?.id ?? "unassigned"} referenceSystem={flockReferenceSystem} />
           </div>}
         </div>
         <footer className="app-footer"><span>Granja · Gestão Avícola Inteligente</span><span>Protótipo inicial · Dados locais</span></footer>
