@@ -353,11 +353,13 @@ function House({ length, width, sideHeight, ridgeHeight, rows, fans, birds, nipp
         </group>
       ))}
 
-      <AssetErrorBoundary fallback={<ProceduralFlock count={birds ?? 0} length={safeLength * 0.9} width={safeWidth * 0.88} scale={scale} />}>
-        <Suspense fallback={null}>
-          <ChickenInstances count={birds ?? 0} length={safeLength * 0.9} width={safeWidth * 0.88} scale={scale} />
-        </Suspense>
-      </AssetErrorBoundary>
+      {(birds ?? 0) > 0 && (
+        <AssetErrorBoundary fallback={<ProceduralFlock count={birds ?? 0} length={safeLength * 0.9} width={safeWidth * 0.88} scale={scale} />}>
+          <Suspense fallback={null}>
+            <ChickenInstances count={birds ?? 0} length={safeLength * 0.9} width={safeWidth * 0.88} scale={scale} />
+          </Suspense>
+        </AssetErrorBoundary>
+      )}
 
       <mesh position={[0, roofCenterY, roofCenterZ]} rotation={[roofAngle, 0, 0]} castShadow receiveShadow>
         <boxGeometry args={[safeLength + 0.6 * scale, 0.1 * scale, roofSlopeLength]} />
