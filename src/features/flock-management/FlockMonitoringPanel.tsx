@@ -182,7 +182,7 @@ export function FlockMonitoringPanel({ lineage, ageWeeks, defaultBirds, lotId = 
           <tbody>{dashboard?.daily.length ? dashboard.daily.slice().reverse().map((item) => <tr key={item.id}><td>{item.date}</td><td>{number(item.birdsAtEnd, 0)}</td><td>{item.deaths}</td><td>{number(item.feedGramsPerBirdDay)}</td><td>{number(item.waterMlPerBirdDay)}</td><td>{item.eggsProduced}</td><td>{number(item.henDayProductionPercent)}%</td></tr>) : <tr><td colSpan={7} className="table-empty">Nenhum dia registrado. Cadastre os dados reais para iniciar os indicadores.</td></tr>}</tbody>
         </table>
       </div>
-      <p className="table-footnote">Os registros desta versão ficam apenas na memória da sessão do navegador. O cálculo usa inventário médio diário; a mortalidade é separada das eliminações. Para sincronizar entre dispositivos e manter histórico, será necessária persistência em banco de dados.</p>
+      <p className="table-footnote">Os registros diários são persistidos localmente neste navegador e separados por lote. O cálculo usa inventário médio diário; a mortalidade é separada das eliminações. Para sincronizar entre dispositivos e manter histórico centralizado, será necessária persistência em banco de dados.</p>
     </section>
   );
 }
