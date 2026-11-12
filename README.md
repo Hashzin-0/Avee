@@ -35,6 +35,12 @@ npm run build
 - **Gestão zootécnica:** acompanhamento diário local de lote com mortalidade, eliminações, inventário, ração, água, postura, massa de ovos e conversão alimentar; histórico ainda não persistido em banco.
 - **Construtor 3D:** dimensões do galpão, parâmetros técnicos rastreáveis, cálculo determinístico, layout Three.js editável e documentação do projeto.
 
+## Cena 3D e desempenho
+
+O construtor usa geometrias paramétricas para estrutura, ventiladores axiais, linhas de comedouro e linhas de água com nipples instanciados. A cena usa renderização sob demanda, DPR limitado e amostragem visual de aves por GPU: até 180 instâncias em viewport compacto e 360 em viewport maior. O número zootécnico do lote não é limitado por esse orçamento visual; quando o lote supera o limite, a cena mostra uma amostra distribuída e mantém o total real nos cálculos. Isso evita criar um objeto React/Three.js por ave.
+
+A galinha usada como referência visual é o modelo genérico **Low Poly Chicken**, disponibilizado por Grab3D em GLB (aprox. 300 KB, 2.997 triângulos), sob licença CC0 1.0: https://grab3d.com/models/animals/low-poly-chicken/ . O arquivo é carregado sob demanda pelo endereço público do fornecedor. Se o host, a rede ou o CORS impedir o carregamento, a cena usa uma representação procedural simplificada como fallback. O modelo é uma galinha marrom genérica; não é um escaneamento nem um modelo oficial/licenciado pela Hy-Line Brown e não deve ser usado para identificação genética ou avaliação morfológica. Ventiladores e linhas de água/comedouro são geometrias ilustrativas paramétricas, não réplicas de fabricantes específicos.
+
 ## Princípios de domínio
 
 1. Cada parâmetro técnico deve guardar fonte documental, versão, página, sistema de alojamento, faixa etária, unidade e estado de validação.
