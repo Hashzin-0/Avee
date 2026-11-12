@@ -34,8 +34,11 @@ import { getLayerPerformanceProfile, getLayerTechnicalRecommendation, type Clima
 import { calculateFarm, calculateUniformity, type FarmInput } from '../features/farm-builder/domain';
 import { connectionOptions, scaleCatalog } from '../features/weighing/catalog';
 import type { IdentificationMode, WeighingRecord } from '../features/weighing/types';
+import { WorkspacePages } from '../features/workspace/WorkspacePages';
+import { createInitialWorkspace, parseWorkspaceData, WORKSPACE_STORAGE_KEY } from '../features/workspace/storage';
+import type { FarmRecord, FlockLot, WorkspaceData } from '../features/workspace/types';
 
-type Section = 'overview' | 'weighing' | 'builder' | 'technical' | 'records';
+type Section = 'overview' | 'weighing' | 'builder' | 'technical' | 'records' | 'farms' | 'settings' | 'profile';
 
 const initialFarm: FarmInput = {
   houseLengthM: 100,
@@ -94,8 +97,12 @@ function Field({ label, value, onChange, unit, min = 0, step = 1, hint }: {
 export function App() {
   const pathname = usePathname();
   const router = useRouter();
-  const section: Section = pathname === '/granja' ? 'builder' : pathname === '/pesagem' ? 'weighing' : pathname === '/registros' ? 'records' : pathname === '/biblioteca' ? 'technical' : 'overview';
+  const section: Section = pathname === '/granja' ? 'builder' : pathname === '/pesagem' ? 'weighing' : pathname === '/registros' ? 'records' : pathname === '/biblioteca' ? 'technical' : pathname === '/granjas' ? 'farms' : pathname === '/configuracoes' ? 'settings' : pathname === '/perfil' ? 'profile' : 'overview';
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [workspace, setWorkspace] = useState<WorkspaceData>(() => createInitialWorkspace());
+  const [workspaceReady, setWorkspaceReady] = useState(false);
+  const activeFarm = workspace.farms.find((item) => item.id === workspace.activeFarmId) ?? workspace.farms[0];
+  const activeLot = activeFarm?.lots.find((item) => item.id === workspace.activeLotId) ?? activeFarm?.lots.find((item) => item.status === 'active');
   const [farm, setFarm] = useState<Partial<FarmInput>>(initialFarm);
   const [planningMode, setPlanningMode] = useState<'birds' | 'house'>('birds');
   const [layoutRows, setLayoutRows] = useState(3);
