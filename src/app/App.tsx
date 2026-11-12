@@ -219,8 +219,8 @@ export function App() {
           <span className="nav-label">GESTÃO</span>
           <button className={section === 'overview' ? 'nav-item active' : 'nav-item'} onClick={() => navigate('overview')}><House size={18} />Visão geral</button>
           <button className={section === 'weighing' ? 'nav-item active' : 'nav-item'} onClick={() => navigate('weighing')}><Scale size={18} />Pesagem <span className="nav-count">{records.length || '—'}</span></button>
-          <button className="nav-item" onClick={() => navigate('records')}><Egg size={18} />Registros diários</button>
-          <button className="nav-item" onClick={() => navigate('builder')}><Activity size={18} />Indicadores zootécnicos</button>
+          <button className={section === 'records' ? 'nav-item active' : 'nav-item'} onClick={() => navigate('records')}><Egg size={18} />Registros diários</button>
+          <button className={section === 'builder' ? 'nav-item active' : 'nav-item'} onClick={() => navigate('builder')}><Activity size={18} />Indicadores zootécnicos</button>
           <span className="nav-label nav-label-spaced">PLANEJAMENTO</span>
           <button className={section === 'builder' ? 'nav-item active' : 'nav-item'} onClick={() => navigate('builder')}><Boxes size={18} />Montar minha granja <span className="new-pill">3D</span></button>
           <button className={section === 'technical' ? 'nav-item active' : 'nav-item'} onClick={() => navigate('technical')}><BookOpen size={18} />Biblioteca técnica</button>
