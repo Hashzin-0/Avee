@@ -33,3 +33,10 @@ test('workspace parser defaults older saved preferences to dark theme', () => {
   const parsed = parseWorkspaceData(JSON.stringify(legacyPayload));
   assert.equal(parsed?.settings.theme, 'dark');
 });
+
+test('workspace parser preserves an explicit light theme preference', () => {
+  const workspace = createInitialWorkspace();
+  workspace.settings.theme = 'light';
+  const parsed = parseWorkspaceData(JSON.stringify(workspace));
+  assert.equal(parsed?.settings.theme, 'light');
+});
