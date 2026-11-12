@@ -123,6 +123,50 @@ export function App() {
   const technicalRecommendation = useMemo(() => getLayerTechnicalRecommendation({ lineage, housingSystem, phase: productionPhase, ageWeeks, climateProfile }), [lineage, housingSystem, productionPhase, ageWeeks, climateProfile]);
 
   useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem(WORKSPACE_STORAGE_KEY);
+      const next = saved ? (parseWorkspaceData(saved) ?? createInitialWorkspace()) : createInitialWorkspace();
+      setWorkspace(next);
+      const selectedFarm = next.farms.find((item) => item.id === next.activeFarmId) ?? next.farms[0];
+      const selectedLot = selectedFarm?.lots.find((item) => item.id === next.activeLotId) ?? selectedFarm?.lots[0];
+      if (selectedFarm) setFarm({ ...initialFarm, ...selectedFarm.configuration, targetBirds: selectedLot?.currentBirds ?? selectedFarm.configuration.targetBirds ?? initialFarm.targetBirds });
+      if (selectedLot) {
+        setLineage(selectedLot.lineage as LayerLineage);
+        setHousingSystem(selectedLot.housingSystem as HousingSystem);
+        setAgeWeeks(selectedLot.ageWeeks);
+      }
+    } catch {
+      setNotice('Não foi possível ler o cadastro local. Os dados atuais permanecem disponíveis nesta sessão.');
+    }
+    setWorkspaceReady(true);
+  }, []);
+
+  useEffect(() => {
+    if (!workspaceReady) return;
+    try {
+      window.localStorage.setItem(WORKSPACE_STORAGE_KEY, JSON.stringify(workspace));
+    } catch {
+      setNotice('O armazenamento local está indisponível ou cheio. Exporte seus dados antes de fechar o navegador.');
+    }
+  }, [workspace, workspaceReady]);
+
+  useEffect(() => {
+    if (!workspaceReady || !activeFarm) return;
+    setWorkspace((current) => ({
+      ...current,
+      farms: current.farms.map((item) => item.id === activeFarm.id
+        ? {
+            ...item,
+            configuration: { ...item.configuration, ...farm },
+            lots: item.lots.map((lot) => lot.id === activeLot?.id
+              ? { ...lot, currentBirds: Math.max(0, Math.floor(farm.targetBirds ?? lot.currentBirds)), lineage, housingSystem, ageWeeks }
+              : lot),
+          }
+        : item),
+    }));
+  }, [farm, workspaceReady, activeFarm?.id, activeLot?.id, lineage, housingSystem, ageWeeks]);
+
+  useEffect(() => {
     setManualOverrides(new Set());
   }, [lineage, housingSystem, ageWeeks, climateProfile]);
 
@@ -196,7 +240,7 @@ export function App() {
   };
 
   const navigate = (next: Section) => {
-    const routes: Record<Section, string> = { overview: '/', builder: '/granja', weighing: '/pesagem', records: '/registros', technical: '/biblioteca' };
+    const routes: Record<Section, string> = { overview: '/', builder: '/granja', weighing: '/pesagem', records: '/registros', technical: '/biblioteca', farms: '/granjas', settings: '/configuracoes', profile: '/perfil' };
     router.push(routes[next]);
     setMobileNavOpen(false);
     setNotice('');
@@ -244,6 +288,28 @@ export function App() {
         <div className="page-content">
           {notice && <div className="notice" role="status"><CheckCircle size={17} />{notice}<button onClick={() => setNotice('')} aria-label="Fechar aviso"><X size={16} /></button></div>}
 
+          {(section === 'farms' || section === 'settings' || section === 'profile') && <WorkspacePages
+            page={section}
+            data={workspace}
+            onChange={setWorkspace}
+            onSelectFarm={(selected: FarmRecord) => {
+              const lot = selected.lots[0];
+              setWorkspace((current) => ({ ...current, activeFarmId: selected.id, activeLotId: lot?.id ?? '' }));
+              setFarm({ ...initialFarm, ...selected.configuration, targetBirds: lot?.currentBirds ?? selected.configuration.targetBirds ?? 0 });
+              if (lot) {
+                setLineage(lot.lineage as LayerLineage);
+                setHousingSystem(lot.housingSystem as HousingSystem);
+                setAgeWeeks(lot.ageWeeks);
+              }
+            }}
+            onSelectLot={(selected: FarmRecord, lot: FlockLot) => {
+              setWorkspace((current) => ({ ...current, activeFarmId: selected.id, activeLotId: lot.id }));
+              setFarm({ ...initialFarm, ...selected.configuration, targetBirds: lot.currentBirds });
+              setLineage(lot.lineage as LayerLineage);
+              setHousingSystem(lot.housingSystem as HousingSystem);
+              setAgeWeeks(lot.ageWeeks);
+            }}
+          />}
           {section === 'overview' && (
             <>
               <div className="page-heading"><div><span className="eyebrow">PAINEL DA GRANJA</span><h1>Visão geral</h1><p>Acompanhe a operação e acesse as ferramentas de manejo.</p></div><button className="button button-primary" onClick={() => navigate('weighing')}><Plus size={17} />Nova pesagem</button></div>
