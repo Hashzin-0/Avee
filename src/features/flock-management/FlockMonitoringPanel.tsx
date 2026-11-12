@@ -17,7 +17,7 @@ function todayLocal() {
   return date.toISOString().slice(0, 10);
 }
 
-export function FlockMonitoringPanel({ lineage, ageWeeks, defaultBirds, lotId = 'unassigned', referenceSystem = 'conventional' }: {
+export function FlockMonitoringPanel({ lineage, ageWeeks, initialBirds, lotId = 'unassigned', referenceSystem = 'conventional' }: {
   lineage: LayerLineage;
   ageWeeks: number;
   initialBirds: number;
