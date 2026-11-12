@@ -36,7 +36,7 @@ export function createInitialWorkspace(): WorkspaceData {
     activeFarmId: farmId,
     activeLotId: lotId,
     profile: { fullName: 'Administrador', email: '', phone: '', role: 'Administrador', organization: '' },
-    settings: { weightUnit: 'g', areaUnit: 'm2', notifications: true, compactTables: false },
+    settings: { weightUnit: 'g', areaUnit: 'm2', notifications: true, compactTables: false, theme: 'dark' },
   };
 }
 
@@ -92,6 +92,7 @@ export function parseWorkspaceData(raw: string): WorkspaceData | null {
         areaUnit: settings.areaUnit === 'ha' ? 'ha' : 'm2',
         notifications: settings.notifications !== false,
         compactTables: settings.compactTables === true,
+        theme: settings.theme === 'light' ? 'light' : 'dark',
       },
     };
   } catch {
