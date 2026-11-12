@@ -48,15 +48,16 @@ export function FlockMonitoringPanel({ lineage, ageWeeks, defaultBirds, lotId = 
       const raw = window.localStorage.getItem(`granja.flock-entries.v1.${lotId}`);
       const parsed: unknown = raw ? JSON.parse(raw) : [];
       if (Array.isArray(parsed)) {
-        const validEntries = parsed.filter((item): item is FlockDailyEntry =>
-          typeof item === 'object' && item !== null
-          && typeof item.id === 'string' && typeof item.date === 'string'
-          && Number.isFinite(item.deaths) && Number.isFinite(item.culls)
-          && Number.isFinite(item.feedKg) && Number.isFinite(item.waterLiters)
-          && Number.isFinite(item.eggsProduced)
-          && (item.averageEggWeightGrams === undefined || Number.isFinite(item.averageEggWeightGrams))
-          && (item.averageBodyWeightGrams === undefined || Number.isFinite(item.averageBodyWeightGrams)),
-        );
+        const validEntries = parsed.filter((item): item is FlockDailyEntry => {
+          if (typeof item !== 'object' || item === null || Array.isArray(item)) return false;
+          const entry = item as Record<string, unknown>;
+          return typeof entry.id === 'string' && typeof entry.date === 'string'
+            && Number.isFinite(entry.deaths) && Number.isFinite(entry.culls)
+            && Number.isFinite(entry.feedKg) && Number.isFinite(entry.waterLiters)
+            && Number.isFinite(entry.eggsProduced)
+            && (entry.averageEggWeightGrams === undefined || Number.isFinite(entry.averageEggWeightGrams))
+            && (entry.averageBodyWeightGrams === undefined || Number.isFinite(entry.averageBodyWeightGrams));
+        });
         setEntries(validEntries);
       }
     } catch {
