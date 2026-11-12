@@ -20,15 +20,10 @@ function todayLocal() {
 export function FlockMonitoringPanel({ lineage, ageWeeks, defaultBirds, lotId = 'unassigned', referenceSystem = 'conventional' }: {
   lineage: LayerLineage;
   ageWeeks: number;
-  defaultBirds: number;
+  initialBirds: number;
   lotId?: string;
   referenceSystem?: 'conventional' | 'alternative' | 'unsupported';
 }) {
-  const [initialBirds, setInitialBirds] = useState(String(defaultBirds));
-
-  useEffect(() => {
-    setInitialBirds(String(defaultBirds));
-  }, [defaultBirds]);
   const [date, setDate] = useState(todayLocal);
   const [deaths, setDeaths] = useState('0');
   const [culls, setCulls] = useState('0');
@@ -77,9 +72,8 @@ export function FlockMonitoringPanel({ lineage, ageWeeks, defaultBirds, lotId = 
   }, [entries, loadedLotId, lotId]);
 
   const dashboard = useMemo(() => {
-    const count = Number(initialBirds);
-    if (!Number.isInteger(count) || count <= 0) return null;
-    try { return calculateFlockDashboard(count, entries); } catch { return null; }
+    if (!Number.isInteger(initialBirds) || initialBirds <= 0) return null;
+    try { return calculateFlockDashboard(initialBirds, entries); } catch { return null; }
   }, [initialBirds, entries]);
   const reference = referenceSystem === 'unsupported' ? null : getLayerAgeReference(lineage, ageWeeks, referenceSystem);
   const guide = referenceSystem === 'unsupported' ? null : getLayerGuideSource(lineage, referenceSystem);
@@ -103,9 +97,8 @@ export function FlockMonitoringPanel({ lineage, ageWeeks, defaultBirds, lotId = 
       averageBodyWeightGrams: bodyWeight === '' ? undefined : Number(bodyWeight),
     };
     try {
-      const count = Number(initialBirds);
-      if (!Number.isInteger(count) || count <= 0) throw new RangeError('Informe o número inicial de aves alojadas.');
-      calculateFlockDashboard(count, [...entries, entry]);
+      if (!Number.isInteger(initialBirds) || initialBirds <= 0) throw new RangeError('O cadastro do lote não possui uma quantidade inicial válida de aves.');
+      calculateFlockDashboard(initialBirds, [...entries, entry]);
       setEntries((current) => [...current, entry].sort((a, b) => a.date.localeCompare(b.date)));
       setError('');
       setDeaths('0');
@@ -130,18 +123,18 @@ export function FlockMonitoringPanel({ lineage, ageWeeks, defaultBirds, lotId = 
   return (
     <section className="panel flock-panel">
       <div className="panel-heading">
-        <div><h2>Acompanhamento real do lote</h2><p>Indicadores calculados com os registros diários informados pelo produtor.</p></div>
+        <div><h2>Acompanhamento Diário</h2><p>Indicadores calculados com os registros diários informados pelo produtor.</p></div>
         <span className="sample-count">Registro local</span>
       </div>
       <div className="flock-context">
         <strong>{lineage}</strong>
-        <span>Idade informada: {number(ageWeeks, 1)} semanas</span>
+        <span>Idade cadastrada: {number(ageWeeks, 1)} semanas</span>
+        <span>Aves alojadas no início: {number(initialBirds, 0)}</span>
         <span>Fase identificada: {phase}</span>
         {lineage === 'Hy-Line Brown' && <span>Sistema de referência: {referenceSystem === 'conventional' ? 'convencional' : referenceSystem === 'alternative' ? 'alternativo' : 'sem guia compatível'}</span>}
         {reference && <span>Referência técnica disponível para esta idade</span>}
       </div>
       <div className="flock-entry-grid">
-        <label className="field"><span>Aves alojadas no início do lote</span><div className="input-with-unit"><input type="number" min="1" step="1" value={initialBirds} onChange={(event) => setInitialBirds(event.target.value)} /></div><small>Base para mortalidade acumulada e ovos por ave alojada.</small></label>
         <label className="field"><span>Data do registro</span><div className="input-with-unit"><input type="date" value={date} onChange={(event) => setDate(event.target.value)} /></div></label>
         <label className="field"><span>Aves mortas no dia</span><div className="input-with-unit"><input type="number" min="0" step="1" value={deaths} onChange={(event) => setDeaths(event.target.value)} /></div></label>
         <label className="field"><span>Aves eliminadas no dia</span><div className="input-with-unit"><input type="number" min="0" step="1" value={culls} onChange={(event) => setCulls(event.target.value)} /></div><small>Separadas da mortalidade, sem somar como óbito.</small></label>
