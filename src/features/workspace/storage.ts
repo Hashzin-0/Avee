@@ -63,7 +63,7 @@ export function parseWorkspaceData(raw: string): WorkspaceData | null {
         && typeof lot.name === 'string'
         && typeof lot.lineage === 'string' && allowedLineages.has(lot.lineage)
         && typeof lot.housingSystem === 'string' && allowedHousingSystems.has(lot.housingSystem)
-        && typeof lot.startDate === 'string' && /^\\d{4}-\\d{2}-\\d{2}$/.test(lot.startDate) && Number.isFinite(Date.parse(lot.startDate))
+        && typeof lot.startDate === 'string' && Number.isFinite(Date.parse(lot.startDate))
         && Number.isSafeInteger(lot.initialBirds) && Number(lot.initialBirds) >= 0
         && Number.isSafeInteger(lot.currentBirds) && Number(lot.currentBirds) >= 0
         && typeof lot.ageWeeks === 'number' && Number.isFinite(lot.ageWeeks) && lot.ageWeeks >= 0
