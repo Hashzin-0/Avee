@@ -1,3 +1,5 @@
+import { getLayerHousingRecommendation, getLayerGuideSource } from '../flock-management/management-library';
+
 export type LayerLineage = 'Hy-Line Brown' | 'Hy-Line W-36' | 'Lohmann Brown-Classic' | 'NOVOgen Brown' | 'Outra / não definida';
 export type HousingSystem = 'Gaiolas convencionais' | 'Gaiolas enriquecidas' | 'Sistema de piso' | 'Aviário / multinível' | 'Free-range';
 export type ProductionPhase = 'Cria' | 'Recria' | 'Pré-postura' | 'Produção';
@@ -45,14 +47,6 @@ const HYLINE_BROWN_CONVENTIONAL: TechnicalSource = {
 const HYLINE_BROWN_PERFORMANCE: TechnicalSource = {
   ...HYLINE_BROWN_CONVENTIONAL,
   page: '3',
-};
-
-const HYLINE_BROWN_ALTERNATIVE: TechnicalSource = {
-  publisher: 'Hy-Line International',
-  title: 'Hy-Line Brown Commercial Layers — Alternative Systems, International Standards',
-  edition: 'Maio de 2026',
-  page: '7',
-  url: 'https://www.hyline.com/resources',
 };
 
 const LOHMANN_BROWN: TechnicalSource = {
@@ -109,48 +103,24 @@ export function getLayerTechnicalRecommendation(input: {
   if (!Number.isFinite(ageWeeks) || ageWeeks < 0) return null;
 
   if (lineage === 'Hy-Line Brown') {
-    if (housingSystem === 'Gaiolas convencionais') {
-      if (ageWeeks <= 4) {
-        return {
-          ...input, reviewStatus: 'transcribed-unreviewed', ageRangeLabel: '0–4 semanas',
-          values: { birdsPerNipple: 12, feederCmPerBird: 4.5 },
-          source: HYLINE_BROWN_CONVENTIONAL,
-          note: 'Guia anexado, tabela de recomendações de espaço para sistemas convencionais. Para 0–4 semanas: 1 bebedouro nipple/copo para 12 aves e 4,5 cm de comedouro por ave. A faixa de 100–200 cm²/ave refere-se ao piso de gaiola/colônia, não à área útil do galpão; por isso não alimenta o cálculo de capacidade pela área do galpão.',
-        };
-      }
-      if (ageWeeks <= 15) {
-        return {
-          ...input, reviewStatus: 'transcribed-unreviewed', ageRangeLabel: '4–15 semanas',
-          values: { birdsPerNipple: 8, feederCmPerBird: 7 },
-          source: HYLINE_BROWN_CONVENTIONAL,
-          note: 'Guia anexado, tabela de recomendações de espaço para sistemas convencionais. Para 4–15 semanas: 1 bebedouro nipple/copo para 8 aves e 5–7 cm de comedouro por ave; o cálculo usa 7 cm/ave como dimensionamento conservador. A referência de 360 cm²/ave refere-se ao piso de gaiola/colônia, não à área útil do galpão.',
-        };
-      }
-      return {
-        ...input, reviewStatus: 'transcribed-unreviewed', ageRangeLabel: '15 semanas ou mais',
-        values: { birdsPerNipple: 12, feederCmPerBird: 9 },
-        source: HYLINE_BROWN_CONVENTIONAL,
-        note: 'Guia anexado, tabela de recomendações de espaço para sistemas convencionais. Para 15–80+ semanas: 1 bebedouro nipple/copo para 12 aves (ou acesso a dois bebedouros) e 7–9 cm de comedouro por ave; o cálculo usa 9 cm/ave. A referência de 490 cm²/ave refere-se ao piso de gaiola/colônia, não à área útil do galpão.',
-      };
-    }
-
-    if ((housingSystem === 'Sistema de piso' || housingSystem === 'Free-range') && ageWeeks >= 18 && ageWeeks <= 100) {
-      return {
-        ...input, reviewStatus: 'transcribed-unreviewed', ageRangeLabel: '18–100 semanas',
-        values: { areaPerBirdCm2: 1429, birdsPerNipple: 10, feederCmPerBird: 10 },
-        source: HYLINE_BROWN_ALTERNATIVE,
-        note: 'Guia anexado de sistemas alternativos, maio de 2026, p. 7. Para produção em piso: 7–9 aves/m² de área útil; foi aplicado o limite conservador de 7 aves/m² (1.429 cm²/ave). Nipple/copo: 1/10 aves. Comedouro: 5 cm/ave com acesso bilateral ou 10 cm/ave com acesso por um lado; o cálculo usa 10 cm/ave. Em free-range, a área calculada representa somente a área interna; a área externa não é dimensionada nesta tabela.',
-      };
-    }
-
-    if (housingSystem === 'Aviário / multinível' && ageWeeks >= 18 && ageWeeks <= 100) {
-      return {
-        ...input, reviewStatus: 'transcribed-unreviewed', ageRangeLabel: '18–100 semanas',
-        values: { birdsPerNipple: 10, feederCmPerBird: 5 },
-        source: HYLINE_BROWN_ALTERNATIVE,
-        note: 'Guia anexado de sistemas alternativos, maio de 2026, p. 7. O guia não fixa densidade única de aves/m² para aviários/multiníveis e remete ao fabricante; por isso a área não é presumida. Publica 1 nipple/copo para 10 aves, 5 cm/ave de comedouro com acesso bilateral (ou 10 cm/ave com acesso por um lado) e 10–15 cm/ave de poleiro.',
-      };
-    }
+    const catalogRecommendation = getLayerHousingRecommendation(lineage, housingSystem, ageWeeks);
+    if (!catalogRecommendation) return null;
+    const guide = getLayerGuideSource(lineage, catalogRecommendation.referenceSystem);
+    if (!guide) return null;
+    return {
+      ...input,
+      reviewStatus: 'transcribed-unreviewed',
+      ageRangeLabel: catalogRecommendation.ageRangeLabel,
+      values: catalogRecommendation.values,
+      source: {
+        publisher: guide.publisher,
+        title: guide.title,
+        edition: guide.edition,
+        page: catalogRecommendation.page,
+        url: guide.url,
+      },
+      note: catalogRecommendation.note,
+    };
   }
 
   if (lineage === 'NOVOgen Brown' && phase === 'Produção' && ageWeeks >= 20 && ageWeeks <= 100) {
