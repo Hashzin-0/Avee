@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { calculateFlockDashboard } from '../src/features/flock-management/domain.ts';
-import { getLayerAgeReference, getManagementPhase, layerAgeReferences, layerGuideSources } from '../src/features/flock-management/management-library.ts';
+import { getLayerAgeReference, getLayerHousingRecommendation, getManagementPhase, layerAgeReferences, layerGuideSources } from '../src/features/flock-management/management-library.ts';
 import { getLayerTechnicalRecommendation } from '../src/features/farm-builder/technical-recommendations.ts';
 
 const base = {
@@ -217,4 +217,18 @@ test('does not apply a floor density to Hy-Line Brown multi-tier aviaries withou
   assert.equal(aviary?.values.areaPerBirdCm2, undefined);
   assert.equal(aviary?.values.birdsPerNipple, 10);
   assert.equal(aviary?.values.feederCmPerBird, 5);
+});
+
+
+test('exposes guide-backed housing coefficients from the same technical library used by the farm calculator', () => {
+  const conventionalRearing = getLayerHousingRecommendation('Hy-Line Brown', 'Gaiolas convencionais', 10);
+  const conventionalProduction = getLayerHousingRecommendation('Hy-Line Brown', 'Gaiolas convencionais', 32);
+  const alternativeFloor = getLayerHousingRecommendation('Hy-Line Brown', 'Sistema de piso', 24);
+  const alternativeAviary = getLayerHousingRecommendation('Hy-Line Brown', 'Aviário / multinível', 24);
+
+  assert.equal(conventionalRearing?.values.birdsPerNipple, 8);
+  assert.equal(conventionalProduction?.values.feederCmPerBird, 9);
+  assert.equal(alternativeFloor?.values.areaPerBirdCm2, 1429);
+  assert.equal(alternativeAviary?.values.areaPerBirdCm2, undefined);
+  assert.equal(getLayerHousingRecommendation('Hy-Line Brown', 'Sistema de piso', 16), null);
 });
