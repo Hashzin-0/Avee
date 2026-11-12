@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { FarmRecord, FlockLot, WorkspaceData } from './types';
 
 interface WorkspacePagesProps {
@@ -35,17 +35,14 @@ export function WorkspacePages({ page, data, onChange, onSelectFarm, onSelectLot
   const [lotLineage, setLotLineage] = useState('Hy-Line Brown');
   const [lotHousing, setLotHousing] = useState('Gaiolas convencionais');
   const [lotAge, setLotAge] = useState('1');
-  const [lotStart, setLotStart] = useState(new Date().toISOString().slice(0, 10));
+  const [lotStart, setLotStart] = useState('');
+  useEffect(() => { setLotStart(new Date().toISOString().slice(0, 10)); }, []);
   const [showFarmForm, setShowFarmForm] = useState(false);
   const [showLotForm, setShowLotForm] = useState(false);
   const [message, setMessage] = useState('');
 
   const activeFarm = data.farms.find((farm) => farm.id === data.activeFarmId) ?? data.farms[0];
   const activeLot = activeFarm?.lots.find((lot) => lot.id === data.activeLotId) ?? activeFarm?.lots.find((lot) => lot.status === 'active');
-
-  const updateFarm = (farmId: string, updater: (farm: FarmRecord) => FarmRecord) => {
-    onChange({ ...data, farms: data.farms.map((farm) => farm.id === farmId ? updater(farm) : farm) });
-  };
 
   const createFarm = () => {
     const name = farmName.trim();
