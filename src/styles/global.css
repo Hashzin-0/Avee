@@ -343,3 +343,68 @@ td { padding: 11px 8px; border-bottom: 1px solid #f0f3f0; color: #536158; font-s
 
 .compact-tables table th, .compact-tables table td { padding-top: 6px; padding-bottom: 6px; }
 .compact-tables .table-wrap { font-size: 9px; }
+
+:root { --pullcord-right: 1.35rem; --pullcord-top: 0px; --pullcord-z: 45; --pullcord-ink: rgba(112, 151, 120, .78); }
+.farm-calendar-overlay { position: fixed; inset: 0; z-index: 44; display: grid; place-items: start center; padding: 78px 18px 24px; background: rgb(7 16 11 / 58%); backdrop-filter: blur(5px); overflow-y: auto; }
+.farm-calendar-dialog { width: min(760px, 100%); max-height: calc(100dvh - 105px); overflow: auto; padding: 20px; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); color: var(--ink); box-shadow: 0 24px 80px rgb(0 0 0 / 28%); }
+.farm-calendar-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
+.farm-calendar-heading h2 { margin: 5px 0 4px; color: var(--ink); font-size: 18px; }
+.farm-calendar-heading p { margin: 0; color: var(--muted); font-size: 11px; }
+.farm-calendar-controls { display: flex; align-items: center; gap: 8px; }
+.farm-calendar-controls button, .farm-calendar-close { display: grid; place-items: center; min-width: 34px; height: 34px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); }
+.farm-calendar-week-label { min-width: 150px; color: var(--muted); font-size: 10px; text-align: center; }
+.farm-calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 7px; }
+.farm-calendar-day { min-width: 0; min-height: 105px; padding: 9px 7px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); }
+.farm-calendar-day.has-activity { border-color: #6e9b78; background: var(--green-soft); }
+.farm-calendar-day.today { box-shadow: inset 0 0 0 1px var(--green); }
+.farm-calendar-day > span { display: block; color: var(--muted); font-size: 9px; }
+.farm-calendar-day > strong { display: block; margin: 5px 0 8px; color: var(--ink); font-size: 17px; }
+.farm-calendar-day > small { display: block; color: var(--green); font-size: 8px; font-weight: 700; line-height: 1.35; }
+.farm-calendar-activity-list { display: grid; gap: 8px; margin-top: 16px; }
+.farm-calendar-activity-list h3 { margin: 0 0 2px; color: var(--ink); font-size: 12px; }
+.farm-calendar-activity { display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: 10px; padding: 10px 11px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); }
+.farm-calendar-activity time { color: var(--green); font-size: 10px; font-weight: 700; }
+.farm-calendar-activity strong { display: block; color: var(--ink); font-size: 10px; }
+.farm-calendar-activity p { margin: 4px 0 0; color: var(--muted); font-size: 9px; line-height: 1.5; }
+.farm-calendar-empty { padding: 22px 14px; border: 1px dashed var(--line); border-radius: 10px; color: var(--muted); font-size: 10px; text-align: center; }
+@media (max-width: 600px) {
+ .farm-calendar-overlay { padding: 54px 9px 12px; }
+ .farm-calendar-dialog { padding: 14px; }
+ .farm-calendar-grid { gap: 4px; }
+ .farm-calendar-day { min-height: 82px; padding: 6px 4px; }
+ .farm-calendar-day > span, .farm-calendar-day > small { font-size: 7px; }
+ .farm-calendar-day > strong { font-size: 14px; }
+ .farm-calendar-heading { flex-direction: column; }
+ .farm-calendar-controls { width: 100%; justify-content: space-between; }
+ .farm-calendar-week-label { flex: 1; }
+ .farm-calendar-activity { grid-template-columns: 1fr; gap: 4px; }
+}
+.app-shell[data-theme="dark"] { color-scheme: dark; --ink: #e4ece6; --muted: #a0afa4; --line: #34483c; --green: #8fbd98; --green-dark: #c3dec8; --green-soft: #24392c; --surface: #1c2a21; background: #101a14; color: #e4ece6; }
+.app-shell[data-theme="dark"] .main-area { background: #101a14; }
+.app-shell[data-theme="dark"] .topbar, .app-shell[data-theme="dark"] .app-footer { background: #17231b; border-color: #34483c; color: #9bac9f; }
+.app-shell[data-theme="dark"] .breadcrumb, .app-shell[data-theme="dark"] .environment-chip { color: #a9b9ad; }
+.app-shell[data-theme="dark"] h1, .app-shell[data-theme="dark"] .section-title-row h2, .app-shell[data-theme="dark"] .panel h2, .app-shell[data-theme="dark"] .panel h3, .app-shell[data-theme="dark"] .metric-card strong, .app-shell[data-theme="dark"] .farm-card-heading h2, .app-shell[data-theme="dark"] .profile-summary h2 { color: #e5eee7; }
+.app-shell[data-theme="dark"] .panel, .app-shell[data-theme="dark"] .metric-card, .app-shell[data-theme="dark"] .quick-card, .app-shell[data-theme="dark"] .farm-registry-card, .app-shell[data-theme="dark"] .workspace-form, .app-shell[data-theme="dark"] .calculation-grid > div, .app-shell[data-theme="dark"] .scale-result { background: #1b2a20; border-color: #34483c; color: #e0e9e2; }
+.app-shell[data-theme="dark"] .quick-card:hover, .app-shell[data-theme="dark"] .farm-registry-card.selected { background: #22372a; border-color: #6b9874; }
+.app-shell[data-theme="dark"] .quick-icon, .app-shell[data-theme="dark"] .panel-icon, .app-shell[data-theme="dark"] .sample-stats > div, .app-shell[data-theme="dark"] .performance-item, .app-shell[data-theme="dark"] .flock-metrics-grid article, .app-shell[data-theme="dark"] .farm-card-stats > div, .app-shell[data-theme="dark"] .lot-row, .app-shell[data-theme="dark"] .capacity-mode-summary, .app-shell[data-theme="dark"] .capacity-constraints, .app-shell[data-theme="dark"] .workspace-context, .app-shell[data-theme="dark"] .phase-indicator, .app-shell[data-theme="dark"] .flock-context, .app-shell[data-theme="dark"] .flock-comparison, .app-shell[data-theme="dark"] .flock-reference, .app-shell[data-theme="dark"] .source-warning, .app-shell[data-theme="dark"] .prototype-note { background: #223329; border-color: #3b5142; color: #a9b9ad; }
+.app-shell[data-theme="dark"] .welcome-panel { background: #1c3828; }
+.app-shell[data-theme="dark"] .page-heading p, .app-shell[data-theme="dark"] .section-title-row p, .app-shell[data-theme="dark"] .panel-heading p, .app-shell[data-theme="dark"] .metric-top, .app-shell[data-theme="dark"] .metric-card small, .app-shell[data-theme="dark"] .table-footnote, .app-shell[data-theme="dark"] .farm-card-heading p, .app-shell[data-theme="dark"] .settings-row small, .app-shell[data-theme="dark"] .field small, .app-shell[data-theme="dark"] .guide-library-card p, .app-shell[data-theme="dark"] .guide-library-card small { color: #9aaba0; }
+.app-shell[data-theme="dark"] .field > span, .app-shell[data-theme="dark"] .settings-row strong, .app-shell[data-theme="dark"] .connection-heading strong, .app-shell[data-theme="dark"] .calculation-grid strong, .app-shell[data-theme="dark"] .farm-card-stats strong, .app-shell[data-theme="dark"] .lot-row strong, .app-shell[data-theme="dark"] .profile-summary p { color: #d7e3d9; }
+.app-shell[data-theme="dark"] .field input, .app-shell[data-theme="dark"] .field select, .app-shell[data-theme="dark"] .input-with-unit, .app-shell[data-theme="dark"] .input-with-unit input, .app-shell[data-theme="dark"] .search-field, .app-shell[data-theme="dark"] .settings-row select, .app-shell[data-theme="dark"] .workspace-form .field input, .app-shell[data-theme="dark"] .workspace-form .field select { background: #142018; border-color: #3a5041; color: #e1ebe3; }
+.app-shell[data-theme="dark"] .button-secondary, .app-shell[data-theme="dark"] .button-light, .app-shell[data-theme="dark"] .local-badge, .app-shell[data-theme="dark"] .draft-badge, .app-shell[data-theme="dark"] .transport-chip, .app-shell[data-theme="dark"] .scale-result { background: #26392d; border-color: #415747; color: #d4e2d7; }
+.app-shell[data-theme="dark"] .segmented-control, .app-shell[data-theme="dark"] .segmented-control button.selected { background: #26392d; color: #dce9df; }
+.app-shell[data-theme="dark"] .segmented-control button { color: #a6b6aa; }
+.app-shell[data-theme="dark"] table th { color: #9aaba0; border-color: #3b4d40; }
+.app-shell[data-theme="dark"] table td { color: #d0ddd3; border-color: #2f4135; }
+.app-shell[data-theme="dark"] .table-empty { color: #9aaba0; }
+.app-shell[data-theme="dark"] .notice { background: #20382a; border-color: #44664d; color: #c4e0c9; }
+.app-shell[data-theme="dark"] .workspace-message { background: #20382a; color: #c4e0c9; }
+.app-shell[data-theme="dark"] .farm-card-stats small, .app-shell[data-theme="dark"] .lot-row small, .app-shell[data-theme="dark"] .performance-item small, .app-shell[data-theme="dark"] .performance-item span, .app-shell[data-theme="dark"] .flock-metrics-grid small, .app-shell[data-theme="dark"] .flock-metrics-grid span { color: #9aaba0; }
+.app-shell[data-theme="dark"] .scene-canvas { background: #1b2b21; }
+.app-shell[data-theme="dark"] .calculation-grid { background: #34483c; border-color: #34483c; }
+.app-shell[data-theme="dark"] .form-section, .app-shell[data-theme="dark"] .profile-summary, .app-shell[data-theme="dark"] .lot-list { border-color: #34483c; }
+.app-shell[data-theme="dark"] .farm-calendar-dialog { background: #1b2a20; color: #e4ece6; }
+.app-shell[data-theme="dark"] .farm-calendar-day { background: #142018; }
+.app-shell[data-theme="dark"] .farm-calendar-day.has-activity { background: #263d2e; }
+.app-shell[data-theme="dark"] .farm-calendar-activity { background: #142018; }
+.app-shell[data-theme="dark"] .farm-calendar-activity strong, .app-shell[data-theme="dark"] .farm-calendar-heading h2, .app-shell[data-theme="dark"] .farm-calendar-day > strong, .app-shell[data-theme="dark"] .farm-calendar-activity-list h3 { color: #e4ece6; }
