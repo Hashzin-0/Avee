@@ -29,8 +29,9 @@ import {
 } from '@phosphor-icons/react';
 import { FarmScene } from '../features/farm-builder/FarmScene';
 import { FlockMonitoringPanel } from '../features/flock-management/FlockMonitoringPanel';
-import { getManagementPhase, layerAgeReferences, layerGuideSources } from '../features/flock-management/management-library';
-import { getLayerPerformanceProfile, getLayerTechnicalRecommendation, type ClimateProfile, type HousingSystem, type LayerLineage, type TechnicalParameterKey } from '../features/farm-builder/technical-recommendations';
+import { getManagementPhase } from '../features/flock-management/management-library';
+import { TechnicalIndicatorsPage } from '../features/flock-management/TechnicalIndicatorsPage';
+import { getLayerTechnicalRecommendation, type ClimateProfile, type HousingSystem, type LayerLineage, type TechnicalParameterKey } from '../features/farm-builder/technical-recommendations';
 import { calculateFarm, calculateUniformity, type FarmInput } from '../features/farm-builder/domain';
 import { connectionOptions, scaleCatalog } from '../features/weighing/catalog';
 import type { IdentificationMode, WeighingRecord } from '../features/weighing/types';
@@ -98,7 +99,7 @@ function Field({ label, value, onChange, unit, min = 0, step = 1, hint }: {
 export function App() {
   const pathname = usePathname();
   const router = useRouter();
-  const section: Section = pathname === '/granja' ? 'builder' : pathname === '/pesagem' ? 'weighing' : pathname === '/registros' ? 'records' : pathname === '/biblioteca' ? 'technical' : pathname === '/granjas' ? 'farms' : pathname === '/configuracoes' ? 'settings' : pathname === '/perfil' ? 'profile' : 'overview';
+  const section: Section = pathname === '/granja' ? 'builder' : pathname === '/pesagem' ? 'weighing' : pathname === '/registros' ? 'records' : pathname === '/biblioteca' || pathname === '/indicadores-zootecnicos' ? 'technical' : pathname === '/granjas' ? 'farms' : pathname === '/configuracoes' ? 'settings' : pathname === '/perfil' ? 'profile' : 'overview';
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [workspace, setWorkspace] = useState<WorkspaceData>(() => createInitialWorkspace());
   const [workspaceReady, setWorkspaceReady] = useState(false);
@@ -117,17 +118,12 @@ export function App() {
   const [activeScale, setActiveScale] = useState('');
   const [notice, setNotice] = useState('');
   const [lineage, setLineage] = useState<LayerLineage>('Hy-Line Brown');
-  const [libraryHousingSystem, setLibraryHousingSystem] = useState<'conventional' | 'alternative'>('conventional');
-  const [resourceQuery, setResourceQuery] = useState('');
-  const [resourceCategory, setResourceCategory] = useState('Todas');
-  const [resourceLanguage, setResourceLanguage] = useState('Todos');
   const [housingSystem, setHousingSystem] = useState<HousingSystem>('Gaiolas convencionais');
   const [ageWeeks, setAgeWeeks] = useState(24);
   const productionPhase = Number.isFinite(ageWeeks) && ageWeeks >= 0 ? getManagementPhase(ageWeeks) : 'Cria';
   const [climateProfile, setClimateProfile] = useState<ClimateProfile>('Outro / não informado');
   const [manualOverrides, setManualOverrides] = useState<Set<TechnicalParameterKey>>(() => new Set());
   const flockReferenceSystem = housingSystem === 'Gaiolas enriquecidas' ? 'unsupported' : housingSystem === 'Gaiolas convencionais' ? 'conventional' : 'alternative';
-  const performanceProfile = useMemo(() => housingSystem === 'Gaiolas convencionais' ? getLayerPerformanceProfile(lineage) : null, [lineage, housingSystem]);
   const technicalRecommendation = useMemo(() => getLayerTechnicalRecommendation({ lineage, housingSystem, phase: productionPhase, ageWeeks, climateProfile }), [lineage, housingSystem, productionPhase, ageWeeks, climateProfile]);
 
   useEffect(() => {
@@ -242,7 +238,7 @@ export function App() {
   };
 
   const navigate = (next: Section) => {
-    const routes: Record<Section, string> = { overview: '/', builder: '/granja', weighing: '/pesagem', records: '/registros', technical: '/biblioteca', farms: '/granjas', settings: '/configuracoes', profile: '/perfil' };
+    const routes: Record<Section, string> = { overview: '/', builder: '/granja', weighing: '/pesagem', records: '/registros', technical: '/indicadores-zootecnicos', farms: '/granjas', settings: '/configuracoes', profile: '/perfil' };
     router.push(routes[next]);
     setMobileNavOpen(false);
     setNotice('');
@@ -266,10 +262,10 @@ export function App() {
           <button className={section === 'overview' ? 'nav-item active' : 'nav-item'} onClick={() => navigate('overview')}><House size={18} />Visão geral</button>
           <button className={section === 'weighing' ? 'nav-item active' : 'nav-item'} onClick={() => navigate('weighing')}><Scale size={18} />Pesagem <span className="nav-count">{records.length || '—'}</span></button>
           <button className={section === 'records' ? 'nav-item active' : 'nav-item'} onClick={() => navigate('records')}><Egg size={18} />Registros diários</button>
-          <button className={section === 'builder' ? 'nav-item active' : 'nav-item'} onClick={() => navigate('builder')}><Activity size={18} />Indicadores zootécnicos</button>
+          <button className={section === 'technical' ? 'nav-item active' : 'nav-item'} onClick={() => navigate('technical')}><ChartLine size={18} />Indicadores zootécnicos</button>
           <span className="nav-label nav-label-spaced">PLANEJAMENTO</span>
           <button className={section === 'builder' ? 'nav-item active' : 'nav-item'} onClick={() => navigate('builder')}><Boxes size={18} />Montar minha granja <span className="new-pill">3D</span></button>
-          <button className={section === 'technical' ? 'nav-item active' : 'nav-item'} onClick={() => navigate('technical')}><BookOpen size={18} />Biblioteca técnica</button>
+          
           <span className="nav-label nav-label-spaced">ADMINISTRAÇÃO</span>
           <button className={section === 'farms' ? 'nav-item active' : 'nav-item'} onClick={() => navigate('farms')}><House size={18} />Minhas granjas</button>
         </nav>
@@ -285,7 +281,7 @@ export function App() {
       <main className="main-area">
         <header className="topbar">
           <button className="icon-button mobile-menu" aria-label="Abrir menu" onClick={() => setMobileNavOpen(true)}><Menu size={20} /></button>
-          <div className="breadcrumb">{activeFarm?.name ?? 'Granja'} <span>/</span> {section === 'builder' ? 'Construtor 3D' : section === 'weighing' ? 'Pesagem' : section === 'technical' ? 'Biblioteca técnica' : section === 'records' ? 'Registros diários' : section === 'farms' ? 'Minhas granjas' : section === 'settings' ? 'Configurações' : section === 'profile' ? 'Perfil do administrador' : 'Visão geral'}</div>
+          <div className="breadcrumb">{activeFarm?.name ?? 'Granja'} <span>/</span> {section === 'builder' ? 'Construtor 3D' : section === 'weighing' ? 'Pesagem' : section === 'technical' ? 'Indicadores zootécnicos' : section === 'records' ? 'Registros diários' : section === 'farms' ? 'Minhas granjas' : section === 'settings' ? 'Configurações' : section === 'profile' ? 'Perfil do administrador' : 'Visão geral'}</div>
           <div className="topbar-actions"><span className="environment-chip"><span className="status-dot" />Ambiente de desenvolvimento</span><button className="icon-button" aria-label="Ajuda" onClick={() => setNotice('Este é um protótipo local. Consulte o README para conhecer os limites atuais.')}><CircleHelp size={19} /></button></div>
         </header>
 
@@ -384,49 +380,18 @@ export function App() {
 
                 </div>
               </div>
-            {performanceProfile && <section className="panel performance-panel">
-              <div className="panel-heading"><div><h2>Indicadores zootécnicos de referência</h2><p>{performanceProfile.lineage} · metas e resultados publicados no guia · {performanceProfile.reviewStatus}</p></div><ChartLine size={20} /></div>
-              <div className="performance-grid">{performanceProfile.indicators.map((indicator, index) => <article className="performance-item" key={indicator.label + "-" + indicator.period + "-" + index}><small>{indicator.label}</small><strong>{indicator.value}</strong><span>{indicator.period}</span></article>)}</div>
-              <div className="performance-source"><strong>{performanceProfile.source.publisher}</strong> · {performanceProfile.source.title} · {performanceProfile.source.edition} · página {performanceProfile.source.page}. {performanceProfile.note}<a href={performanceProfile.source.url} target="_blank" rel="noreferrer">Consultar documento original</a></div>
-            </section>}
+
             </>
           )}
 
           {section === 'technical' && (
-            <>
-              <div className="page-heading"><div><span className="eyebrow">BASE DE CONHECIMENTO</span><h1>Biblioteca técnica</h1><p>Parâmetros zootécnicos precisam manter origem, versão e contexto de aplicação.</p></div><button className="button button-primary" onClick={() => setNotice('O cadastro e a revisão documental serão ampliados junto com o armazenamento dos manuais originais.')}><Plus size={17} />Adicionar manual</button></div>
-              <div className="page-heading"><div><span className="eyebrow">BASE DE CONHECIMENTO</span><h1>Biblioteca técnica</h1><p>Guias oficiais catalogados por linhagem, versão e cobertura dos dados.</p></div></div>
-              <div className="guide-library-grid">{layerGuideSources.map((guide) => <article className="panel guide-library-card" key={guide.id}><div className="guide-library-top"><span className="sample-count">{guide.dataStatus === 'weekly-rearing-and-production' ? 'Recria e produção semanais' : guide.dataStatus === 'weekly-rearing' ? 'Recria semanal estruturada' : 'Marcos de desempenho estruturados'}</span><BookOpen size={19} /></div><h2>{guide.lineage}</h2><strong>{guide.title}</strong><p>{guide.publisher} · {guide.edition}</p><small>{guide.coverage}</small><a href={guide.url} target="_blank" rel="noreferrer">Consultar guia original</a></article>)}</div>
-              <p className="table-footnote">A cobertura não é idêntica entre linhagens. O sistema só compara metas em idades com valores efetivamente extraídos e revisados; ausência de ponto não será preenchida por interpolação automática. Documentos de matrizes e frangos de corte não são usados como referência de poedeiras comerciais.</p>
-              <section className="panel guide-standards-panel">
-                <div className="panel-heading">
-                  <div><h2>Padrões semanais de desempenho</h2><p>{lineage} · consulta por idade exata, sem interpolação.</p></div>
-                  <BookOpen size={20} />
-                </div>
-                <label className="field guide-lineage-filter"><span>Linhagem da tabela</span><select value={lineage} onChange={(event) => setLineage(event.target.value as LayerLineage)}><option>Hy-Line Brown</option><option>Lohmann Brown-Classic</option><option>NOVOgen Brown</option><option>Hy-Line W-36</option><option>Outra / não definida</option></select></label>
-                <div className="table-wrap guide-standards-table">
-                  <table>
-                    <thead><tr><th>Sem.</th><th>Fase</th><th>Uniformidade mínima (%)</th><th>Peso corporal (g)</th><th>Ração (g/ave/dia)</th><th>Água (ml/ave/dia)</th><th>Mortalidade acum. (%)</th><th>Postura ave-dia (%)</th><th>Ovos/ave-dia acum.</th><th>Ovos/ave alojada acum.</th><th>Massa de ovos (kg)</th><th>Peso do ovo (g)</th></tr></thead>
-                    <tbody>{layerAgeReferences.filter((item) => item.lineage === lineage).sort((a, b) => a.ageWeeks - b.ageWeeks).map((item) => <tr key={item.lineage + '-' + item.ageWeeks}>
-                      <td>{item.ageWeeks}</td><td>{item.phase}</td>
-                      <td>{item.uniformityMinPercent === undefined ? '—' : `> ${formatNumber(item.uniformityMinPercent, 0)}`}</td>
-                      <td>{formatRange(item.bodyWeightMinGrams, item.bodyWeightMaxGrams, 0)}</td>
-                      <td>{formatRange(item.dailyFeedMinGrams, item.dailyFeedMaxGrams)}</td>
-                      <td>{formatRange(item.dailyWaterMinMl, item.dailyWaterMaxMl, 0)}</td>
-                      <td>{item.cumulativeMortalityPercent === undefined ? '—' : formatNumber(item.cumulativeMortalityPercent, 2)}</td>
-                      <td>{formatRange(item.layRateMinPercent, item.layRateMaxPercent)}</td>
-                      <td>{formatRange(item.eggsPerHenDayMin, item.eggsPerHenDayMax)}</td>
-                      <td>{formatRange(item.eggsPerHenHousedMin, item.eggsPerHenHousedMax)}</td>
-                      <td>{formatRange(item.eggMassPerHenHousedMinKg, item.eggMassPerHenHousedMaxKg, 2)}</td>
-                      <td>{formatRange(item.averageEggWeightMinGrams, item.averageEggWeightMaxGrams)}</td>
-                    </tr>)}
-                    {layerAgeReferences.every((item) => item.lineage !== lineage) && <tr><td colSpan={12} className="table-empty">Não há valores estruturados para esta linhagem.</td></tr>}
-                    </tbody>
-                  </table>
-                </div>
-                <p className="table-footnote">Hy-Line Brown: 100 idades semanais documentadas (1–100). O guia não estabelece semana obrigatória de abate/descarte nem calendário vacinal. Os dados foram transcritos e permanecem pendentes de revisão técnica independente; “—” indica que a tabela não publica aquele indicador para a idade selecionada.</p>
-              </section>
-            </>
+            <TechnicalIndicatorsPage
+              initialLineage={lineage}
+              initialHousingSystem={flockReferenceSystem === 'alternative' ? 'alternative' : 'conventional'}
+              lotId={activeLot?.id ?? 'unassigned'}
+              initialBirds={activeLot?.initialBirds ?? 0}
+              ageWeeks={activeLot?.ageWeeks ?? ageWeeks}
+            />
           )}
           {section === 'records' && <div className="dashboard-flock-section">
             <div className="section-title-row">
