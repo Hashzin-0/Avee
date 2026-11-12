@@ -443,7 +443,7 @@ export function App() {
                 <Field label="Idade atual do lote" value={ageWeeks} onChange={(value) => setAgeWeeks(value ?? 0)} unit="semanas" step={0.1} hint={`Fase identificada automaticamente: ${productionPhase}.`} />
               </div>
             </section>
-            <FlockMonitoringPanel lineage={lineage} ageWeeks={ageWeeks} defaultBirds={activeLot?.currentBirds ?? farm.targetBirds ?? 1} referenceSystem={flockReferenceSystem} />
+            <FlockMonitoringPanel lineage={lineage} ageWeeks={ageWeeks} defaultBirds={activeLot?.currentBirds ?? farm.targetBirds ?? 1} lotId={activeLot?.id ?? "unassigned"} referenceSystem={flockReferenceSystem} />
           </div>}
         </div>
         <footer className="app-footer"><span>Granja · Gestão Avícola Inteligente</span><span>Protótipo inicial · Dados locais</span></footer>
