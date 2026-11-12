@@ -29,13 +29,15 @@ import {
 } from '@phosphor-icons/react';
 import { FarmScene } from '../features/farm-builder/FarmScene';
 import { FlockMonitoringPanel } from '../features/flock-management/FlockMonitoringPanel';
-import { getManagementPhase, layerAgeReferences, layerGuideSources } from '../features/flock-management/management-library';
-import { getLayerPerformanceProfile, getLayerTechnicalRecommendation, type ClimateProfile, type HousingSystem, type LayerLineage, type TechnicalParameterKey } from '../features/farm-builder/technical-recommendations';
+import { getManagementPhase } from '../features/flock-management/management-library';
+import { TechnicalIndicatorsPage } from '../features/flock-management/TechnicalIndicatorsPage';
+import { getLayerTechnicalRecommendation, type ClimateProfile, type HousingSystem, type LayerLineage, type TechnicalParameterKey } from '../features/farm-builder/technical-recommendations';
 import { calculateFarm, calculateUniformity, type FarmInput } from '../features/farm-builder/domain';
 import { connectionOptions, scaleCatalog } from '../features/weighing/catalog';
 import type { IdentificationMode, WeighingRecord } from '../features/weighing/types';
 import { WorkspacePages } from '../features/workspace/WorkspacePages';
 import { FarmActivityCalendar } from '../features/dashboard/FarmActivityCalendar';
+import { calculateFlockDashboard, type FlockDailyEntry } from '../features/flock-management/domain';
 import { createInitialWorkspace, parseWorkspaceData, WORKSPACE_STORAGE_KEY } from '../features/workspace/storage';
 import type { FarmRecord, FlockLot, WorkspaceData } from '../features/workspace/types';
 
@@ -69,6 +71,30 @@ function formatRange(min?: number, max?: number, digits = 1) {
   return min === max ? formatNumber(min, digits) : `${formatNumber(min, digits)}–${formatNumber(max, digits)}`;
 }
 
+function formatOptionalNumber(value: number | null | undefined, digits = 0) {
+  return value === null || value === undefined ? '—' : formatNumber(value, digits);
+}
+
+function readFlockEntries(raw: string | null): FlockDailyEntry[] {
+  if (!raw) return [];
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((item): item is FlockDailyEntry => {
+      if (typeof item !== 'object' || item === null || Array.isArray(item)) return false;
+      const entry = item as Record<string, unknown>;
+      return typeof entry.id === 'string' && typeof entry.date === 'string'
+        && Number.isFinite(entry.deaths) && Number.isFinite(entry.culls)
+        && Number.isFinite(entry.feedKg) && Number.isFinite(entry.waterLiters)
+        && Number.isFinite(entry.eggsProduced)
+        && (entry.averageEggWeightGrams === undefined || Number.isFinite(entry.averageEggWeightGrams))
+        && (entry.averageBodyWeightGrams === undefined || Number.isFinite(entry.averageBodyWeightGrams));
+    });
+  } catch {
+    return [];
+  }
+}
+
 function Metric({ label, value, detail, icon: Icon }: { label: string; value: string; detail: string; icon: typeof Bird }) {
   return (
     <article className="metric-card">
@@ -98,7 +124,7 @@ function Field({ label, value, onChange, unit, min = 0, step = 1, hint }: {
 export function App() {
   const pathname = usePathname();
   const router = useRouter();
-  const section: Section = pathname === '/granja' ? 'builder' : pathname === '/pesagem' ? 'weighing' : pathname === '/registros' ? 'records' : pathname === '/biblioteca' ? 'technical' : pathname === '/granjas' ? 'farms' : pathname === '/configuracoes' ? 'settings' : pathname === '/perfil' ? 'profile' : 'overview';
+  const section: Section = pathname === '/granja' ? 'builder' : pathname === '/pesagem' ? 'weighing' : pathname === '/registros' ? 'records' : pathname === '/biblioteca' || pathname === '/indicadores-zootecnicos' ? 'technical' : pathname === '/granjas' ? 'farms' : pathname === '/configuracoes' ? 'settings' : pathname === '/perfil' ? 'profile' : 'overview';
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [workspace, setWorkspace] = useState<WorkspaceData>(() => createInitialWorkspace());
   const [workspaceReady, setWorkspaceReady] = useState(false);
@@ -112,22 +138,18 @@ export function App() {
   const [ringId, setRingId] = useState('');
   const [sampleNumber, setSampleNumber] = useState('1');
   const [records, setRecords] = useState<WeighingRecord[]>([]);
+  const [flockEntries, setFlockEntries] = useState<FlockDailyEntry[]>([]);
   const [scaleQuery, setScaleQuery] = useState('');
   const [connection, setConnection] = useState('usb');
   const [activeScale, setActiveScale] = useState('');
   const [notice, setNotice] = useState('');
   const [lineage, setLineage] = useState<LayerLineage>('Hy-Line Brown');
-  const [libraryHousingSystem, setLibraryHousingSystem] = useState<'conventional' | 'alternative'>('conventional');
-  const [resourceQuery, setResourceQuery] = useState('');
-  const [resourceCategory, setResourceCategory] = useState('Todas');
-  const [resourceLanguage, setResourceLanguage] = useState('Todos');
   const [housingSystem, setHousingSystem] = useState<HousingSystem>('Gaiolas convencionais');
   const [ageWeeks, setAgeWeeks] = useState(24);
   const productionPhase = Number.isFinite(ageWeeks) && ageWeeks >= 0 ? getManagementPhase(ageWeeks) : 'Cria';
   const [climateProfile, setClimateProfile] = useState<ClimateProfile>('Outro / não informado');
   const [manualOverrides, setManualOverrides] = useState<Set<TechnicalParameterKey>>(() => new Set());
   const flockReferenceSystem = housingSystem === 'Gaiolas enriquecidas' ? 'unsupported' : housingSystem === 'Gaiolas convencionais' ? 'conventional' : 'alternative';
-  const performanceProfile = useMemo(() => housingSystem === 'Gaiolas convencionais' ? getLayerPerformanceProfile(lineage) : null, [lineage, housingSystem]);
   const technicalRecommendation = useMemo(() => getLayerTechnicalRecommendation({ lineage, housingSystem, phase: productionPhase, ageWeeks, climateProfile }), [lineage, housingSystem, productionPhase, ageWeeks, climateProfile]);
 
   useEffect(() => {
@@ -137,7 +159,7 @@ export function App() {
       setWorkspace(next);
       const selectedFarm = next.farms.find((item) => item.id === next.activeFarmId) ?? next.farms[0];
       const selectedLot = selectedFarm?.lots.find((item) => item.id === next.activeLotId) ?? selectedFarm?.lots[0];
-      if (selectedFarm) setFarm({ ...initialFarm, ...selectedFarm.configuration, targetBirds: selectedLot?.currentBirds ?? selectedFarm.configuration.targetBirds ?? initialFarm.targetBirds });
+      if (selectedFarm) setFarm({ ...initialFarm, ...selectedFarm.configuration, targetBirds: selectedLot?.initialBirds ?? selectedFarm.configuration.targetBirds ?? initialFarm.targetBirds });
       if (selectedLot) {
         setLineage(selectedLot.lineage as LayerLineage);
         setHousingSystem(selectedLot.housingSystem as HousingSystem);
@@ -148,6 +170,23 @@ export function App() {
     }
     setWorkspaceReady(true);
   }, []);
+
+  useEffect(() => {
+    const lotId = activeLot?.id;
+    if (!lotId) {
+      setFlockEntries([]);
+      return;
+    }
+    const key = `granja.flock-entries.v1.${lotId}`;
+    const loadEntries = () => setFlockEntries(readFlockEntries(window.localStorage.getItem(key)));
+    loadEntries();
+    window.addEventListener('storage', loadEntries);
+    window.addEventListener('granja:flock-entries-updated', loadEntries);
+    return () => {
+      window.removeEventListener('storage', loadEntries);
+      window.removeEventListener('granja:flock-entries-updated', loadEntries);
+    };
+  }, [activeLot?.id]);
 
   useEffect(() => {
     if (!workspaceReady) return;
@@ -163,16 +202,10 @@ export function App() {
     setWorkspace((current) => ({
       ...current,
       farms: current.farms.map((item) => item.id === activeFarm.id
-        ? {
-            ...item,
-            configuration: { ...item.configuration, ...farm },
-            lots: item.lots.map((lot) => lot.id === activeLot?.id
-              ? { ...lot, currentBirds: Math.max(0, Math.floor(farm.targetBirds ?? lot.currentBirds)), lineage, housingSystem, ageWeeks }
-              : lot),
-          }
+        ? { ...item, configuration: { ...item.configuration, ...farm } }
         : item),
     }));
-  }, [farm, workspaceReady, activeFarm?.id, activeLot?.id, lineage, housingSystem, ageWeeks]);
+  }, [farm, workspaceReady, activeFarm?.id]);
 
   useEffect(() => {
     setManualOverrides(new Set());
@@ -200,6 +233,11 @@ export function App() {
     catch { return null; }
   }, [calculation, farm, planningMode]);
   const stats = useMemo(() => calculateUniformity(records.map((record) => record.weightGrams)), [records]);
+  const flockDashboard = useMemo(() => {
+    if (!activeLot || !Number.isInteger(activeLot.initialBirds) || activeLot.initialBirds <= 0) return null;
+    try { return calculateFlockDashboard(activeLot.initialBirds, flockEntries); } catch { return null; }
+  }, [activeLot?.id, activeLot?.initialBirds, flockEntries]);
+  const latestFlockDay = flockDashboard?.latest ?? null;
   const visibleScales = scaleCatalog.filter((scale) => `${scale.manufacturer} ${scale.model}`.toLowerCase().includes(scaleQuery.toLowerCase()));
 
   const updateFarm = (key: keyof FarmInput, value: number | undefined) => {
@@ -248,7 +286,7 @@ export function App() {
   };
 
   const navigate = (next: Section) => {
-    const routes: Record<Section, string> = { overview: '/', builder: '/granja', weighing: '/pesagem', records: '/registros', technical: '/biblioteca', farms: '/granjas', settings: '/configuracoes', profile: '/perfil' };
+    const routes: Record<Section, string> = { overview: '/', builder: '/granja', weighing: '/pesagem', records: '/registros', technical: '/indicadores-zootecnicos', farms: '/granjas', settings: '/configuracoes', profile: '/perfil' };
     router.push(routes[next]);
     setMobileNavOpen(false);
     setNotice('');
@@ -272,10 +310,10 @@ export function App() {
           <button className={section === 'overview' ? 'nav-item active' : 'nav-item'} onClick={() => navigate('overview')}><House size={18} />Visão geral</button>
           <button className={section === 'weighing' ? 'nav-item active' : 'nav-item'} onClick={() => navigate('weighing')}><Scale size={18} />Pesagem <span className="nav-count">{records.length || '—'}</span></button>
           <button className={section === 'records' ? 'nav-item active' : 'nav-item'} onClick={() => navigate('records')}><Egg size={18} />Registros diários</button>
-          <button className={section === 'builder' ? 'nav-item active' : 'nav-item'} onClick={() => navigate('builder')}><Activity size={18} />Indicadores zootécnicos</button>
+          <button className={section === 'technical' ? 'nav-item active' : 'nav-item'} onClick={() => navigate('technical')}><ChartLine size={18} />Indicadores zootécnicos</button>
           <span className="nav-label nav-label-spaced">PLANEJAMENTO</span>
           <button className={section === 'builder' ? 'nav-item active' : 'nav-item'} onClick={() => navigate('builder')}><Boxes size={18} />Montar minha granja <span className="new-pill">3D</span></button>
-          <button className={section === 'technical' ? 'nav-item active' : 'nav-item'} onClick={() => navigate('technical')}><BookOpen size={18} />Biblioteca técnica</button>
+          
           <span className="nav-label nav-label-spaced">ADMINISTRAÇÃO</span>
           <button className={section === 'farms' ? 'nav-item active' : 'nav-item'} onClick={() => navigate('farms')}><House size={18} />Minhas granjas</button>
         </nav>
@@ -291,7 +329,7 @@ export function App() {
       <main className="main-area">
         <header className="topbar">
           <button className="icon-button mobile-menu" aria-label="Abrir menu" onClick={() => setMobileNavOpen(true)}><Menu size={20} /></button>
-          <div className="breadcrumb">{activeFarm?.name ?? 'Granja'} <span>/</span> {section === 'builder' ? 'Construtor 3D' : section === 'weighing' ? 'Pesagem' : section === 'technical' ? 'Biblioteca técnica' : section === 'records' ? 'Registros diários' : section === 'farms' ? 'Minhas granjas' : section === 'settings' ? 'Configurações' : section === 'profile' ? 'Perfil do administrador' : 'Visão geral'}</div>
+          <div className="breadcrumb">{activeFarm?.name ?? 'Granja'} <span>/</span> {section === 'builder' ? 'Construtor 3D' : section === 'weighing' ? 'Pesagem' : section === 'technical' ? 'Indicadores zootécnicos' : section === 'records' ? 'Registros diários' : section === 'farms' ? 'Minhas granjas' : section === 'settings' ? 'Configurações' : section === 'profile' ? 'Perfil do administrador' : 'Visão geral'}</div>
           <div className="topbar-actions"><span className="environment-chip"><span className="status-dot" />Ambiente de desenvolvimento</span><button className="icon-button" aria-label="Ajuda" onClick={() => setNotice('Este é um protótipo local. Consulte o README para conhecer os limites atuais.')}><CircleHelp size={19} /></button></div>
         </header>
 
@@ -305,7 +343,7 @@ export function App() {
             onSelectFarm={(selected: FarmRecord) => {
               const lot = selected.lots[0];
               setWorkspace((current) => ({ ...current, activeFarmId: selected.id, activeLotId: lot?.id ?? '' }));
-              setFarm({ ...initialFarm, ...selected.configuration, targetBirds: lot?.currentBirds ?? selected.configuration.targetBirds ?? 0 });
+              setFarm({ ...initialFarm, ...selected.configuration, targetBirds: lot?.initialBirds ?? selected.configuration.targetBirds ?? 0 });
               if (lot) {
                 setLineage(lot.lineage as LayerLineage);
                 setHousingSystem(lot.housingSystem as HousingSystem);
@@ -314,7 +352,7 @@ export function App() {
             }}
             onSelectLot={(selected: FarmRecord, lot: FlockLot) => {
               setWorkspace((current) => ({ ...current, activeFarmId: selected.id, activeLotId: lot.id }));
-              setFarm({ ...initialFarm, ...selected.configuration, targetBirds: lot.currentBirds });
+              setFarm({ ...initialFarm, ...selected.configuration, targetBirds: lot.initialBirds });
               setLineage(lot.lineage as LayerLineage);
               setHousingSystem(lot.housingSystem as HousingSystem);
               setAgeWeeks(lot.ageWeeks);
@@ -329,6 +367,23 @@ export function App() {
                 <Metric label="Pesagens nesta sessão" value={String(records.length)} detail="Registros locais ainda não sincronizados" icon={Scale} />
                 <Metric label="Peso médio da amostra" value={stats.meanGrams === null ? '—' : `${formatNumber(stats.meanGrams)} g`} detail="Calculado sobre os registros desta sessão" icon={Gauge} />
                 <Metric label="Uniformidade da amostra" value={stats.uniformityPercent === null ? '—' : `${formatNumber(stats.uniformityPercent, 1)}%`} detail="Faixa de ±10% da média amostral" icon={ChartLine} />
+                <Metric label="Aves vivas estimadas" value={latestFlockDay ? formatNumber(flockDashboard?.currentBirds ?? 0) : '—'} detail="Após mortes e eliminações registradas" icon={Bird} />
+                <Metric label="Mortalidade do dia" value={latestFlockDay ? `${formatNumber(latestFlockDay.dailyMortalityPercent, 3)}%` : '—'} detail="Óbitos ÷ aves no início do dia" icon={Activity} />
+                <Metric label="Mortalidade acumulada" value={latestFlockDay ? `${formatNumber(flockDashboard?.cumulativeMortalityPercent ?? 0, 2)}%` : '—'} detail="Óbitos ÷ aves alojadas inicialmente" icon={Activity} />
+                <Metric label="Eliminações acumuladas" value={latestFlockDay ? `${formatNumber(flockDashboard?.cumulativeCullsPercent ?? 0, 2)}%` : '—'} detail="Eliminações, sem classificar como morte" icon={Bird} />
+                <Metric label="Viabilidade atual" value={latestFlockDay ? `${formatNumber(flockDashboard?.liveabilityPercent ?? 0, 2)}%` : '—'} detail="Aves vivas ÷ aves alojadas inicialmente" icon={CheckCircle} />
+                <Metric label="Ração por ave/dia" value={latestFlockDay ? `${formatOptionalNumber(latestFlockDay.feedGramsPerBirdDay)} g` : '—'} detail="Último dia registrado" icon={Activity} />
+                <Metric label="Água por ave/dia" value={latestFlockDay ? `${formatOptionalNumber(latestFlockDay.waterMlPerBirdDay)} ml` : '—'} detail="Último dia registrado" icon={Activity} />
+                <Metric label="Postura hen-day" value={latestFlockDay ? `${formatOptionalNumber(latestFlockDay.henDayProductionPercent)}%` : '—'} detail="Ovos ÷ aves vivas no fim do dia" icon={Egg} />
+                <Metric label="Postura hen-housed" value={latestFlockDay ? `${formatOptionalNumber(latestFlockDay.henHousedProductionPercent)}%` : '—'} detail="Ovos ÷ aves alojadas inicialmente" icon={Egg} />
+                <Metric label="Massa de ovos acumulada" value={latestFlockDay ? `${formatNumber(flockDashboard?.eggMassTotalKg ?? 0)} kg` : '—'} detail={flockDashboard?.eggMassCoverageComplete ? 'Cobertura completa dos dias com postura' : 'Parcial: falta peso médio em dias com ovos'} icon={Egg} />
+                <Metric label="Conversão alimentar acumulada" value={!latestFlockDay || !flockDashboard?.eggMassCoverageComplete || flockDashboard.cumulativeFeedConversion === null ? '—' : `${formatNumber(flockDashboard.cumulativeFeedConversion, 2)} kg/kg`} detail="Ração acumulada ÷ massa de ovos acumulada" icon={Gauge} />
+                <Metric label="Ovos acumulados" value={latestFlockDay ? formatNumber(flockDashboard?.eggsTotal ?? 0) : '—'} detail="Total dos dias registrados" icon={Egg} />
+                <Metric label="Ovos por ave alojada" value={latestFlockDay ? formatNumber(flockDashboard?.eggsPerHousedBird ?? 0, 2) : '—'} detail="Ovos acumulados ÷ aves alojadas inicialmente" icon={Egg} />
+                <Metric label="Massa de ovos por ave alojada" value={!latestFlockDay || flockDashboard?.eggMassPerHousedBirdKg === null || flockDashboard?.eggMassPerHousedBirdKg === undefined ? '—' : `${formatNumber(flockDashboard.eggMassPerHousedBirdKg, 3)} kg`} detail="Massa acumulada ÷ aves alojadas inicialmente" icon={Egg} />
+                <Metric label="Ração acumulada" value={latestFlockDay ? `${formatNumber(flockDashboard?.feedTotalKg ?? 0)} kg` : '—'} detail="Total dos registros diários" icon={Activity} />
+                <Metric label="Peso corporal médio medido" value={latestFlockDay?.averageBodyWeightGrams ? `${formatNumber(latestFlockDay.averageBodyWeightGrams, 0)} g` : '—'} detail="Amostra informada no último registro" icon={Gauge} />
+                <Metric label="Peso médio do ovo medido" value={latestFlockDay?.averageEggWeightGrams ? `${formatNumber(latestFlockDay.averageEggWeightGrams)} g` : '—'} detail="Amostra informada no último registro" icon={Egg} />
               </div>
               <section className="welcome-panel">
                 <div className="welcome-copy"><span className="eyebrow">PLANEJAMENTO DE INSTALAÇÕES</span><h2>Projete seu galpão antes de construir.</h2><p>Informe as dimensões, adicione parâmetros técnicos com fonte identificada e visualize uma proposta tridimensional editável.</p><button className="button button-light" onClick={() => navigate('builder')}>Abrir construtor 3D <span>→</span></button></div>
@@ -338,7 +393,7 @@ export function App() {
               <div className="quick-grid">
                 <button className="quick-card" onClick={() => navigate('weighing')}><span className="quick-icon"><Scale size={21} /></span><strong>Central de pesagem</strong><small>Registrar pesos e configurar identificação</small><span className="quick-arrow">→</span></button>
                 <button className="quick-card" onClick={() => navigate('builder')}><span className="quick-icon"><Boxes size={21} /></span><strong>Montar minha granja</strong><small>Dimensionamento paramétrico e cena 3D</small><span className="quick-arrow">→</span></button>
-                <button className="quick-card" onClick={() => navigate('technical')}><span className="quick-icon"><BookOpen size={21} /></span><strong>Biblioteca técnica</strong><small>Preparar referências oficiais por linhagem</small><span className="quick-arrow">→</span></button>
+                <button className="quick-card" onClick={() => navigate('technical')}><span className="quick-icon"><BookOpen size={21} /></span><strong>Indicadores zootécnicos</strong><small>Metas do guia, resultados reais e biblioteca técnica</small><span className="quick-arrow">→</span></button>
               </div>
               <div className="prototype-note"><ShieldCheck size={18} /><div><strong>Dados demonstrativos identificados</strong><p>Esta versão ainda não está conectada a uma balança, banco de dados ou manual oficial. Os registros feitos aqui permanecem apenas na memória desta sessão.</p></div></div>
             </>
@@ -390,62 +445,24 @@ export function App() {
 
                 </div>
               </div>
-            {performanceProfile && <section className="panel performance-panel">
-              <div className="panel-heading"><div><h2>Indicadores zootécnicos de referência</h2><p>{performanceProfile.lineage} · metas e resultados publicados no guia · {performanceProfile.reviewStatus}</p></div><ChartLine size={20} /></div>
-              <div className="performance-grid">{performanceProfile.indicators.map((indicator, index) => <article className="performance-item" key={indicator.label + "-" + indicator.period + "-" + index}><small>{indicator.label}</small><strong>{indicator.value}</strong><span>{indicator.period}</span></article>)}</div>
-              <div className="performance-source"><strong>{performanceProfile.source.publisher}</strong> · {performanceProfile.source.title} · {performanceProfile.source.edition} · página {performanceProfile.source.page}. {performanceProfile.note}<a href={performanceProfile.source.url} target="_blank" rel="noreferrer">Consultar documento original</a></div>
-            </section>}
+
             </>
           )}
 
           {section === 'technical' && (
-            <>
-              <div className="page-heading"><div><span className="eyebrow">BASE DE CONHECIMENTO</span><h1>Biblioteca técnica</h1><p>Parâmetros zootécnicos precisam manter origem, versão e contexto de aplicação.</p></div><button className="button button-primary" onClick={() => setNotice('O cadastro e a revisão documental serão ampliados junto com o armazenamento dos manuais originais.')}><Plus size={17} />Adicionar manual</button></div>
-              <div className="page-heading"><div><span className="eyebrow">BASE DE CONHECIMENTO</span><h1>Biblioteca técnica</h1><p>Guias oficiais catalogados por linhagem, versão e cobertura dos dados.</p></div></div>
-              <div className="guide-library-grid">{layerGuideSources.map((guide) => <article className="panel guide-library-card" key={guide.id}><div className="guide-library-top"><span className="sample-count">{guide.dataStatus === 'weekly-rearing-and-production' ? 'Recria e produção semanais' : guide.dataStatus === 'weekly-rearing' ? 'Recria semanal estruturada' : 'Marcos de desempenho estruturados'}</span><BookOpen size={19} /></div><h2>{guide.lineage}</h2><strong>{guide.title}</strong><p>{guide.publisher} · {guide.edition}</p><small>{guide.coverage}</small><a href={guide.url} target="_blank" rel="noreferrer">Consultar guia original</a></article>)}</div>
-              <p className="table-footnote">A cobertura não é idêntica entre linhagens. O sistema só compara metas em idades com valores efetivamente extraídos e revisados; ausência de ponto não será preenchida por interpolação automática. Documentos de matrizes e frangos de corte não são usados como referência de poedeiras comerciais.</p>
-              <section className="panel guide-standards-panel">
-                <div className="panel-heading">
-                  <div><h2>Padrões semanais de desempenho</h2><p>{lineage} · consulta por idade exata, sem interpolação.</p></div>
-                  <BookOpen size={20} />
-                </div>
-                <label className="field guide-lineage-filter"><span>Linhagem da tabela</span><select value={lineage} onChange={(event) => setLineage(event.target.value as LayerLineage)}><option>Hy-Line Brown</option><option>Lohmann Brown-Classic</option><option>NOVOgen Brown</option><option>Hy-Line W-36</option><option>Outra / não definida</option></select></label>
-                <div className="table-wrap guide-standards-table">
-                  <table>
-                    <thead><tr><th>Sem.</th><th>Fase</th><th>Uniformidade mínima (%)</th><th>Peso corporal (g)</th><th>Ração (g/ave/dia)</th><th>Água (ml/ave/dia)</th><th>Mortalidade acum. (%)</th><th>Postura ave-dia (%)</th><th>Ovos/ave-dia acum.</th><th>Ovos/ave alojada acum.</th><th>Massa de ovos (kg)</th><th>Peso do ovo (g)</th></tr></thead>
-                    <tbody>{layerAgeReferences.filter((item) => item.lineage === lineage).sort((a, b) => a.ageWeeks - b.ageWeeks).map((item) => <tr key={item.lineage + '-' + item.ageWeeks}>
-                      <td>{item.ageWeeks}</td><td>{item.phase}</td>
-                      <td>{item.uniformityMinPercent === undefined ? '—' : `> ${formatNumber(item.uniformityMinPercent, 0)}`}</td>
-                      <td>{formatRange(item.bodyWeightMinGrams, item.bodyWeightMaxGrams, 0)}</td>
-                      <td>{formatRange(item.dailyFeedMinGrams, item.dailyFeedMaxGrams)}</td>
-                      <td>{formatRange(item.dailyWaterMinMl, item.dailyWaterMaxMl, 0)}</td>
-                      <td>{item.cumulativeMortalityPercent === undefined ? '—' : formatNumber(item.cumulativeMortalityPercent, 2)}</td>
-                      <td>{formatRange(item.layRateMinPercent, item.layRateMaxPercent)}</td>
-                      <td>{formatRange(item.eggsPerHenDayMin, item.eggsPerHenDayMax)}</td>
-                      <td>{formatRange(item.eggsPerHenHousedMin, item.eggsPerHenHousedMax)}</td>
-                      <td>{formatRange(item.eggMassPerHenHousedMinKg, item.eggMassPerHenHousedMaxKg, 2)}</td>
-                      <td>{formatRange(item.averageEggWeightMinGrams, item.averageEggWeightMaxGrams)}</td>
-                    </tr>)}
-                    {layerAgeReferences.every((item) => item.lineage !== lineage) && <tr><td colSpan={12} className="table-empty">Não há valores estruturados para esta linhagem.</td></tr>}
-                    </tbody>
-                  </table>
-                </div>
-                <p className="table-footnote">Hy-Line Brown: 100 idades semanais documentadas (1–100). O guia não estabelece semana obrigatória de abate/descarte nem calendário vacinal. Os dados foram transcritos e permanecem pendentes de revisão técnica independente; “—” indica que a tabela não publica aquele indicador para a idade selecionada.</p>
-              </section>
-            </>
+            <TechnicalIndicatorsPage
+              initialLineage={lineage}
+              initialHousingSystem={flockReferenceSystem === 'alternative' ? 'alternative' : 'conventional'}
+              lotId={activeLot?.id ?? 'unassigned'}
+              initialBirds={activeLot?.initialBirds ?? 0}
+              ageWeeks={activeLot?.ageWeeks ?? ageWeeks}
+            />
           )}
           {section === 'records' && <div className="dashboard-flock-section">
             <div className="section-title-row">
               <div><h2>Cálculos reais da granja</h2><p>Registros diários, indicadores do lote e comparação com referências da linhagem.</p></div>
             </div>
-            <section className="panel dashboard-flock-settings">
-              <div className="field-grid">
-                <label className="field"><span>Linhagem do lote</span><select value={lineage} onChange={(event) => setLineage(event.target.value as LayerLineage)}><option>Hy-Line Brown</option><option>Lohmann Brown-Classic</option><option>NOVOgen Brown</option><option>Hy-Line W-36</option><option>Outra / não definida</option></select></label>
-                <label className="field"><span>Sistema de alojamento</span><select value={housingSystem} onChange={(event) => setHousingSystem(event.target.value as HousingSystem)}><option>Gaiolas convencionais</option><option>Gaiolas enriquecidas</option><option>Sistema de piso</option><option>Aviário / multinível</option><option>Free-range</option></select></label>
-                <Field label="Idade atual do lote" value={ageWeeks} onChange={(value) => setAgeWeeks(value ?? 0)} unit="semanas" step={0.1} hint={`Fase identificada automaticamente: ${productionPhase}.`} />
-              </div>
-            </section>
-            <FlockMonitoringPanel key={activeLot?.id ?? "unassigned"} lineage={lineage} ageWeeks={ageWeeks} defaultBirds={activeLot?.currentBirds ?? farm.targetBirds ?? 1} lotId={activeLot?.id ?? "unassigned"} referenceSystem={flockReferenceSystem} />
+            <FlockMonitoringPanel key={activeLot?.id ?? "unassigned"} lineage={activeLot?.lineage as LayerLineage ?? lineage} ageWeeks={activeLot?.ageWeeks ?? ageWeeks} initialBirds={activeLot?.initialBirds ?? farm.targetBirds ?? 1} lotId={activeLot?.id ?? "unassigned"} referenceSystem={activeLot ? (activeLot.housingSystem === 'Gaiolas enriquecidas' ? 'unsupported' : activeLot.housingSystem === 'Gaiolas convencionais' ? 'conventional' : 'alternative') : flockReferenceSystem} />
           </div>}
         </div>
         <footer className="app-footer"><span>Granja · Gestão Avícola Inteligente</span><span>Protótipo inicial · Dados locais</span></footer>

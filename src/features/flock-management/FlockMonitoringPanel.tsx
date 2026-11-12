@@ -17,18 +17,13 @@ function todayLocal() {
   return date.toISOString().slice(0, 10);
 }
 
-export function FlockMonitoringPanel({ lineage, ageWeeks, defaultBirds, lotId = 'unassigned', referenceSystem = 'conventional' }: {
+export function FlockMonitoringPanel({ lineage, ageWeeks, initialBirds, lotId = 'unassigned', referenceSystem = 'conventional' }: {
   lineage: LayerLineage;
   ageWeeks: number;
-  defaultBirds: number;
+  initialBirds: number;
   lotId?: string;
   referenceSystem?: 'conventional' | 'alternative' | 'unsupported';
 }) {
-  const [initialBirds, setInitialBirds] = useState(String(defaultBirds));
-
-  useEffect(() => {
-    setInitialBirds(String(defaultBirds));
-  }, [defaultBirds]);
   const [date, setDate] = useState(todayLocal);
   const [deaths, setDeaths] = useState('0');
   const [culls, setCulls] = useState('0');
@@ -77,9 +72,8 @@ export function FlockMonitoringPanel({ lineage, ageWeeks, defaultBirds, lotId = 
   }, [entries, loadedLotId, lotId]);
 
   const dashboard = useMemo(() => {
-    const count = Number(initialBirds);
-    if (!Number.isInteger(count) || count <= 0) return null;
-    try { return calculateFlockDashboard(count, entries); } catch { return null; }
+    if (!Number.isInteger(initialBirds) || initialBirds <= 0) return null;
+    try { return calculateFlockDashboard(initialBirds, entries); } catch { return null; }
   }, [initialBirds, entries]);
   const reference = referenceSystem === 'unsupported' ? null : getLayerAgeReference(lineage, ageWeeks, referenceSystem);
   const guide = referenceSystem === 'unsupported' ? null : getLayerGuideSource(lineage, referenceSystem);
@@ -103,9 +97,8 @@ export function FlockMonitoringPanel({ lineage, ageWeeks, defaultBirds, lotId = 
       averageBodyWeightGrams: bodyWeight === '' ? undefined : Number(bodyWeight),
     };
     try {
-      const count = Number(initialBirds);
-      if (!Number.isInteger(count) || count <= 0) throw new RangeError('Informe o número inicial de aves alojadas.');
-      calculateFlockDashboard(count, [...entries, entry]);
+      if (!Number.isInteger(initialBirds) || initialBirds <= 0) throw new RangeError('O cadastro do lote não possui uma quantidade inicial válida de aves.');
+      calculateFlockDashboard(initialBirds, [...entries, entry]);
       setEntries((current) => [...current, entry].sort((a, b) => a.date.localeCompare(b.date)));
       setError('');
       setDeaths('0');
@@ -130,18 +123,18 @@ export function FlockMonitoringPanel({ lineage, ageWeeks, defaultBirds, lotId = 
   return (
     <section className="panel flock-panel">
       <div className="panel-heading">
-        <div><h2>Acompanhamento real do lote</h2><p>Indicadores calculados com os registros diários informados pelo produtor.</p></div>
+        <div><h2>Acompanhamento Diário</h2><p>Registre os dados reais do dia; os indicadores calculados ficam disponíveis na Visão geral.</p></div>
         <span className="sample-count">Registro local</span>
       </div>
       <div className="flock-context">
         <strong>{lineage}</strong>
-        <span>Idade informada: {number(ageWeeks, 1)} semanas</span>
+        <span>Idade cadastrada: {number(ageWeeks, 1)} semanas</span>
+        <span>Aves alojadas no início: {number(initialBirds, 0)}</span>
         <span>Fase identificada: {phase}</span>
         {lineage === 'Hy-Line Brown' && <span>Sistema de referência: {referenceSystem === 'conventional' ? 'convencional' : referenceSystem === 'alternative' ? 'alternativo' : 'sem guia compatível'}</span>}
         {reference && <span>Referência técnica disponível para esta idade</span>}
       </div>
       <div className="flock-entry-grid">
-        <label className="field"><span>Aves alojadas no início do lote</span><div className="input-with-unit"><input type="number" min="1" step="1" value={initialBirds} onChange={(event) => setInitialBirds(event.target.value)} /></div><small>Base para mortalidade acumulada e ovos por ave alojada.</small></label>
         <label className="field"><span>Data do registro</span><div className="input-with-unit"><input type="date" value={date} onChange={(event) => setDate(event.target.value)} /></div></label>
         <label className="field"><span>Aves mortas no dia</span><div className="input-with-unit"><input type="number" min="0" step="1" value={deaths} onChange={(event) => setDeaths(event.target.value)} /></div></label>
         <label className="field"><span>Aves eliminadas no dia</span><div className="input-with-unit"><input type="number" min="0" step="1" value={culls} onChange={(event) => setCulls(event.target.value)} /></div><small>Separadas da mortalidade, sem somar como óbito.</small></label>
@@ -154,26 +147,6 @@ export function FlockMonitoringPanel({ lineage, ageWeeks, defaultBirds, lotId = 
       {error && <p className="flock-error" role="alert">{error}</p>}
       <button className="button button-primary" onClick={addEntry}>Registrar dados do dia</button>
       <div className="form-divider" />
-      <div className="section-title-row"><div><h3>Indicadores reais calculados</h3><p>Baseados no último dia cadastrado e no acumulado do lote.</p></div></div>
-      <div className="flock-metrics-grid">
-        <article><small>Aves vivas estimadas</small><strong>{dashboard ? number(dashboard.currentBirds, 0) : '—'}</strong><span>Inventário após mortes e eliminações</span></article>
-        <article><small>Mortalidade do dia</small><strong>{latest ? `${number(latest.dailyMortalityPercent, 3)}%` : '—'}</strong><span>Óbitos ÷ inventário no início do dia</span></article>
-        <article><small>Mortalidade acumulada</small><strong>{dashboard ? `${number(dashboard.cumulativeMortalityPercent, 2)}%` : '—'}</strong><span>Óbitos ÷ aves alojadas</span></article>
-        <article><small>Eliminações acumuladas</small><strong>{dashboard ? `${number(dashboard.cumulativeCullsPercent, 2)}%` : '—'}</strong><span>Eliminadas, sem classificar como morte</span></article>
-        <article><small>Viabilidade atual</small><strong>{dashboard ? `${number(dashboard.liveabilityPercent, 2)}%` : '—'}</strong><span>Aves vivas ÷ aves alojadas</span></article>
-        <article><small>Ração por ave/dia</small><strong>{latest ? `${number(latest.feedGramsPerBirdDay)} g` : '—'}</strong><span>Consumo ÷ inventário médio do dia</span></article>
-        <article><small>Água por ave/dia</small><strong>{latest ? `${number(latest.waterMlPerBirdDay)} ml` : '—'}</strong><span>Consumo ÷ inventário médio do dia</span></article>
-        <article><small>Postura hen-day</small><strong>{latest ? `${number(latest.henDayProductionPercent)}%` : '—'}</strong><span>Ovos ÷ aves vivas no fim do dia</span></article>
-        <article><small>Postura hen-housed</small><strong>{latest ? `${number(latest.henHousedProductionPercent)}%` : '—'}</strong><span>Ovos ÷ aves alojadas inicialmente</span></article>
-        <article><small>Massa de ovos acumulada</small><strong>{dashboard ? `${number(dashboard.eggMassTotalKg)} kg` : '—'}</strong><span>{dashboard?.eggMassCoverageComplete ? 'Cobertura completa dos dias com postura' : 'Parcial: falta peso médio em dias com ovos'}</span></article>
-        <article><small>Conversão alimentar acumulada</small><strong>{!dashboard?.eggMassCoverageComplete || dashboard?.cumulativeFeedConversion === null || dashboard?.cumulativeFeedConversion === undefined ? '—' : `${number(dashboard.cumulativeFeedConversion, 2)} kg/kg`}</strong><span>Ração acumulada ÷ massa de ovos acumulada</span></article>
-        <article><small>Ovos acumulados</small><strong>{dashboard ? number(dashboard.eggsTotal, 0) : '—'}</strong><span>Todos os dias registrados</span></article>
-        <article><small>Ovos acumulados por ave alojada</small><strong>{dashboard ? number(dashboard.eggsPerHousedBird, 2) : '—'}</strong><span>Ovos acumulados ÷ aves alojadas no início</span></article>
-        <article><small>Massa de ovos por ave alojada</small><strong>{dashboard?.eggMassPerHousedBirdKg === null || dashboard?.eggMassPerHousedBirdKg === undefined ? '—' : `${number(dashboard.eggMassPerHousedBirdKg, 3)} kg`}</strong><span>Exibida quando o peso médio dos ovos cobre todos os dias</span></article>
-        <article><small>Ração acumulada</small><strong>{dashboard ? `${number(dashboard.feedTotalKg)} kg` : '—'}</strong><span>Total dos registros diários</span></article>
-        <article><small>Peso corporal médio medido</small><strong>{latest?.averageBodyWeightGrams ? `${number(latest.averageBodyWeightGrams, 0)} g` : '—'}</strong><span>Amostra informada no último registro</span></article>
-        <article><small>Peso médio do ovo medido</small><strong>{latest?.averageEggWeightGrams ? `${number(latest.averageEggWeightGrams)} g` : '—'}</strong><span>Amostra informada no último registro</span></article>
-      </div>
       {feedStatus && <p className="flock-comparison"><strong>Comparação com o guia na idade selecionada:</strong> {feedStatus}. Referência: {reference?.dailyFeedMinGrams}–{reference?.dailyFeedMaxGrams} g/ave/dia. A comparação é válida apenas quando a referência estruturada existe para esta linhagem e idade.</p>}
       {reference && <div className="flock-reference"><strong>Referência oficial para {lineage}, {reference.ageRangeLabel ?? `${reference.ageWeeks} semanas`}</strong><span>{reference.bodyWeightMinGrams !== undefined ? `Peso corporal: ${reference.bodyWeightMinGrams}–${reference.bodyWeightMaxGrams} g. ` : ''}{reference.dailyFeedMinGrams !== undefined ? `Ração: ${reference.dailyFeedMinGrams}–${reference.dailyFeedMaxGrams} g/ave/dia. ` : ''}{reference.dailyWaterMinMl !== undefined ? `Água: ${reference.dailyWaterMinMl}–${reference.dailyWaterMaxMl} ml/ave/dia. ` : ''}{reference.cumulativeMortalityPercent !== undefined ? `Mortalidade acumulada: ${reference.cumulativeMortalityPercent}%. ` : ''}{reference.cumulativeFeedMinGrams !== undefined ? `Ração acumulada: ${reference.cumulativeFeedMinGrams}–${reference.cumulativeFeedMaxGrams} g/ave. ` : ''}{reference.eggsPerHenDayMin !== undefined ? `Ovos por ave-dia acumulados: ${reference.eggsPerHenDayMin}–${reference.eggsPerHenDayMax}. ` : ''}{reference.eggsPerHenHousedMin !== undefined ? `Ovos por ave alojada: ${reference.eggsPerHenHousedMin}–${reference.eggsPerHenHousedMax}. ` : ''}{reference.eggMassPerHenHousedMinKg !== undefined ? `Massa de ovos acumulada: ${reference.eggMassPerHenHousedMinKg}–${reference.eggMassPerHenHousedMaxKg} kg/ave alojada. ` : ''}{reference.note ?? ''} Fonte: {reference.sourceId}, página {reference.page}, versão {guide?.edition ?? 'não informada'}. Aplicabilidade: {reference.housingSystemApplicability} Status: {reference.reviewStatus}.</span></div>}
       {!reference && <p className="flock-reference">{lineage === 'Hy-Line Brown' && ageWeeks > 100 ? 'O acompanhamento de referência Hy-Line Brown termina na semana 100, último marco publicado no guia.' : `O guia desta linhagem foi catalogado, mas não há um ponto de idade estruturado exatamente para ${number(ageWeeks, 1)} semanas. O sistema não interpola nem inventa uma meta.`}</p>}
