@@ -254,7 +254,7 @@ export function App() {
   };
 
   return (
-    <div className="app-shell">
+    <div className={workspace.settings.compactTables ? "app-shell compact-tables" : "app-shell"}>
       <aside className={`sidebar ${mobileNavOpen ? 'sidebar-open' : ''}`}>
         <div className="brand-lockup">
           <div className="brand-mark"><Bird size={23} weight="fill" /></div>
