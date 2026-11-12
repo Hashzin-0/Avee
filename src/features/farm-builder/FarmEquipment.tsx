@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef } from 'react';
+import { FarmFanInstances } from './FarmFanInstances';
 import {
   CylinderGeometry,
   InstancedMesh,
@@ -68,11 +69,6 @@ export function FarmEquipment({ rows, length, width, wallHeight, scale, fans, ni
   const rowPositions = Array.from({ length: Math.min(12, Math.max(1, Math.floor(rows))) }, (_, index) =>
     -width / 2 + ((index + 1) * width) / (Math.min(12, Math.max(1, Math.floor(rows))) + 1),
   );
-  const fanCount = Math.min(12, Math.max(0, Math.floor(fans ?? 0)));
-  const fanPositions = Array.from({ length: fanCount }, (_, index) =>
-    -width / 2 + ((index + 1) * width) / (fanCount + 1),
-  );
-
   return (
     <group>
       {rowPositions.map((z, index) => (
@@ -98,22 +94,7 @@ export function FarmEquipment({ rows, length, width, wallHeight, scale, fans, ni
 
       <DrinkerNipples count={nipples ?? 0} rows={rowPositions} length={length} scale={scale} />
 
-      {fanPositions.map((z, index) => (
-        <group key={`fan-${index}`} position={[length / 2 - 0.02 * scale, wallHeight * 0.52, z]} rotation={[0, 0, Math.PI / 2]}>
-          <mesh>
-            <cylinderGeometry args={[0.46 * scale, 0.46 * scale, 0.18 * scale, 20]} />
-            <meshStandardMaterial color="#52615e" metalness={0.72} roughness={0.34} />
-          </mesh>
-          <mesh position={[0, 0.105 * scale, 0]}>
-            <cylinderGeometry args={[0.12 * scale, 0.12 * scale, 0.04 * scale, 16]} />
-            <meshStandardMaterial color="#b8c2bd" metalness={0.82} roughness={0.3} />
-          </mesh>
-          {[0, 1, 2, 3].map((blade) => (
-            <mesh key={blade} rotation={[0, (blade * Math.PI) / 2, 0]} position={[0, 0.1 * scale, 0]}>
-              <boxGeometry args={[0.12 * scale, 0.035 * scale, 0.66 * scale]} />
-              <meshStandardMaterial color="#9baaa4" metalness={0.66} roughness={0.38} />
-            </mesh>
-          ))}
+      <FarmFanInstances count={fans ?? 0} length={length} width={width} wallHeight={wallHeight} scale={scale} />
           <mesh position={[0, 0.19 * scale, 0]}>
             <boxGeometry args={[1.08 * scale, 0.06 * scale, 1.08 * scale]} />
             <meshStandardMaterial color="#354844" metalness={0.55} roughness={0.4} wireframe />
