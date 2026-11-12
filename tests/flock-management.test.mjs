@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { calculateFlockDashboard } from '../src/features/flock-management/domain.ts';
 import { getLayerAgeReference, getManagementPhase, layerAgeReferences, layerGuideSources } from '../src/features/flock-management/management-library.ts';
+import { getLayerTechnicalRecommendation } from '../src/features/farm-builder/technical-recommendations.ts';
 
 const base = {
   id: 'd1', date: '2026-11-01', deaths: 5, culls: 2,
@@ -192,4 +193,28 @@ test('does not expose conventional age references when an unsupported alternativ
   assert.equal(getLayerAgeReference('Lohmann Brown-Classic', 17, 'alternative'), null);
   assert.equal(getLayerAgeReference('NOVOgen Brown', 12, 'alternative'), null);
   assert.equal(getLayerAgeReference('Hy-Line W-36', 17, 'alternative'), null);
+});
+
+
+test('uses the attached Hy-Line Brown conventional guide for rearing and production equipment sizing', () => {
+  const chick = getLayerTechnicalRecommendation({ lineage: 'Hy-Line Brown', housingSystem: 'Gaiolas convencionais', phase: 'Cria', ageWeeks: 2, climateProfile: 'Outro / não informado' });
+  assert.equal(chick?.values.birdsPerNipple, 12);
+  assert.equal(chick?.values.feederCmPerBird, 4.5);
+  assert.equal(chick?.values.areaPerBirdCm2, undefined);
+
+  const grower = getLayerTechnicalRecommendation({ lineage: 'Hy-Line Brown', housingSystem: 'Gaiolas convencionais', phase: 'Recria', ageWeeks: 10, climateProfile: 'Outro / não informado' });
+  assert.equal(grower?.values.birdsPerNipple, 8);
+  assert.equal(grower?.values.feederCmPerBird, 7);
+
+  const layer = getLayerTechnicalRecommendation({ lineage: 'Hy-Line Brown', housingSystem: 'Gaiolas convencionais', phase: 'Produção', ageWeeks: 32, climateProfile: 'Outro / não informado' });
+  assert.equal(layer?.values.birdsPerNipple, 12);
+  assert.equal(layer?.values.feederCmPerBird, 9);
+  assert.equal(layer?.source.edition, 'Dezembro de 2025');
+});
+
+test('does not apply a floor density to Hy-Line Brown multi-tier aviaries without a published coefficient', () => {
+  const aviary = getLayerTechnicalRecommendation({ lineage: 'Hy-Line Brown', housingSystem: 'Aviário / multinível', phase: 'Produção', ageWeeks: 24, climateProfile: 'Outro / não informado' });
+  assert.equal(aviary?.values.areaPerBirdCm2, undefined);
+  assert.equal(aviary?.values.birdsPerNipple, 10);
+  assert.equal(aviary?.values.feederCmPerBird, 5);
 });
