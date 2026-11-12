@@ -123,7 +123,7 @@ export function FlockMonitoringPanel({ lineage, ageWeeks, initialBirds, lotId = 
   return (
     <section className="panel flock-panel">
       <div className="panel-heading">
-        <div><h2>Acompanhamento Diário</h2><p>Indicadores calculados com os registros diários informados pelo produtor.</p></div>
+        <div><h2>Acompanhamento Diário</h2><p>Registre os dados reais do dia; os indicadores calculados ficam disponíveis na Visão geral.</p></div>
         <span className="sample-count">Registro local</span>
       </div>
       <div className="flock-context">
