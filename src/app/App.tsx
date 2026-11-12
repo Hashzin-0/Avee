@@ -37,6 +37,7 @@ import { connectionOptions, scaleCatalog } from '../features/weighing/catalog';
 import type { IdentificationMode, WeighingRecord } from '../features/weighing/types';
 import { WorkspacePages } from '../features/workspace/WorkspacePages';
 import { FarmActivityCalendar } from '../features/dashboard/FarmActivityCalendar';
+import { calculateFlockDashboard, type FlockDailyEntry } from '../features/flock-management/domain';
 import { createInitialWorkspace, parseWorkspaceData, WORKSPACE_STORAGE_KEY } from '../features/workspace/storage';
 import type { FarmRecord, FlockLot, WorkspaceData } from '../features/workspace/types';
 
@@ -68,6 +69,26 @@ function formatNumber(value: number, digits = 0) {
 function formatRange(min?: number, max?: number, digits = 1) {
   if (min === undefined || max === undefined) return '—';
   return min === max ? formatNumber(min, digits) : `${formatNumber(min, digits)}–${formatNumber(max, digits)}`;
+}
+
+function readFlockEntries(raw: string | null): FlockDailyEntry[] {
+  if (!raw) return [];
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((item): item is FlockDailyEntry => {
+      if (typeof item !== 'object' || item === null || Array.isArray(item)) return false;
+      const entry = item as Record<string, unknown>;
+      return typeof entry.id === 'string' && typeof entry.date === 'string'
+        && Number.isFinite(entry.deaths) && Number.isFinite(entry.culls)
+        && Number.isFinite(entry.feedKg) && Number.isFinite(entry.waterLiters)
+        && Number.isFinite(entry.eggsProduced)
+        && (entry.averageEggWeightGrams === undefined || Number.isFinite(entry.averageEggWeightGrams))
+        && (entry.averageBodyWeightGrams === undefined || Number.isFinite(entry.averageBodyWeightGrams));
+    });
+  } catch {
+    return [];
+  }
 }
 
 function Metric({ label, value, detail, icon: Icon }: { label: string; value: string; detail: string; icon: typeof Bird }) {
@@ -113,6 +134,7 @@ export function App() {
   const [ringId, setRingId] = useState('');
   const [sampleNumber, setSampleNumber] = useState('1');
   const [records, setRecords] = useState<WeighingRecord[]>([]);
+  const [flockEntries, setFlockEntries] = useState<FlockDailyEntry[]>([]);
   const [scaleQuery, setScaleQuery] = useState('');
   const [connection, setConnection] = useState('usb');
   const [activeScale, setActiveScale] = useState('');
@@ -144,6 +166,23 @@ export function App() {
     }
     setWorkspaceReady(true);
   }, []);
+
+  useEffect(() => {
+    const lotId = activeLot?.id;
+    if (!lotId) {
+      setFlockEntries([]);
+      return;
+    }
+    const key = `granja.flock-entries.v1.${lotId}`;
+    const loadEntries = () => setFlockEntries(readFlockEntries(window.localStorage.getItem(key)));
+    loadEntries();
+    window.addEventListener('storage', loadEntries);
+    window.addEventListener('granja:flock-entries-updated', loadEntries);
+    return () => {
+      window.removeEventListener('storage', loadEntries);
+      window.removeEventListener('granja:flock-entries-updated', loadEntries);
+    };
+  }, [activeLot?.id]);
 
   useEffect(() => {
     if (!workspaceReady) return;
@@ -190,6 +229,11 @@ export function App() {
     catch { return null; }
   }, [calculation, farm, planningMode]);
   const stats = useMemo(() => calculateUniformity(records.map((record) => record.weightGrams)), [records]);
+  const flockDashboard = useMemo(() => {
+    if (!activeLot || !Number.isInteger(activeLot.initialBirds) || activeLot.initialBirds <= 0) return null;
+    try { return calculateFlockDashboard(activeLot.initialBirds, flockEntries); } catch { return null; }
+  }, [activeLot?.id, activeLot?.initialBirds, flockEntries]);
+  const latestFlockDay = flockDashboard?.latest ?? null;
   const visibleScales = scaleCatalog.filter((scale) => `${scale.manufacturer} ${scale.model}`.toLowerCase().includes(scaleQuery.toLowerCase()));
 
   const updateFarm = (key: keyof FarmInput, value: number | undefined) => {
@@ -319,6 +363,23 @@ export function App() {
                 <Metric label="Pesagens nesta sessão" value={String(records.length)} detail="Registros locais ainda não sincronizados" icon={Scale} />
                 <Metric label="Peso médio da amostra" value={stats.meanGrams === null ? '—' : `${formatNumber(stats.meanGrams)} g`} detail="Calculado sobre os registros desta sessão" icon={Gauge} />
                 <Metric label="Uniformidade da amostra" value={stats.uniformityPercent === null ? '—' : `${formatNumber(stats.uniformityPercent, 1)}%`} detail="Faixa de ±10% da média amostral" icon={ChartLine} />
+                <Metric label="Aves vivas estimadas" value={latestFlockDay ? formatNumber(flockDashboard?.currentBirds ?? 0) : '—'} detail="Após mortes e eliminações registradas" icon={Bird} />
+                <Metric label="Mortalidade do dia" value={latestFlockDay ? `${formatNumber(latestFlockDay.dailyMortalityPercent, 3)}%` : '—'} detail="Óbitos ÷ aves no início do dia" icon={Activity} />
+                <Metric label="Mortalidade acumulada" value={latestFlockDay ? `${formatNumber(flockDashboard?.cumulativeMortalityPercent ?? 0, 2)}%` : '—'} detail="Óbitos ÷ aves alojadas inicialmente" icon={Activity} />
+                <Metric label="Eliminações acumuladas" value={latestFlockDay ? `${formatNumber(flockDashboard?.cumulativeCullsPercent ?? 0, 2)}%` : '—'} detail="Eliminações, sem classificar como morte" icon={Bird} />
+                <Metric label="Viabilidade atual" value={latestFlockDay ? `${formatNumber(flockDashboard?.liveabilityPercent ?? 0, 2)}%` : '—'} detail="Aves vivas ÷ aves alojadas inicialmente" icon={CheckCircle} />
+                <Metric label="Ração por ave/dia" value={latestFlockDay ? `${formatNumber(latestFlockDay.feedGramsPerBirdDay)} g` : '—'} detail="Último dia registrado" icon={Activity} />
+                <Metric label="Água por ave/dia" value={latestFlockDay ? `${formatNumber(latestFlockDay.waterMlPerBirdDay)} ml` : '—'} detail="Último dia registrado" icon={Activity} />
+                <Metric label="Postura hen-day" value={latestFlockDay ? `${formatNumber(latestFlockDay.henDayProductionPercent)}%` : '—'} detail="Ovos ÷ aves vivas no fim do dia" icon={Egg} />
+                <Metric label="Postura hen-housed" value={latestFlockDay ? `${formatNumber(latestFlockDay.henHousedProductionPercent)}%` : '—'} detail="Ovos ÷ aves alojadas inicialmente" icon={Egg} />
+                <Metric label="Massa de ovos acumulada" value={latestFlockDay ? `${formatNumber(flockDashboard?.eggMassTotalKg ?? 0)} kg` : '—'} detail={flockDashboard?.eggMassCoverageComplete ? 'Cobertura completa dos dias com postura' : 'Parcial: falta peso médio em dias com ovos'} icon={Egg} />
+                <Metric label="Conversão alimentar acumulada" value={!latestFlockDay || !flockDashboard?.eggMassCoverageComplete || flockDashboard.cumulativeFeedConversion === null ? '—' : `${formatNumber(flockDashboard.cumulativeFeedConversion, 2)} kg/kg`} detail="Ração acumulada ÷ massa de ovos acumulada" icon={Gauge} />
+                <Metric label="Ovos acumulados" value={latestFlockDay ? formatNumber(flockDashboard?.eggsTotal ?? 0) : '—'} detail="Total dos dias registrados" icon={Egg} />
+                <Metric label="Ovos por ave alojada" value={latestFlockDay ? formatNumber(flockDashboard?.eggsPerHousedBird ?? 0, 2) : '—'} detail="Ovos acumulados ÷ aves alojadas inicialmente" icon={Egg} />
+                <Metric label="Massa de ovos por ave alojada" value={!latestFlockDay || flockDashboard?.eggMassPerHousedBirdKg === null || flockDashboard?.eggMassPerHousedBirdKg === undefined ? '—' : `${formatNumber(flockDashboard.eggMassPerHousedBirdKg, 3)} kg`} detail="Massa acumulada ÷ aves alojadas inicialmente" icon={Egg} />
+                <Metric label="Ração acumulada" value={latestFlockDay ? `${formatNumber(flockDashboard?.feedTotalKg ?? 0)} kg` : '—'} detail="Total dos registros diários" icon={Activity} />
+                <Metric label="Peso corporal médio medido" value={latestFlockDay?.averageBodyWeightGrams ? `${formatNumber(latestFlockDay.averageBodyWeightGrams, 0)} g` : '—'} detail="Amostra informada no último registro" icon={Gauge} />
+                <Metric label="Peso médio do ovo medido" value={latestFlockDay?.averageEggWeightGrams ? `${formatNumber(latestFlockDay.averageEggWeightGrams)} g` : '—'} detail="Amostra informada no último registro" icon={Egg} />
               </div>
               <section className="welcome-panel">
                 <div className="welcome-copy"><span className="eyebrow">PLANEJAMENTO DE INSTALAÇÕES</span><h2>Projete seu galpão antes de construir.</h2><p>Informe as dimensões, adicione parâmetros técnicos com fonte identificada e visualize uma proposta tridimensional editável.</p><button className="button button-light" onClick={() => navigate('builder')}>Abrir construtor 3D <span>→</span></button></div>
