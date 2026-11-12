@@ -203,11 +203,10 @@ function ProceduralFlock({ count, length, width, scale }: {
   );
 }
 
-function DrinkerNipples({ count, rows, length, width, scale }: {
+function DrinkerNipples({ count, rows, length, scale }: {
   count: number;
   rows: number[];
   length: number;
-  width: number;
   scale: number;
 }) {
   const instanceRef = useRef<InstancedMesh>(null);
@@ -329,7 +328,7 @@ function House({ length, width, sideHeight, ridgeHeight, rows, fans, birds, nipp
         </group>
       ))}
 
-      <DrinkerNipples count={nipples ?? 0} rows={rowPositions} length={safeLength} width={safeWidth} scale={scale} />
+      <DrinkerNipples count={nipples ?? 0} rows={rowPositions} length={safeLength} scale={scale} />
 
       {fanPositions.map((z, index) => (
         <group key={`fan-${index}`} position={[safeLength / 2 - 0.02 * scale, wallHeight * 0.52, z]} rotation={[0, 0, Math.PI / 2]}>
@@ -362,11 +361,11 @@ function House({ length, width, sideHeight, ridgeHeight, rows, fans, birds, nipp
 
       <mesh position={[0, roofCenterY, roofCenterZ]} rotation={[roofAngle, 0, 0]} castShadow receiveShadow>
         <boxGeometry args={[safeLength + 0.6 * scale, 0.1 * scale, roofSlopeLength]} />
-        <meshStandardMaterial color="#657d68" roughness={0.78} />
+        <meshStandardMaterial color="#657d68" roughness={0.78} transparent opacity={0.24} depthWrite={false} />
       </mesh>
       <mesh position={[0, roofCenterY, -roofCenterZ]} rotation={[-roofAngle, 0, 0]} castShadow receiveShadow>
         <boxGeometry args={[safeLength + 0.6 * scale, 0.1 * scale, roofSlopeLength]} />
-        <meshStandardMaterial color="#718b73" roughness={0.78} />
+        <meshStandardMaterial color="#718b73" roughness={0.78} transparent opacity={0.24} depthWrite={false} />
       </mesh>
       <mesh position={[0, ridgeY, 0]}>
         <boxGeometry args={[safeLength + 0.6 * scale, 0.12 * scale, 0.14 * scale]} />
