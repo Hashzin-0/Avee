@@ -17,10 +17,11 @@ function todayLocal() {
   return date.toISOString().slice(0, 10);
 }
 
-export function FlockMonitoringPanel({ lineage, ageWeeks, defaultBirds, referenceSystem = 'conventional' }: {
+export function FlockMonitoringPanel({ lineage, ageWeeks, defaultBirds, lotId = 'unassigned', referenceSystem = 'conventional' }: {
   lineage: LayerLineage;
   ageWeeks: number;
   defaultBirds: number;
+  lotId?: string;
   referenceSystem?: 'conventional' | 'alternative' | 'unsupported';
 }) {
   const [initialBirds, setInitialBirds] = useState(String(defaultBirds));
@@ -37,7 +38,41 @@ export function FlockMonitoringPanel({ lineage, ageWeeks, defaultBirds, referenc
   const [eggWeight, setEggWeight] = useState('');
   const [bodyWeight, setBodyWeight] = useState('');
   const [entries, setEntries] = useState<FlockDailyEntry[]>([]);
+  const [loadedLotId, setLoadedLotId] = useState('');
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    setLoadedLotId('');
+    setEntries([]);
+    try {
+      const raw = window.localStorage.getItem(`granja.flock-entries.v1.${lotId}`);
+      const parsed: unknown = raw ? JSON.parse(raw) : [];
+      if (Array.isArray(parsed)) {
+        const validEntries = parsed.filter((item): item is FlockDailyEntry =>
+          typeof item === 'object' && item !== null
+          && typeof item.id === 'string' && typeof item.date === 'string'
+          && Number.isFinite(item.deaths) && Number.isFinite(item.culls)
+          && Number.isFinite(item.feedKg) && Number.isFinite(item.waterLiters)
+          && Number.isFinite(item.eggsProduced)
+          && (item.averageEggWeightGrams === undefined || Number.isFinite(item.averageEggWeightGrams))
+          && (item.averageBodyWeightGrams === undefined || Number.isFinite(item.averageBodyWeightGrams)),
+        );
+        setEntries(validEntries);
+      }
+    } catch {
+      setError('Não foi possível carregar o histórico local deste lote.');
+    }
+    setLoadedLotId(lotId);
+  }, [lotId]);
+
+  useEffect(() => {
+    if (loadedLotId !== lotId) return;
+    try {
+      window.localStorage.setItem(`granja.flock-entries.v1.${lotId}`, JSON.stringify(entries));
+    } catch {
+      setError('Não foi possível salvar o histórico local deste lote. Verifique o espaço disponível no navegador.');
+    }
+  }, [entries, loadedLotId, lotId]);
 
   const dashboard = useMemo(() => {
     const count = Number(initialBirds);
