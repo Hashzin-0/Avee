@@ -328,7 +328,7 @@ export function App() {
               <div className="quick-grid">
                 <button className="quick-card" onClick={() => navigate('weighing')}><span className="quick-icon"><Scale size={21} /></span><strong>Central de pesagem</strong><small>Registrar pesos e configurar identificação</small><span className="quick-arrow">→</span></button>
                 <button className="quick-card" onClick={() => navigate('builder')}><span className="quick-icon"><Boxes size={21} /></span><strong>Montar minha granja</strong><small>Dimensionamento paramétrico e cena 3D</small><span className="quick-arrow">→</span></button>
-                <button className="quick-card" onClick={() => navigate('technical')}><span className="quick-icon"><BookOpen size={21} /></span><strong>Biblioteca técnica</strong><small>Preparar referências oficiais por linhagem</small><span className="quick-arrow">→</span></button>
+                <button className="quick-card" onClick={() => navigate('technical')}><span className="quick-icon"><BookOpen size={21} /></span><strong>Indicadores zootécnicos</strong><small>Metas do guia, resultados reais e biblioteca técnica</small><span className="quick-arrow">→</span></button>
               </div>
               <div className="prototype-note"><ShieldCheck size={18} /><div><strong>Dados demonstrativos identificados</strong><p>Esta versão ainda não está conectada a uma balança, banco de dados ou manual oficial. Os registros feitos aqui permanecem apenas na memória desta sessão.</p></div></div>
             </>
