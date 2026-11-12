@@ -1,4 +1,4 @@
-import type { LayerLineage, TechnicalParameterKey } from '../farm-builder/technical-recommendations';
+import type { HousingSystem, LayerLineage, TechnicalParameterKey } from '../farm-builder/technical-recommendations';
 import { hyLineBrownProductionRows } from './hyline-brown-production';
 import { hyLineBrownAlternativeProductionRows, hyLineBrownAlternativeRearingRows } from './hyline-brown-alternative';
 
@@ -329,14 +329,14 @@ const layerHousingRecommendations: LayerHousingRecommendation[] = [
 
 export function getLayerHousingRecommendation(
   lineage: LayerLineage,
-  housingSystem: LayerHousingRecommendation['housingSystem'],
+  housingSystem: HousingSystem,
   ageWeeks: number,
 ): LayerHousingRecommendation | null {
   if (!Number.isFinite(ageWeeks) || ageWeeks < 0) return null;
-  return layerHousingRecommendations.find((item) =>
-    item.lineage === lineage
-    && item.housingSystem === housingSystem
-    && ageWeeks >= item.minAgeWeeks
-    && (item.maxAgeWeeks === undefined || ageWeeks <= item.maxAgeWeeks),
-  ) ?? null;
+  return layerHousingRecommendations
+    .filter((item) => item.lineage === lineage
+      && item.housingSystem === housingSystem
+      && ageWeeks >= item.minAgeWeeks
+      && (item.maxAgeWeeks === undefined || ageWeeks <= item.maxAgeWeeks))
+    .sort((a, b) => b.minAgeWeeks - a.minAgeWeeks)[0] ?? null;
 }
